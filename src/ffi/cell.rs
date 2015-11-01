@@ -54,7 +54,7 @@ mod tests {
     use super::super::*;
 
     #[test]
-    fn cell_can_create_and_destroy() {
+    fn ffi_cell_can_create_and_destroy() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
             vterm_cell_free(cell_ptr);
@@ -62,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_chars() {
+    fn ffi_cell_can_get_and_set_chars() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -77,7 +77,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_width() {
+    fn ffi_cell_can_get_and_set_width() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_bold() {
+    fn ffi_cell_can_get_and_set_bold() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -107,7 +107,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_underline() {
+    fn ffi_cell_can_get_and_set_underline() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -125,7 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_italic() {
+    fn ffi_cell_can_get_and_set_italic() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -139,7 +139,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_blink() {
+    fn ffi_cell_can_get_and_set_blink() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -153,7 +153,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_reverse() {
+    fn ffi_cell_can_get_and_set_reverse() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -167,7 +167,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_strike() {
+    fn ffi_cell_can_get_and_set_strike() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -181,7 +181,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_font() {
+    fn ffi_cell_can_get_and_set_font() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -199,7 +199,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_dwl() {
+    fn ffi_cell_can_get_and_set_dwl() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -213,7 +213,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_dhl() {
+    fn ffi_cell_can_get_and_set_dhl() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -231,7 +231,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_bit_fields_dont_interact_with_each_other() {
+    fn ffi_cell_bit_fields_dont_interact_with_each_other() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -273,7 +273,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_fg() {
+    fn ffi_cell_can_get_and_set_fg() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
@@ -289,7 +289,7 @@ mod tests {
     }
 
     #[test]
-    fn cell_can_get_and_set_bg() {
+    fn ffi_cell_can_get_and_set_bg() {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 

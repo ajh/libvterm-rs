@@ -44,7 +44,7 @@ mod tests {
     use libc::{c_int, c_void};
 
     #[test]
-    fn screen_can_reset() {
+    fn ffi_screen_can_reset() {
         unsafe {
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
             let screen_ptr = vterm_obtain_screen(vterm_ptr);
@@ -54,7 +54,7 @@ mod tests {
     }
 
     #[test]
-    fn screen_can_get_cell() {
+    fn ffi_screen_can_get_cell() {
         unsafe {
             // TODO: write something so the cell will have a known value
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
@@ -83,30 +83,34 @@ mod tests {
 
 
     #[test]
-    fn screen_can_set_callbacks() {
+    fn ffi_screen_can_set_callbacks() {
+
+        // libvterm crashes with a segfault here. It seems that in parser.c#140 its calling the
+        // text callback while passing in the cbdata as the user void pointer, but the default
+        // handler at state.c:222 is expected to get the state!
         unsafe {
             // TODO: write something so the cell will have a known value
             let vterm_ptr: *mut VTerm = vterm_new(5, 5);
+            vterm_set_utf8(vterm_ptr, -1);
             let screen_ptr: *mut VTermScreen = vterm_obtain_screen(vterm_ptr);
+            vterm_screen_reset(screen_ptr, 1);
 
-            //let callbacks = VTermScreenCallbacks {
-                //damage:         &damage_handler,
-                //move_rect:      &move_rect_handler,
-                //move_cursor:    &move_cursor_handler,
-                //set_term_prop:  &set_term_prop_handler,
-                //bell:           &bell_handler,
-                //resize:         &resize_handler,
-                //sb_pushline:    &sb_pushline_handler,
-                //sb_popline:     &sb_popline_handler,
-            //};
+            let callbacks = VTermScreenCallbacks {
+                damage:         &damage_handler,
+                move_rect:      &move_rect_handler,
+                move_cursor:    &move_cursor_handler,
+                set_term_prop:  &set_term_prop_handler,
+                bell:           &bell_handler,
+                resize:         &resize_handler,
+                sb_pushline:    &sb_pushline_handler,
+                sb_popline:     &sb_popline_handler,
+            };
 
-            //let mut strings: Vec<String> = vec!();
-            //let strings_ptr: *mut c_void = &mut strings as *mut _ as *mut c_void;
+            let mut strings: Vec<String> = vec!();
+            let strings_ptr: *mut c_void = &mut strings as *mut _ as *mut c_void;
             //vterm_screen_set_callbacks(screen_ptr, &callbacks, strings_ptr);
 
-            //let input = [b'\x07' as libc::c_char]; // bell
-            //let input = [b'a' as libc::c_char]; // bell
-            let input_bytes = "abc".as_bytes();
+            let input_bytes = "xyz".as_bytes();
             let input_ptr = input_bytes.as_ptr();
             vterm_input_write(vterm_ptr, input_ptr, input_bytes.len() as libc::size_t);
 

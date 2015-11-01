@@ -19,14 +19,14 @@ pub use state::*;
 
 pub fn int_to_bool(val: c_int) -> bool {
     match val {
-        1 => true,
-        _ => false,
+        0 => false,
+        _ => true,
     }
 }
 
 fn bool_to_int(flag: bool) -> c_int {
     match flag {
-        true => 1,
+        true => -1,
         false => 0,
     }
 }

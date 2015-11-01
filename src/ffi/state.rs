@@ -14,7 +14,7 @@ mod tests {
     use super::super::*;
 
     #[test]
-    fn state_can_get_default_colors() {
+    fn ffi_state_can_get_default_colors() {
         unsafe {
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
             let state_ptr = vterm_obtain_state(vterm_ptr);
