@@ -9,14 +9,12 @@ pub mod ffi;
 
 mod vterm;
 mod screen;
-mod cell;
-mod cell2;
+mod screen_cell;
 mod state;
 
 pub use vterm::*;
 pub use screen::*;
-pub use cell::*;
-pub use cell2::*;
+pub use screen_cell::*;
 pub use state::*;
 
 pub fn int_to_bool(val: c_int) -> bool {

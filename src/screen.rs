@@ -32,8 +32,8 @@ pub enum ScreenEvent {
     //SetTermProp { prop: Prop,     value: Value },
     Bell,
     Resize      { rows: usize,         cols: usize },
-    SbPushLine  { cells: Vec<Cell2> },
-    SbPopLine   { cells: Vec<Cell2> },
+    SbPushLine  { cells: Vec<ScreenCell> },
+    SbPopLine   { cells: Vec<ScreenCell> },
 }
 
 extern "C" fn damage_handler(rect: ffi::VTermRect, tx: *mut c_void) -> c_int {
@@ -109,7 +109,7 @@ extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScree
         Some(tx) => {
             let mut cells = vec!();
             for i in 0..(cols as usize) {
-                cells.push(Cell2::from_ptr(cells_ptr));
+                cells.push(ScreenCell::from_ptr(cells_ptr));
                 unsafe { cells_ptr.offset(1) };
             }
 
@@ -146,21 +146,14 @@ impl Screen {
         unsafe { ffi::vterm_screen_reset(self.ptr, super::bool_to_int(is_hard)) }
     }
 
-    pub fn get_cell(&self, pos: &Pos) -> Cell {
+    pub fn get_cell(&self, pos: &Pos) -> ScreenCell {
         let pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
         let cell_ptr = unsafe { ffi::vterm_cell_new() };
         unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_ptr) };
-        Cell::from_ptr(cell_ptr)
-    }
-
-    pub fn get_cell2(&self, pos: &Pos) -> Cell2 {
-        let pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
-        let cell_ptr = unsafe { ffi::vterm_cell_new() };
-        unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_ptr) };
-        let cell2 = Cell2::from_ptr(cell_ptr);
+        let cell = ScreenCell::from_ptr(cell_ptr);
         unsafe { ffi::vterm_cell_free(cell_ptr) };
 
-        cell2
+        cell
     }
 }
 

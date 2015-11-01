@@ -58,7 +58,7 @@ struct Context {
   //return -1;
 //}
 
-fn dump_cell(cell: &Cell2, prev_cell: &Cell2, context: &Context) {
+fn dump_cell(cell: &ScreenCell, prev_cell: &ScreenCell, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
@@ -154,7 +154,7 @@ fn dump_cell(cell: &Cell2, prev_cell: &Cell2, context: &Context) {
     std::io::stdout().write_all(&cell.chars_as_utf8_bytes());
 }
 
-fn dump_eol(prev_cell: &Cell2, context: &Context) {
+fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
@@ -170,14 +170,14 @@ fn dump_eol(prev_cell: &Cell2, context: &Context) {
 
 fn dump_row(row: usize, vt: &VTerm, context: &Context) {
     let mut pos = Pos { row: row, col: 0 };
-    let mut prev_cell: Cell2 = Default::default();
+    let mut prev_cell: ScreenCell = Default::default();
     let (fg, bg) = vt.get_state().get_default_colors();
     //prev_cell.set_fg(fg);
     //prev_cell.set_bg(bg);
     let vts = vt.get_screen();
 
     while pos.col < context.cols_count {
-        let cell = vts.get_cell2(&pos);
+        let cell = vts.get_cell(&pos);
 
         dump_cell(&cell, &prev_cell, context);
 
@@ -249,7 +249,7 @@ fn main() {
                 context.cols_count = cols;
             },
             ScreenEvent::SbPushLine{cells: cells} => {
-                let mut prev_cell: Cell2 = Default::default();
+                let mut prev_cell: ScreenCell = Default::default();
                 //let (prev_cell.fg, prev_cell.bg) = vt.get_state().get_default_colors();
 
                 for cell in &cells {

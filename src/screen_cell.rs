@@ -6,10 +6,15 @@ use std::vec::Vec;
 
 use super::*;
 
-// Lets try this again...
+#[derive(Debug, Default)]
+pub struct Color {
+    pub red: u8,
+    pub green: u8,
+    pub blue: u8,
+}
 
 #[derive(Debug, Default)]
-pub struct Cell2Attr {
+pub struct ScreenCellAttr {
     pub bold:       bool,
     pub underline:  u8, // 0 to 3
     pub italic:     bool,
@@ -22,17 +27,17 @@ pub struct Cell2Attr {
 }
 
 #[derive(Debug, Default)]
-pub struct Cell2 {
+pub struct ScreenCell {
     pub chars: Vec<char>,
     pub width: u8,
-    pub attrs: Cell2Attr,
+    pub attrs: ScreenCellAttr,
     pub fg: Color,
     pub bg: Color,
 }
 
-impl Cell2 {
+impl ScreenCell {
     // Copies data from the given pointer. Doesn't free the pointer or anything.
-    pub fn from_ptr(ptr: *const ffi::VTermScreenCell) -> Cell2 {
+    pub fn from_ptr(ptr: *const ffi::VTermScreenCell) -> ScreenCell {
         let fg = unsafe { ffi::vterm_cell_get_fg(ptr) };
         let bg = unsafe { ffi::vterm_cell_get_fg(ptr) };
 
@@ -47,10 +52,10 @@ impl Cell2 {
         }
 
         unsafe {
-            Cell2 {
+            ScreenCell {
                 chars: chars,
                 width: ffi::vterm_cell_get_width(ptr) as u8,
-                attrs: Cell2Attr {
+                attrs: ScreenCellAttr {
                     bold:       int_to_bool(ffi::vterm_cell_get_bold(ptr) as i32),
                     underline:  ffi::vterm_cell_get_underline(ptr) as u8,
                     italic:     int_to_bool(ffi::vterm_cell_get_italic(ptr) as i32),
