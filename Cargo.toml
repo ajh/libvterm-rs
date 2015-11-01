@@ -1,4 +1,20 @@
 [package]
-name = "libvterm-sys"
-version = "0.1.0"
 authors = ["Andy Hartford <hartforda@gmail.com>"]
+description = "FFI bindings to libtsm"
+name = "libvterm-sys"
+version = "0.0.0"
+license = "MIT"
+
+build = "build.rs"
+links = "libvterm"
+
+[build-dependencies]
+gcc = "0.3"
+glob = "0.2.10"
+libc = "0.1"
+
+[dev-dependencies]
+pty = "0.1.5"
+regex = "0.1.8"
+term = { git = "https://github.com/ajh/term.git", branch = "add_stuff_that_i_need" }
+termios = "0.2"
