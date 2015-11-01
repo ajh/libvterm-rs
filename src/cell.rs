@@ -6,12 +6,14 @@ use std::vec::Vec;
 
 use super::*;
 
+#[derive(Debug)]
 pub struct Color {
     pub red: u8,
     pub green: u8,
     pub blue: u8,
 }
 
+#[derive(Debug)]
 pub struct Cell {
     ptr: *mut ffi::VTermScreenCell
 }

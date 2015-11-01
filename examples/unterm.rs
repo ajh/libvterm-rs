@@ -262,8 +262,9 @@ fn main() {
 
     vt.set_utf8(true);
 
+    let rx = vt.receive_screen_events();
+
     let mut vts: Screen = vt.get_screen();
-    //vterm_screen_set_callbacks(vts, &cb_screen, NULL);
     vts.reset(true);
 
     let mut file = std::fs::File::open(args.arg_file).unwrap();
@@ -274,6 +275,10 @@ fn main() {
             Ok(num) => { vt.write(&read_buf[0..num]); },
             Err(_)  => panic!("error reading from file")
         }
+    }
+
+    while let Ok(event) = rx.try_recv() {
+        println!("{:?}", event);
     }
 
     for row in 0..args.flag_rows {

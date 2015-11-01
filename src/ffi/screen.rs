@@ -27,16 +27,40 @@ pub struct VTermRect {
     pub end_col: c_int,
 }
 
+extern "C" fn default_damage_handler(_: VTermRect, strings: *mut c_void) -> c_int { 1 }
+extern "C" fn default_move_rect_handler(_: VTermRect, _: VTermRect, strings: *mut c_void) -> c_int { 1 }
+extern "C" fn default_move_cursor_handler(_: VTermPos, _: VTermPos, _: c_int, strings: *mut c_void) -> c_int { 1 }
+extern "C" fn default_set_term_prop_handler(_: VTermProp, _: VTermValue, strings: *mut c_void) -> c_int { 1 }
+extern "C" fn default_bell_handler(strings: *mut c_void) -> c_int { 1 }
+extern "C" fn default_resize_handler(_: c_int, _: c_int, strings: *mut c_void) -> c_int { 1 }
+extern "C" fn default_sb_pushline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int { 1 }
+extern "C" fn default_sb_popline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int { 1 }
+
 #[repr(C)]
 pub struct VTermScreenCallbacks {
-    damage:         extern fn(VTermRect, *mut c_void) -> (c_int),
-    move_rect:      extern fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
-    move_cursor:    extern fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int),
-    set_term_prop:  extern fn(VTermProp, VTermValue, *mut c_void) -> (c_int),
-    bell:           extern fn(*mut c_void) -> (c_int),
-    resize:         extern fn(c_int, c_int, *mut c_void) -> c_int,
-    sb_pushline:    extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
-    sb_popline:     extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
+    pub damage:         extern fn(VTermRect, *mut c_void) -> (c_int),
+    pub move_rect:      extern fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
+    pub move_cursor:    extern fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int),
+    pub set_term_prop:  extern fn(VTermProp, VTermValue, *mut c_void) -> (c_int),
+    pub bell:           extern fn(*mut c_void) -> (c_int),
+    pub resize:         extern fn(c_int, c_int, *mut c_void) -> c_int,
+    pub sb_pushline:    extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
+    pub sb_popline:     extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
+}
+
+impl Default for VTermScreenCallbacks {
+    fn default() -> VTermScreenCallbacks {
+        VTermScreenCallbacks {
+            damage:             default_damage_handler,
+            move_rect:          default_move_rect_handler,
+            move_cursor:        default_move_cursor_handler,
+            set_term_prop:      default_set_term_prop_handler,
+            bell:               default_bell_handler,
+            resize:             default_resize_handler,
+            sb_pushline:        default_sb_pushline_handler,
+            sb_popline:         default_sb_popline_handler,
+        }
+    }
 }
 
 extern {
@@ -119,12 +143,7 @@ mod tests {
 
     #[test]
     fn ffi_screen_can_set_callbacks() {
-
-        // libvterm crashes with a segfault here. It seems that in parser.c#140 its calling the
-        // text callback while passing in the cbdata as the user void pointer, but the default
-        // handler at state.c:222 is expected to get the state!
         unsafe {
-            // TODO: write something so the cell will have a known value
             let vterm_ptr: *mut VTerm = vterm_new(5, 5);
             vterm_set_utf8(vterm_ptr, -1);
             let screen_ptr: *mut VTermScreen = vterm_obtain_screen(vterm_ptr);

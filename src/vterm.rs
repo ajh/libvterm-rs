@@ -1,19 +1,20 @@
 extern crate libc;
 
-use libc::{c_int};
-use std;
+use libc::{c_int, c_void};
+use std::sync::mpsc;
 
 use super::*;
 
 pub struct VTerm {
-    ptr: *mut ffi::VTerm
+    ptr: *mut ffi::VTerm,
+    screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
 }
 
 impl VTerm {
     pub fn new(rows: usize, cols: usize) -> VTerm {
         // TODO how to detect error?
         let vterm_ptr = unsafe { ffi::vterm_new(rows as c_int, cols as c_int) };
-        VTerm { ptr: vterm_ptr }
+        VTerm { ptr: vterm_ptr, screen_event_tx: None }
     }
 
     pub fn get_size(&self) -> ScreenSize {
@@ -36,6 +37,11 @@ impl VTerm {
     }
 
     // TODO: figure out lifetime and data race issues
+    //
+    // I think I don't want this, instead provide access to an owned screen stored in the struct.
+    //
+    // The field could either be public, or have a method to borrow the screen. I've seen borrow()
+    // and borrow_mut() around, so maybe that's idomatic.
     pub fn get_screen(&self) -> Screen {
         let screen_ptr = unsafe { ffi::vterm_obtain_screen(self.ptr) };
         Screen::from_ptr(screen_ptr)
@@ -51,6 +57,20 @@ impl VTerm {
         unsafe {
             ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as libc::size_t) as usize
         }
+    }
+
+    /// install vtermscreen callbacks that will add events to the returned channel.
+    pub fn receive_screen_events(&mut self) -> mpsc::Receiver<ScreenEvent> {
+        let (tx, rx) = mpsc::channel();
+        self.screen_event_tx = Some(tx);
+
+        unsafe {
+            let screen_ptr = ffi::vterm_obtain_screen(self.ptr);
+            let tx_ptr: *mut c_void = &mut self.screen_event_tx as *mut _ as *mut c_void;
+            ffi::vterm_screen_set_callbacks(screen_ptr, &screen_callbacks, tx_ptr);
+        }
+
+        rx
     }
 }
 
