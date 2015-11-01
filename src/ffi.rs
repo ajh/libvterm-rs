@@ -30,6 +30,24 @@ extern {
     pub fn vterm_cell_free(vterm: *const VTerm, cell: *mut VTermScreenCell);
     pub fn vterm_cell_get_width(cell: *const VTermScreenCell) -> libc::c_char;
     pub fn vterm_cell_set_width(cell: *mut VTermScreenCell, width: libc::c_char);
+    pub fn vterm_cell_get_bold(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_bold(cell: *mut VTermScreenCell, is_bold: libc::c_uint);
+    pub fn vterm_cell_get_underline(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_underline(cell: *mut VTermScreenCell, underline_value: libc::c_uint);
+    pub fn vterm_cell_get_italic(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_italic(cell: *mut VTermScreenCell, is_italic: libc::c_uint);
+    pub fn vterm_cell_get_blink(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_blink(cell: *mut VTermScreenCell, is_blink: libc::c_uint);
+    pub fn vterm_cell_get_reverse(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_reverse(cell: *mut VTermScreenCell, is_reverse: libc::c_uint);
+    pub fn vterm_cell_get_strike(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_strike(cell: *mut VTermScreenCell, is_strike: libc::c_uint);
+    pub fn vterm_cell_get_font(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_font(cell: *mut VTermScreenCell, font_value: libc::c_uint);
+    pub fn vterm_cell_get_dwl(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_dwl(cell: *mut VTermScreenCell, dwl: libc::c_uint);
+    pub fn vterm_cell_get_dhl(cell: *const VTermScreenCell) -> libc::c_uint;
+    pub fn vterm_cell_set_dhl(cell: *mut VTermScreenCell, dhl: libc::c_uint);
 }
 
 mod tests {
@@ -160,6 +178,207 @@ mod tests {
 
             vterm_cell_set_width(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_width(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_bold() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_bold(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_bold(cell_ptr));
+
+            vterm_cell_set_bold(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_bold(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_underline() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_underline(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_underline(cell_ptr));
+            vterm_cell_set_underline(cell_ptr, 2);
+            assert_eq!(2, vterm_cell_get_underline(cell_ptr));
+            vterm_cell_set_underline(cell_ptr, 3);
+            assert_eq!(3, vterm_cell_get_underline(cell_ptr));
+            vterm_cell_set_underline(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_underline(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_italic() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_italic(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_italic(cell_ptr));
+            vterm_cell_set_italic(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_italic(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_blink() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_blink(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_blink(cell_ptr));
+            vterm_cell_set_blink(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_blink(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_reverse() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_reverse(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_reverse(cell_ptr));
+            vterm_cell_set_reverse(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_reverse(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_strike() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_strike(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_strike(cell_ptr));
+            vterm_cell_set_strike(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_strike(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_font() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_font(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_font(cell_ptr));
+            vterm_cell_set_font(cell_ptr, 5);
+            assert_eq!(5, vterm_cell_get_font(cell_ptr));
+            vterm_cell_set_font(cell_ptr, 9);
+            assert_eq!(9, vterm_cell_get_font(cell_ptr));
+            vterm_cell_set_font(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_font(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_dwl() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_dwl(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_dwl(cell_ptr));
+            vterm_cell_set_dwl(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_dwl(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_dhl() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_dhl(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_dhl(cell_ptr));
+            vterm_cell_set_dhl(cell_ptr, 2);
+            assert_eq!(2, vterm_cell_get_dhl(cell_ptr));
+            vterm_cell_set_dhl(cell_ptr, 3);
+            assert_eq!(3, vterm_cell_get_dhl(cell_ptr));
+            vterm_cell_set_dhl(cell_ptr, 0);
+            assert_eq!(0, vterm_cell_get_dhl(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_bit_fields_dont_interact_with_each_other() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            vterm_cell_set_bold(cell_ptr, 1);
+            vterm_cell_set_underline(cell_ptr, 0);
+            vterm_cell_set_italic(cell_ptr, 1);
+            vterm_cell_set_blink(cell_ptr, 0);
+            vterm_cell_set_reverse(cell_ptr, 1);
+            vterm_cell_set_strike(cell_ptr, 1);
+            vterm_cell_set_font(cell_ptr, 7);
+            vterm_cell_set_dwl(cell_ptr, 1);
+            vterm_cell_set_dhl(cell_ptr, 2);
+            assert_eq!(1, vterm_cell_get_bold(cell_ptr));
+            assert_eq!(0, vterm_cell_get_underline(cell_ptr));
+            assert_eq!(1, vterm_cell_get_italic(cell_ptr));
+            assert_eq!(0, vterm_cell_get_blink(cell_ptr));
+            assert_eq!(1, vterm_cell_get_reverse(cell_ptr));
+            assert_eq!(1, vterm_cell_get_strike(cell_ptr));
+            assert_eq!(7, vterm_cell_get_font(cell_ptr));
+            assert_eq!(1, vterm_cell_get_dwl(cell_ptr));
+            assert_eq!(2, vterm_cell_get_dhl(cell_ptr));
+
+            vterm_cell_set_blink(cell_ptr, 1);
+            vterm_cell_set_strike(cell_ptr, 0);
+            vterm_cell_set_dwl(cell_ptr, 0);
+            vterm_cell_set_dhl(cell_ptr, 1);
+            assert_eq!(1, vterm_cell_get_bold(cell_ptr));
+            assert_eq!(0, vterm_cell_get_underline(cell_ptr));
+            assert_eq!(1, vterm_cell_get_italic(cell_ptr));
+            assert_eq!(1, vterm_cell_get_blink(cell_ptr));
+            assert_eq!(1, vterm_cell_get_reverse(cell_ptr));
+            assert_eq!(0, vterm_cell_get_strike(cell_ptr));
+            assert_eq!(7, vterm_cell_get_font(cell_ptr));
+            assert_eq!(0, vterm_cell_get_dwl(cell_ptr));
+            assert_eq!(1, vterm_cell_get_dhl(cell_ptr));
 
             vterm_cell_free(vterm_ptr, cell_ptr);
             vterm_free(vterm_ptr);
