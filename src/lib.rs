@@ -59,6 +59,13 @@ impl VTerm {
         let screen_ptr = unsafe { ffi::vterm_obtain_screen(self.ptr) };
         VTermScreen { ptr: screen_ptr }
     }
+
+    pub fn write(&mut self, input: &[u8]) -> usize {
+        unsafe {
+            let input = std::mem::transmute::<&[u8], &[i8]>(input);
+            ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as libc::size_t) as usize
+        }
+    }
 }
 
 impl Drop for VTerm {
@@ -81,20 +88,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn can_create_and_destroy_vterm() {
+    fn vterm_can_create_and_destroy() {
         let vterm: VTerm = VTerm::new(2, 2);
         drop(vterm);
     }
 
     #[test]
-    fn can_get_size() {
+    fn vterm_can_get_size() {
         let vterm: VTerm = VTerm::new(2, 2);
         let size = vterm.get_size();
         assert_eq!((2, 2), (size.rows, size.cols));
     }
 
     #[test]
-    fn can_set_size() {
+    fn vterm_can_set_size() {
         let mut vterm: VTerm = VTerm::new(2, 2);
         vterm.set_size(ScreenSize { cols: 1, rows: 1 });
         let size = vterm.get_size();
@@ -102,7 +109,7 @@ mod tests {
     }
 
     #[test]
-    fn can_get_and_set_utf8() {
+    fn vterm_can_get_and_set_utf8() {
         let mut vterm: VTerm = VTerm::new(2, 2);
         vterm.set_utf8(true);
         assert_eq!(true, vterm.get_utf8());
@@ -112,9 +119,16 @@ mod tests {
     }
 
     #[test]
-    fn can_get_screen() {
+    fn vterm_can_get_screen() {
         let vterm: VTerm = VTerm::new(2, 2);
         vterm.get_screen();
+    }
+
+    #[test]
+    fn vterm_can_write() {
+        let mut vterm: VTerm = VTerm::new(2, 2);
+        let input: &[u8] = "abcd".as_bytes();
+        assert_eq!(4, vterm.write(input));
     }
 
     #[test]

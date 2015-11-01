@@ -13,6 +13,7 @@ extern {
     pub fn vterm_get_utf8(vterm: *const VTerm) -> c_int;
     pub fn vterm_set_utf8(vterm: *mut VTerm, is_utf8: c_int);
     pub fn vterm_obtain_screen(vterm: *mut VTerm) -> *mut VTermScreen;
+    pub fn vterm_input_write(vterm: *mut VTerm, bytes: *const libc::c_char, len: libc::size_t) -> libc::size_t;
 
     pub fn vterm_screen_reset(screen: *mut VTermScreen, hard: c_int);
 }
@@ -77,6 +78,23 @@ mod tests {
         unsafe {
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
             vterm_obtain_screen(vterm_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn vterm_can_write_input() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+
+            // there probably a nicer way to do this
+            let input = [
+                b'a' as libc::c_char,
+                b'b' as libc::c_char,
+                b'c' as libc::c_char,
+            ];
+            let bytes_read = vterm_input_write(vterm_ptr, input.as_ptr(), 3);
+            assert_eq!(3, bytes_read);
             vterm_free(vterm_ptr);
         }
     }

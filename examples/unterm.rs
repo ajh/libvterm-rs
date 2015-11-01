@@ -253,8 +253,8 @@ fn main() {
     loop {
         match file.read(&mut read_buf) {
             Ok(0)   => break,
-            Ok(_) => {}, // pass to vt here
-            Err(e)  => panic!("{}", e)
+            Ok(num) => { vt.write(&read_buf[0..num]); },
+            Err(_)  => panic!("error reading from file")
         }
     }
 
