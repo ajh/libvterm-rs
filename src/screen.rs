@@ -153,20 +153,25 @@ pub struct Screen {
 }
 
 impl Screen {
+
+    /// Create a new Screen from a pointer. This pointer will not get free'ed because the vterm
+    /// handles that.
     pub fn from_ptr(ptr: *mut ffi::VTermScreen) -> Screen {
         Screen { ptr: ptr }
     }
 
+    /// Reset the screen. I've observed this needs to happen before using or segfaults will occur.
     pub fn reset(&mut self, is_hard: bool) {
         unsafe { ffi::vterm_screen_reset(self.ptr, super::bool_to_int(is_hard)) }
     }
 
+    /// Return the cell at the given position
     pub fn get_cell(&self, pos: &Pos) -> ScreenCell {
         let pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
-        let cell_ptr = unsafe { ffi::vterm_cell_new() };
-        unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_ptr) };
-        let cell = ScreenCell::from_ptr(cell_ptr);
-        unsafe { ffi::vterm_cell_free(cell_ptr) };
+        let cell_buf = unsafe { ffi::vterm_cell_new() };
+        unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_buf) };
+        let cell = ScreenCell::from_ptr(cell_buf);
+        unsafe { ffi::vterm_cell_free(cell_buf) };
 
         cell
     }

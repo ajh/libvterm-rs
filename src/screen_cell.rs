@@ -27,10 +27,14 @@ pub struct ScreenCellAttr {
 
 #[derive(Debug, Default)]
 pub struct ScreenCell {
+    /// The characters in the cell. I believe there are more than one to support overstrike.
     pub chars: Vec<char>,
+    /// I think this is How wide the cell is in columns.
     pub width: u8,
     pub attrs: ScreenCellAttr,
+    /// foreground color
     pub fg: Color,
+    /// background color
     pub bg: Color,
 }
 
