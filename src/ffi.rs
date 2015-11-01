@@ -7,9 +7,18 @@ pub enum VTermScreen {}
 pub enum VTermScreenCell {}
 
 #[repr(C)]
+#[derive(PartialEq, Debug)]
 pub struct VTermPos {
     row: c_int,
     col: c_int,
+}
+
+#[repr(C)]
+#[derive(PartialEq, Debug, Clone)]
+pub struct VTermColor {
+    red:   libc::uint8_t,
+    green: libc::uint8_t,
+    blue:  libc::uint8_t,
 }
 
 extern {
@@ -48,6 +57,10 @@ extern {
     pub fn vterm_cell_set_dwl(cell: *mut VTermScreenCell, dwl: libc::c_uint);
     pub fn vterm_cell_get_dhl(cell: *const VTermScreenCell) -> libc::c_uint;
     pub fn vterm_cell_set_dhl(cell: *mut VTermScreenCell, dhl: libc::c_uint);
+    pub fn vterm_cell_get_fg(cell: *const VTermScreenCell) -> VTermColor;
+    pub fn vterm_cell_set_fg(cell: *mut VTermScreenCell, color: VTermColor);
+    pub fn vterm_cell_get_bg(cell: *const VTermScreenCell) -> VTermColor;
+    pub fn vterm_cell_set_bg(cell: *mut VTermScreenCell, color: VTermColor);
 }
 
 mod tests {
@@ -379,6 +392,42 @@ mod tests {
             assert_eq!(7, vterm_cell_get_font(cell_ptr));
             assert_eq!(0, vterm_cell_get_dwl(cell_ptr));
             assert_eq!(1, vterm_cell_get_dhl(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_fg() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            let color = VTermColor { red: 0, green: 255, blue: 0 };
+            vterm_cell_set_fg(cell_ptr, color.clone());
+            assert_eq!(color, vterm_cell_get_fg(cell_ptr));
+            let color = VTermColor { red: 255, green: 255, blue: 0 };
+            vterm_cell_set_fg(cell_ptr, color.clone());
+            assert_eq!(color, vterm_cell_get_fg(cell_ptr));
+
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_bg() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            let color = VTermColor { red: 0, green: 255, blue: 0 };
+            vterm_cell_set_bg(cell_ptr, color.clone());
+            assert_eq!(color, vterm_cell_get_bg(cell_ptr));
+            let color = VTermColor { red: 255, green: 255, blue: 0 };
+            vterm_cell_set_bg(cell_ptr, color.clone());
+            assert_eq!(color, vterm_cell_get_bg(cell_ptr));
 
             vterm_cell_free(vterm_ptr, cell_ptr);
             vterm_free(vterm_ptr);

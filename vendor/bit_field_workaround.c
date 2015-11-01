@@ -132,5 +132,22 @@ void vterm_cell_set_dhl(VTermScreenCell *cell, unsigned int dhl)
   cell->attrs.dhl = dhl;
 };
 
-/*void vterm_cell_get_fg(VTermScreenCell *cell) {};*/
-/*void vterm_cell_get_bg(VTermScreenCell *cell) {};*/
+VTermColor vterm_cell_get_fg(VTermScreenCell *cell)
+{
+  return cell->fg;
+};
+
+void vterm_cell_set_fg(VTermScreenCell *cell, VTermColor color)
+{
+  cell->fg = color;
+};
+
+VTermColor vterm_cell_get_bg(VTermScreenCell *cell)
+{
+  return cell->bg;
+};
+
+void vterm_cell_set_bg(VTermScreenCell *cell, VTermColor color)
+{
+  cell->bg = color;
+};
