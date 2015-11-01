@@ -28,12 +28,12 @@ pub struct Rect {
 pub enum ScreenEvent {
     Damage      { rect: Rect },
     MoveRect    { dest: Rect,     src: Rect },
-    MoveCursor  { pos: Pos,       old_pos: Pos,    is_visible: bool },
+    MoveCursor  { new: Pos,       old: Pos,    is_visible: bool },
     //SetTermProp { prop: Prop,     value: Value },
     Bell,
     Resize      { rows: usize,         cols: usize },
-    SbPushLine  { cells: Vec<Cell> },
-    SbPopLine   { cells: Vec<Cell> },
+    SbPushLine  { cells: Vec<Cell2> },
+    SbPopLine   { cells: Vec<Cell2> },
 }
 
 extern "C" fn damage_handler(rect: ffi::VTermRect, tx: *mut c_void) -> c_int {
@@ -54,10 +54,45 @@ extern "C" fn damage_handler(rect: ffi::VTermRect, tx: *mut c_void) -> c_int {
     }
 }
 
-extern "C" fn move_rect_handler(dest: ffi::VTermRect, src: ffi::VTermRect, tx: *mut c_void) -> c_int { 1 }
-extern "C" fn move_cursor_handler(pos: ffi::VTermPos, old_pos: ffi::VTermPos, is_visible: c_int, tx: *mut c_void) -> c_int { 1 }
-extern "C" fn set_term_prop_handler(_: ffi::VTermProp, _: ffi::VTermValue, tx: *mut c_void) -> c_int { 1 }
-extern "C" fn bell_handler(tx: *mut c_void) -> c_int { 1 }
+extern "C" fn move_rect_handler(dest: ffi::VTermRect, src: ffi::VTermRect, tx: *mut c_void) -> c_int {
+    let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
+    match tx.as_ref() {
+        Some(tx) => {
+            let rust_dest = Rect {
+                start_row: dest.start_row as usize,
+                end_row: dest.end_row as usize,
+                start_col: dest.start_col as usize,
+                end_col: dest.end_col as usize,
+            };
+
+            let rust_src = Rect {
+                start_row: src.start_row as usize,
+                end_row: src.end_row as usize,
+                start_col: src.start_col as usize,
+                end_col: src.end_col as usize,
+            };
+
+            tx.send(ScreenEvent::MoveRect { dest: rust_dest, src: rust_src });
+            1
+        },
+        None => 0
+    }
+}
+
+extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_visible: c_int, tx: *mut c_void) -> c_int {
+    let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
+    match tx.as_ref() {
+        Some(tx) => {
+            let rust_new = Pos { row: new.row as usize, col: new.col as usize };
+            let rust_old = Pos { row: old.row as usize, col: old.col as usize };
+            tx.send(ScreenEvent::MoveCursor { new: rust_new, old: rust_old, is_visible: super::int_to_bool(is_visible) });
+            1
+        },
+        None => 0
+    }
+}
+extern "C" fn set_term_prop_handler(_: ffi::VTermProp, _: ffi::VTermValue, tx: *mut c_void) -> c_int { 0 }
+extern "C" fn bell_handler(tx: *mut c_void) -> c_int { 0 }
 extern "C" fn resize_handler(rows: c_int, cols: c_int, tx: *mut c_void) -> c_int {
     let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
     match tx.as_ref() {
@@ -68,8 +103,24 @@ extern "C" fn resize_handler(rows: c_int, cols: c_int, tx: *mut c_void) -> c_int
         None => 0
     }
 }
-extern "C" fn sb_pushline_handler(cols: c_int, cells: *const ffi::VTermScreenCell, tx: *mut c_void) -> c_int { 1 }
-extern "C" fn sb_popline_handler(cols: c_int, cells: *const ffi::VTermScreenCell, tx: *mut c_void) -> c_int { 1 }
+extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScreenCell, tx: *mut c_void) -> c_int {
+    let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
+    match tx.as_ref() {
+        Some(tx) => {
+            let mut cells = vec!();
+            for i in 0..(cols as usize) {
+                cells.push(Cell2::from_ptr(cells_ptr));
+                unsafe { cells_ptr.offset(1) };
+            }
+
+            tx.send(ScreenEvent::SbPushLine { cells: cells });
+            1
+        },
+        None => 0
+    }
+}
+
+extern "C" fn sb_popline_handler(cols: c_int, cells: *const ffi::VTermScreenCell, tx: *mut c_void) -> c_int { 0 }
 
 pub static screen_callbacks: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbacks {
     damage:             damage_handler,
@@ -100,6 +151,16 @@ impl Screen {
         let cell_ptr = unsafe { ffi::vterm_cell_new() };
         unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_ptr) };
         Cell::from_ptr(cell_ptr)
+    }
+
+    pub fn get_cell2(&self, pos: &Pos) -> Cell2 {
+        let pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
+        let cell_ptr = unsafe { ffi::vterm_cell_new() };
+        unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_ptr) };
+        let cell2 = Cell2::from_ptr(cell_ptr);
+        unsafe { ffi::vterm_cell_free(cell_ptr) };
+
+        cell2
     }
 }
 

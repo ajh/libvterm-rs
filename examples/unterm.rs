@@ -58,7 +58,7 @@ struct Context {
   //return -1;
 //}
 
-fn dump_cell(cell: &Cell, prev_cell: &Cell, context: &Context) {
+fn dump_cell(cell: &Cell2, prev_cell: &Cell2, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
@@ -151,10 +151,10 @@ fn dump_cell(cell: &Cell, prev_cell: &Cell, context: &Context) {
         }
     }
 
-    std::io::stdout().write_all(&cell.get_chars_utf8_encoded_as_bytes());
+    std::io::stdout().write_all(&cell.chars_as_utf8_bytes());
 }
 
-fn dump_eol(prev_cell: &Cell, context: &Context) {
+fn dump_eol(prev_cell: &Cell2, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
@@ -170,58 +170,23 @@ fn dump_eol(prev_cell: &Cell, context: &Context) {
 
 fn dump_row(row: usize, vt: &VTerm, context: &Context) {
     let mut pos = Pos { row: row, col: 0 };
-    let mut prev_cell = Cell::new();
+    let mut prev_cell: Cell2 = Default::default();
     let (fg, bg) = vt.get_state().get_default_colors();
     //prev_cell.set_fg(fg);
     //prev_cell.set_bg(bg);
     let vts = vt.get_screen();
 
     while pos.col < context.cols_count {
-        let cell = vts.get_cell(&pos);
+        let cell = vts.get_cell2(&pos);
 
         dump_cell(&cell, &prev_cell, context);
 
-        pos.col += cell.get_width();
+        pos.col += cell.width as usize;
         prev_cell = cell;
     }
 
     dump_eol(&prev_cell, context);
 }
-
-// TODO: figure out how to write this at a higher level
-extern fn screen_sb_pushline(cols: libc::c_int, cells: *mut ffi::VTermScreenCell, context: *mut Context) -> libc::c_int {
-    let mut cells = cells; // not sure why I must do this
-    let context: &Context = unsafe { & *context };
-    let mut prev_cell = Cell::new();
-    //let (fg, bg) = vt.get_state().get_default_colors();
-    //prev_cell.set_fg(fg);
-    //prev_cell.set_bg(bg);
-
-    for i in 0..cols {
-        // This assumes I am in charge of free'ing the passed in cells. I should confirm that!
-        let cell = Cell::from_ptr(unsafe { &mut *cells });
-        dump_cell(&cell, &prev_cell, context);
-        unsafe { cells = cells.offset(1) };
-        prev_cell = cell;
-    }
-
-    dump_eol(&prev_cell, context);
-
-    1
-}
-
-extern fn screen_resize(new_rows: libc::c_int, new_cols: libc::c_int, context: *mut Context) -> libc::c_int {
-    unsafe {
-        (*context).rows_count = new_rows as usize;
-        (*context).cols_count = new_cols as usize;
-    }
-    1
-}
-
-//static VTermScreenCallbacks cb_screen = {
-  //.sb_pushline = &screen_sb_pushline,
-  //.resize      = &screen_resize,
-//};
 
 const USAGE: &'static str = "
 unterm
@@ -252,7 +217,7 @@ fn main() {
     args.flag_cols   = if args.flag_cols         != 0 { args.flag_cols   } else { 80 };
     args.flag_format = if args.flag_format.len() != 0 { args.flag_format } else { "sgr".to_string() };
 
-    let context = Context {
+    let mut context = Context {
         rows_count: args.flag_rows,
         cols_count: args.flag_cols,
         format: if args.flag_format == "sgr" { Format::Sgr } else { Format::Plain },
@@ -278,7 +243,24 @@ fn main() {
     }
 
     while let Ok(event) = rx.try_recv() {
-        println!("{:?}", event);
+        match event {
+            ScreenEvent::Resize{rows: rows, cols: cols} =>  {
+                context.rows_count = rows;
+                context.cols_count = cols;
+            },
+            ScreenEvent::SbPushLine{cells: cells} => {
+                let mut prev_cell: Cell2 = Default::default();
+                //let (prev_cell.fg, prev_cell.bg) = vt.get_state().get_default_colors();
+
+                for cell in &cells {
+                    //dump_cell(&cell, &prev_cell, context);
+                    //prev_cell = cell
+                }
+
+                //dump_eol(&prev_cell, context);
+            },
+            _ => {},
+        }
     }
 
     for row in 0..args.flag_rows {

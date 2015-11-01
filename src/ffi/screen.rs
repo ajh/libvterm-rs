@@ -6,7 +6,6 @@ use super::*;
 
 pub enum VTermScreen {}
 
-
 // Temporarily stub these in
 pub enum VTermProp {}
 pub enum VTermValue {}
