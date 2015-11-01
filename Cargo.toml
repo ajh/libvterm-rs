@@ -1,0 +1,4 @@
+[package]
+name = "libvterm-sys"
+version = "0.1.0"
+authors = ["Andy Hartford <hartforda@gmail.com>"]
