@@ -160,9 +160,14 @@ use std::io::prelude::*;
   //printf("\n");
 //}
 
-fn dump_row(row: usize) {
+fn dump_row(vt: &VTerm, row: usize, cols_count: usize) {
     let pos = VTermPos { row: row, col: 0 };
     let prev_cell = VTermScreenCell::new();
+    let (fg, bg) = vt.get_state().get_default_colors();
+
+    while pos.col < cols_count {
+        //cell = vt.get_cell(pos);
+    }
 }
 
 //void dump_row(int row)
@@ -263,6 +268,6 @@ fn main() {
     }
 
     for row in 0..args.flag_rows {
-        dump_row(row);
+        dump_row(&vt, row, args.flag_cols);
     }
 }

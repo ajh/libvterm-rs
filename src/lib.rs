@@ -66,9 +66,16 @@ impl VTerm {
         unsafe { ffi::vterm_set_utf8(self.ptr, bool_to_int(is_utf8)) }
     }
 
+    // TODO: figure out lifetime and data race issues
     pub fn get_screen(&self) -> VTermScreen {
         let screen_ptr = unsafe { ffi::vterm_obtain_screen(self.ptr) };
         VTermScreen { ptr: screen_ptr }
+    }
+
+    // TODO: figure out lifetime and data race issues
+    pub fn get_state(&self) -> VTermState {
+        let state_ptr = unsafe { ffi::vterm_obtain_state(self.ptr) };
+        VTermState { ptr: state_ptr }
     }
 
     pub fn write(&mut self, input: &[u8]) -> usize {
@@ -109,6 +116,23 @@ impl VTermScreenCell {
 impl Drop for VTermScreenCell {
     fn drop(&mut self) {
         unsafe { ffi::vterm_cell_free(self.ptr) }
+    }
+}
+
+pub struct VTermState {
+    ptr: *mut ffi::VTermState
+}
+
+impl VTermState {
+    pub fn get_default_colors(&self) -> (VTermColor, VTermColor) {
+        let mut fg: ffi::VTermColor = Default::default();
+        let mut bg: ffi::VTermColor = Default::default();
+        unsafe { ffi::vterm_state_get_default_colors(self.ptr, &mut fg, &mut bg) };
+
+        (
+            VTermColor { red: fg.red, green: fg.green, blue: fg.blue },
+            VTermColor { red: bg.red, green: bg.green, blue: bg.blue },
+        )
     }
 }
 
@@ -153,6 +177,12 @@ mod tests {
     }
 
     #[test]
+    fn vterm_can_get_state() {
+        let vterm: VTerm = VTerm::new(2, 2);
+        vterm.get_state();
+    }
+
+    #[test]
     fn vterm_can_write() {
         let mut vterm: VTerm = VTerm::new(2, 2);
         let input: &[u8] = "abcd".as_bytes();
@@ -170,5 +200,12 @@ mod tests {
     fn cell_can_create_and_destroy() {
         let cell = VTermScreenCell::new();
         drop(cell);
+    }
+
+    #[test]
+    fn state_can_get_default_colors() {
+        let mut vterm: VTerm = VTerm::new(2, 2);
+        let state = vterm.get_state();
+        state.get_default_colors();
     }
 }
