@@ -33,7 +33,6 @@ impl Cell {
     pub fn get_chars(&self) -> Vec<char> {
         let mut buf = [0 as libc::uint32_t; ffi::VTERM_MAX_CHARS_PER_CELL];
         let ret = unsafe { ffi::vterm_cell_get_chars(self.ptr, buf.as_mut_ptr(), ffi::VTERM_MAX_CHARS_PER_CELL as u64) };
-        println!("{}", ret);
 
         let mut output: Vec<char> = Vec::with_capacity(ffi::VTERM_MAX_CHARS_PER_CELL);
         for i in 0..(ret as usize) {

@@ -147,12 +147,7 @@ fn dump_cell(cell: &Cell, prev_cell: &Cell, context: &Context) {
         }
     }
 
-
-  //for(int i = 0; i < VTERM_MAX_CHARS_PER_CELL && cell->chars[i]; i++) {
-    //char bytes[6];
-    //bytes[fill_utf8(cell->chars[i], bytes)] = 0;
-    //printf("%s", bytes);
-  //}
+    std::io::stdout().write_all(&cell.get_chars_utf8_encoded_as_bytes());
 }
 
 fn dump_eol(prev_cell: &Cell, context: &Context) {
@@ -240,7 +235,7 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     args.flag_rows   = if args.flag_rows         != 0 { args.flag_rows   } else { 25 };
-    args.flag_cols   = if args.flag_cols         != 0 { args.flag_cols   } else { 25 };
+    args.flag_cols   = if args.flag_cols         != 0 { args.flag_cols   } else { 80 };
     args.flag_format = if args.flag_format.len() != 0 { args.flag_format } else { "sgr".to_string() };
 
     let context = Context {
@@ -248,8 +243,6 @@ fn main() {
         cols_count: args.flag_cols,
         format: if args.flag_format == "sgr" { Format::Sgr } else { Format::Plain },
     };
-
-    println!("{:?}", args);
 
     let mut vt = VTerm::new(context.rows_count, context.cols_count);
 

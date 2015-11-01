@@ -9,6 +9,7 @@ pub struct ScreenSize {
     pub cols: usize,
 }
 
+#[derive(Debug)]
 pub struct Pos {
     pub row: usize,
     pub col: usize,
