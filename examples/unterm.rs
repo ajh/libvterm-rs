@@ -1,9 +1,13 @@
+#![feature(libc)]
+
 extern crate rustc_serialize;
 extern crate docopt;
 extern crate libvterm_sys;
+extern crate libc;
 
 use libvterm_sys::*;
 use std::io::prelude::*;
+use std::slice;
 
 // port libvterms unterm example to rust
 
@@ -168,6 +172,8 @@ fn dump_row(row: usize, vt: &VTerm, context: &Context) {
     let mut pos = Pos { row: row, col: 0 };
     let mut prev_cell = Cell::new();
     let (fg, bg) = vt.get_state().get_default_colors();
+    //prev_cell.set_fg(fg);
+    //prev_cell.set_bg(bg);
     let vts = vt.get_screen();
 
     while pos.col < context.cols_count {
@@ -182,27 +188,35 @@ fn dump_row(row: usize, vt: &VTerm, context: &Context) {
     dump_eol(&prev_cell, context);
 }
 
-//static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user)
-//{
-  //VTermScreenCell prevcell = {};
-  //vterm_state_get_default_colors(vterm_obtain_state(vt), &prevcell.fg, &prevcell.bg);
+// TODO: figure out how to write this at a higher level
+extern fn screen_sb_pushline(cols: libc::c_int, cells: *mut ffi::VTermScreenCell, context: *mut Context) -> libc::c_int {
+    let mut cells = cells; // not sure why I must do this
+    let context: &Context = unsafe { & *context };
+    let mut prev_cell = Cell::new();
+    //let (fg, bg) = vt.get_state().get_default_colors();
+    //prev_cell.set_fg(fg);
+    //prev_cell.set_bg(bg);
 
-  //for(int col = 0; col < cols; col++) {
-    //dump_cell(cells + col, &prevcell);
-    //prevcell = cells[col];
-  //}
+    for i in 0..cols {
+        // This assumes I am in charge of free'ing the passed in cells. I should confirm that!
+        let cell = Cell::from_ptr(unsafe { &mut *cells });
+        dump_cell(&cell, &prev_cell, context);
+        unsafe { cells = cells.offset(1) };
+        prev_cell = cell;
+    }
 
-  //dump_eol(&prevcell);
+    dump_eol(&prev_cell, context);
 
-  //return 1;
-//}
+    1
+}
 
-//static int screen_resize(int new_rows, int new_cols, void *user)
-//{
-  //rows = new_rows;
-  //cols = new_cols;
-  //return 1;
-//}
+extern fn screen_resize(new_rows: libc::c_int, new_cols: libc::c_int, context: *mut Context) -> libc::c_int {
+    unsafe {
+        (*context).rows_count = new_rows as usize;
+        (*context).cols_count = new_cols as usize;
+    }
+    1
+}
 
 //static VTermScreenCallbacks cb_screen = {
   //.sb_pushline = &screen_sb_pushline,

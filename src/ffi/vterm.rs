@@ -14,7 +14,7 @@ extern {
     pub fn vterm_get_utf8(vt: *const VTerm) -> c_int;
     pub fn vterm_set_utf8(vt: *mut VTerm, is_utf8: c_int);
     pub fn vterm_obtain_screen(vt: *mut VTerm) -> *mut VTermScreen;
-    pub fn vterm_input_write(vt: *mut VTerm, bytes: *const libc::c_char, len: libc::size_t) -> libc::size_t;
+    pub fn vterm_input_write(vt: *mut VTerm, bytes: *const libc::c_uchar, len: libc::size_t) -> libc::size_t;
     pub fn vterm_obtain_state(vt: *mut VTerm) -> *mut VTermState;
 }
 
@@ -89,9 +89,9 @@ mod tests {
 
             // there probably a nicer way to do this
             let input = [
-                b'a' as libc::c_char,
-                b'b' as libc::c_char,
-                b'c' as libc::c_char,
+                b'a' as libc::c_uchar,
+                b'b' as libc::c_uchar,
+                b'c' as libc::c_uchar,
             ];
             let bytes_read = vterm_input_write(vterm_ptr, input.as_ptr(), 3);
             assert_eq!(3, bytes_read);

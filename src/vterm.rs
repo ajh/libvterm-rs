@@ -49,7 +49,6 @@ impl VTerm {
 
     pub fn write(&mut self, input: &[u8]) -> usize {
         unsafe {
-            let input = std::mem::transmute::<&[u8], &[i8]>(input);
             ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as libc::size_t) as usize
         }
     }
