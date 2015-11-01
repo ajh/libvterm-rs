@@ -2,19 +2,11 @@ extern crate libc;
 
 use libc::{c_int};
 
-pub enum VTerm {}
-pub enum VTermScreen {}
+use super::*;
+
 pub enum VTermScreenCell {}
-pub enum VTermState {}
 
 pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
-
-#[repr(C)]
-#[derive(PartialEq, Debug)]
-pub struct VTermPos {
-    pub row: c_int,
-    pub col: c_int,
-}
 
 #[repr(C)]
 #[derive(PartialEq, Debug, Clone, Default)]
@@ -25,19 +17,6 @@ pub struct VTermColor {
 }
 
 extern {
-    pub fn vterm_new(rows: c_int, cols: c_int) -> *mut VTerm;
-    pub fn vterm_free(vt: *mut VTerm);
-    pub fn vterm_get_size(vt: *const VTerm, rowsp: *mut c_int, colsp: *mut c_int);
-    pub fn vterm_set_size(vt: *mut VTerm, rows: c_int, cols: c_int);
-    pub fn vterm_get_utf8(vt: *const VTerm) -> c_int;
-    pub fn vterm_set_utf8(vt: *mut VTerm, is_utf8: c_int);
-    pub fn vterm_obtain_screen(vt: *mut VTerm) -> *mut VTermScreen;
-    pub fn vterm_input_write(vt: *mut VTerm, bytes: *const libc::c_char, len: libc::size_t) -> libc::size_t;
-    pub fn vterm_obtain_state(vt: *mut VTerm) -> *mut VTermState;
-
-    pub fn vterm_screen_reset(screen: *mut VTermScreen, hard: c_int);
-    pub fn vterm_screen_get_cell(screen: *const VTermScreen, pos: VTermPos, cell: *mut VTermScreenCell) -> c_int;
-
     // These are my rust ffi bitfield workarounds
     pub fn vterm_cell_new() -> *mut VTermScreenCell;
     pub fn vterm_cell_free(cell: *mut VTermScreenCell);
@@ -67,125 +46,12 @@ extern {
     pub fn vterm_cell_set_fg(cell: *mut VTermScreenCell, color: VTermColor);
     pub fn vterm_cell_get_bg(cell: *const VTermScreenCell) -> VTermColor;
     pub fn vterm_cell_set_bg(cell: *mut VTermScreenCell, color: VTermColor);
-
-    pub fn vterm_state_get_default_colors(state: *const VTermState, default_fg: *mut VTermColor, default_bg: *mut VTermColor);
 }
 
 mod tests {
     extern crate libc;
 
-    use libc::{c_int};
-    use super::*;
-
-    #[test]
-    fn vterm_can_create_and_destroy() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn vterm_can_get_size() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let mut cols: c_int = 0;
-            let mut rows: c_int = 0;
-            vterm_get_size(vterm_ptr, &mut cols, &mut rows);
-            assert_eq!((2, 2), (cols, rows));
-
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn vterm_can_set_size() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            vterm_set_size(vterm_ptr, 1, 1);
-
-            let mut cols: c_int = 0;
-            let mut rows: c_int = 0;
-            vterm_get_size(vterm_ptr, &mut cols, &mut rows);
-            assert_eq!((1, 1), (cols, rows));
-
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn vterm_can_get_and_set_utf8() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-
-            vterm_set_utf8(vterm_ptr, 1);
-            let val = vterm_get_utf8(vterm_ptr);
-            assert_eq!(1, val); // not sure why this doesnt work
-
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn vterm_can_obtain_screen() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            vterm_obtain_screen(vterm_ptr);
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn vterm_can_write_input() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-
-            // there probably a nicer way to do this
-            let input = [
-                b'a' as libc::c_char,
-                b'b' as libc::c_char,
-                b'c' as libc::c_char,
-            ];
-            let bytes_read = vterm_input_write(vterm_ptr, input.as_ptr(), 3);
-            assert_eq!(3, bytes_read);
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn vterm_can_obtain_state() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            vterm_obtain_state(vterm_ptr);
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn screen_can_reset() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let screen_ptr = vterm_obtain_screen(vterm_ptr);
-            vterm_screen_reset(screen_ptr, 1);
-            vterm_free(vterm_ptr);
-        }
-    }
-
-    #[test]
-    fn screen_can_get_cell() {
-        unsafe {
-            // TODO: write something so the cell will have a known value
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let screen_ptr = vterm_obtain_screen(vterm_ptr);
-            let pos = VTermPos { row: 1, col: 0 };
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
-            let ret = vterm_screen_get_cell(screen_ptr, pos, cell_ptr);
-            assert_eq!(0, ret);
-
-            vterm_cell_free(cell_ptr);
-            vterm_free(vterm_ptr);
-        }
-    }
+    use super::super::*;
 
     #[test]
     fn cell_can_create_and_destroy() {
@@ -435,25 +301,6 @@ mod tests {
             assert_eq!(color, vterm_cell_get_bg(cell_ptr));
 
             vterm_cell_free(cell_ptr);
-        }
-    }
-
-
-    #[test]
-    fn state_can_get_default_colors() {
-        unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let state_ptr = vterm_obtain_state(vterm_ptr);
-
-            let mut fg: VTermColor = Default::default();
-            let mut bg: VTermColor = Default::default();
-            vterm_state_get_default_colors(state_ptr, &mut fg, &mut bg);
-
-            assert!(fg.red > 200 && fg.red < 255);
-            assert!(fg.green > 200 && fg.green < 255);
-            assert!(fg.blue > 200 && fg.blue < 255);
-
-            vterm_free(vterm_ptr);
         }
     }
 }
