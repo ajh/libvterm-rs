@@ -1,6 +1,5 @@
 extern crate libc;
 
-use libc::{c_int};
 use std::char;
 use std::vec::Vec;
 

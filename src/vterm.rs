@@ -67,7 +67,7 @@ impl VTerm {
         unsafe {
             let screen_ptr = ffi::vterm_obtain_screen(self.ptr);
             let tx_ptr: *mut c_void = &mut self.screen_event_tx as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(screen_ptr, &screen_callbacks, tx_ptr);
+            ffi::vterm_screen_set_callbacks(screen_ptr, &SCREEN_CALLBACKS, tx_ptr);
         }
 
         rx

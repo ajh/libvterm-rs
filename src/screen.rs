@@ -47,8 +47,10 @@ extern "C" fn damage_handler(rect: ffi::VTermRect, tx: *mut c_void) -> c_int {
                 end_col: rect.end_col as usize,
             };
 
-            tx.send(ScreenEvent::Damage { rect: rust_rect });
-            1
+            match tx.send(ScreenEvent::Damage { rect: rust_rect }) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
         },
         None => 0
     }
@@ -72,8 +74,10 @@ extern "C" fn move_rect_handler(dest: ffi::VTermRect, src: ffi::VTermRect, tx: *
                 end_col: src.end_col as usize,
             };
 
-            tx.send(ScreenEvent::MoveRect { dest: rust_dest, src: rust_src });
-            1
+            match tx.send(ScreenEvent::MoveRect { dest: rust_dest, src: rust_src }) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
         },
         None => 0
     }
@@ -85,8 +89,15 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
         Some(tx) => {
             let rust_new = Pos { row: new.row as usize, col: new.col as usize };
             let rust_old = Pos { row: old.row as usize, col: old.col as usize };
-            tx.send(ScreenEvent::MoveCursor { new: rust_new, old: rust_old, is_visible: super::int_to_bool(is_visible) });
-            1
+            let event = ScreenEvent::MoveCursor {
+                new: rust_new,
+                old: rust_old,
+                is_visible: super::int_to_bool(is_visible)
+            };
+            match tx.send(event) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
         },
         None => 0
     }
@@ -97,8 +108,10 @@ extern "C" fn resize_handler(rows: c_int, cols: c_int, tx: *mut c_void) -> c_int
     let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
     match tx.as_ref() {
         Some(tx) => {
-            tx.send(ScreenEvent::Resize { rows: rows as usize, cols: cols as usize} );
-            1
+            match tx.send(ScreenEvent::Resize { rows: rows as usize, cols: cols as usize} ) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
         },
         None => 0
     }
@@ -113,8 +126,10 @@ extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScree
                 cells.push(ScreenCell::from_ptr(ptr));
             }
 
-            tx.send(ScreenEvent::SbPushLine { cells: cells });
-            1
+            match tx.send(ScreenEvent::SbPushLine { cells: cells }) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
         },
         None => 0
     }
@@ -122,7 +137,7 @@ extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScree
 
 extern "C" fn sb_popline_handler(cols: c_int, cells: *const ffi::VTermScreenCell, tx: *mut c_void) -> c_int { 0 }
 
-pub static screen_callbacks: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbacks {
+pub static SCREEN_CALLBACKS: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbacks {
     damage:             damage_handler,
     move_rect:          move_rect_handler,
     move_cursor:        move_cursor_handler,

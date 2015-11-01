@@ -167,7 +167,7 @@ mod tests {
             let input_ptr = input_bytes.as_ptr();
             vterm_input_write(vterm_ptr, input_ptr, input_bytes.len() as libc::size_t);
 
-            assert_eq!("damage.damage.move_cursor", strings.connect("."));
+            assert_eq!("damage.damage.move_cursor", strings.join("."));
 
             vterm_free(vterm_ptr);
         }
