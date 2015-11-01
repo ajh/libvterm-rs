@@ -160,6 +160,9 @@ use std::io::prelude::*;
   //printf("\n");
 //}
 
+fn dump_row(row: usize) {
+}
+
 //void dump_row(int row)
 //{
   //VTermPos pos = { .row = row, .col = 0 };
@@ -220,14 +223,13 @@ Options:
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-    flag_cols:    isize,
-    flag_rows:    isize,
+    flag_cols:    usize,
+    flag_rows:    usize,
     flag_format:  String,
     arg_file:     String,
 }
 
 fn main() {
-
     let mut args: Args = docopt::Docopt::new(USAGE)
         .and_then(|d| d.decode())
         .unwrap_or_else(|e| e.exit());
@@ -258,81 +260,7 @@ fn main() {
         }
     }
 
-
-  //int len;
-  //char buffer[1024];
-  //while((len = read(fd, buffer, sizeof(buffer))) > 0) {
-    //vterm_input_write(vt, buffer, len);
-  //}
-
-  //for(int row = 0; row < rows; row++) {
-    //dump_row(row);
-  //}
-
-  //close(fd);
-
-  //vterm_free(vt);
+    for row in 0..args.flag_rows {
+        dump_row(row);
+    }
 }
-
-//int main(int argc, char *argv[])
-//{
-  //rows = 25;
-  //cols = 80;
-
-  //int opt;
-  //while((opt = getopt(argc, argv, "f:l:c:")) != -1) {
-    //switch(opt) {
-      //case 'f':
-        //if(streq(optarg, "plain"))
-          //format = FORMAT_PLAIN;
-        //else if(streq(optarg, "sgr"))
-          //format = FORMAT_SGR;
-        //else {
-          //fprintf(stderr, "Unrecognised format '%s'\n", optarg);
-          //exit(1);
-        //}
-        //break;
-
-      //case 'l':
-        //rows = atoi(optarg);
-        //if(!rows)
-          //rows = 25;
-        //break;
-
-      //case 'c':
-        //cols = atoi(optarg);
-        //if(!cols)
-          //cols = 80;
-        //break;
-    //}
-  //}
-
-  //const char *file = argv[optind++];
-  //int fd = open(file, O_RDONLY);
-  //if(fd == -1) {
-    //fprintf(stderr, "Cannot open %s - %s\n", file, strerror(errno));
-    //exit(1);
-  //}
-
-  //vt = vterm_new(rows, cols);
-  //vterm_set_utf8(vt, true);
-
-  //vts = vterm_obtain_screen(vt);
-  //vterm_screen_set_callbacks(vts, &cb_screen, NULL);
-
-  //vterm_screen_reset(vts, 1);
-
-  //int len;
-  //char buffer[1024];
-  //while((len = read(fd, buffer, sizeof(buffer))) > 0) {
-    //vterm_input_write(vt, buffer, len);
-  //}
-
-  //for(int row = 0; row < rows; row++) {
-    //dump_row(row);
-  //}
-
-  //close(fd);
-
-  //vterm_free(vt);
-//}
