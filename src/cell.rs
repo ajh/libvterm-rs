@@ -4,24 +4,24 @@ use libc::{c_int};
 
 use super::*;
 
-pub struct VTermColor {
+pub struct Color {
     pub red: u8,
     pub green: u8,
     pub blue: u8,
 }
 
-pub struct VTermScreenCell {
+pub struct Cell {
     ptr: *mut ffi::VTermScreenCell
 }
 
-impl VTermScreenCell {
-    pub fn new() -> VTermScreenCell {
+impl Cell {
+    pub fn new() -> Cell {
         let ptr = unsafe { ffi::vterm_cell_new() };
-        VTermScreenCell { ptr: ptr }
+        Cell { ptr: ptr }
     }
 }
 
-impl Drop for VTermScreenCell {
+impl Drop for Cell {
     fn drop(&mut self) {
         unsafe { ffi::vterm_cell_free(self.ptr) }
     }
@@ -32,7 +32,7 @@ mod tests {
 
     #[test]
     fn cell_can_create_and_destroy() {
-        let cell = VTermScreenCell::new();
+        let cell = Cell::new();
         drop(cell);
     }
 }

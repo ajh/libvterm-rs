@@ -4,23 +4,23 @@ use libc::{c_int};
 
 use super::*;
 
-pub struct VTermState {
+pub struct State {
     ptr: *mut ffi::VTermState
 }
 
-impl VTermState {
-    pub fn from_ptr(ptr: *mut ffi::VTermState) -> VTermState {
-        VTermState { ptr: ptr }
+impl State {
+    pub fn from_ptr(ptr: *mut ffi::VTermState) -> State {
+        State { ptr: ptr }
     }
 
-    pub fn get_default_colors(&self) -> (VTermColor, VTermColor) {
+    pub fn get_default_colors(&self) -> (Color, Color) {
         let mut fg: ffi::VTermColor = Default::default();
         let mut bg: ffi::VTermColor = Default::default();
         unsafe { ffi::vterm_state_get_default_colors(self.ptr, &mut fg, &mut bg) };
 
         (
-            VTermColor { red: fg.red, green: fg.green, blue: fg.blue },
-            VTermColor { red: bg.red, green: bg.green, blue: bg.blue },
+            Color { red: fg.red, green: fg.green, blue: fg.blue },
+            Color { red: bg.red, green: bg.green, blue: bg.blue },
         )
     }
 }

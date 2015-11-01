@@ -36,15 +36,15 @@ impl VTerm {
     }
 
     // TODO: figure out lifetime and data race issues
-    pub fn get_screen(&self) -> VTermScreen {
+    pub fn get_screen(&self) -> Screen {
         let screen_ptr = unsafe { ffi::vterm_obtain_screen(self.ptr) };
-        VTermScreen::from_ptr(screen_ptr)
+        Screen::from_ptr(screen_ptr)
     }
 
     // TODO: figure out lifetime and data race issues
-    pub fn get_state(&self) -> VTermState {
+    pub fn get_state(&self) -> State {
         let state_ptr = unsafe { ffi::vterm_obtain_state(self.ptr) };
-        VTermState::from_ptr(state_ptr)
+        State::from_ptr(state_ptr)
     }
 
     pub fn write(&mut self, input: &[u8]) -> usize {

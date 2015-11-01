@@ -161,9 +161,10 @@ use std::io::prelude::*;
 //}
 
 fn dump_row(vt: &VTerm, row: usize, cols_count: usize) {
-    let pos = VTermPos { row: row, col: 0 };
-    let prev_cell = VTermScreenCell::new();
+    let pos = Pos { row: row, col: 0 };
+    let prev_cell = Cell::new();
     let (fg, bg) = vt.get_state().get_default_colors();
+    let vts = vt.get_screen();
 
     while pos.col < cols_count {
         //cell = vt.get_cell(pos);
@@ -251,7 +252,7 @@ fn main() {
 
     vt.set_utf8(true);
 
-    let mut vts: VTermScreen = vt.get_screen();
+    let mut vts: Screen = vt.get_screen();
 
       //vterm_screen_set_callbacks(vts, &cb_screen, NULL);
 
