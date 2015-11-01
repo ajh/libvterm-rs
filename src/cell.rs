@@ -15,9 +15,17 @@ pub struct Cell {
 }
 
 impl Cell {
+    pub fn from_ptr(ptr: *mut ffi::VTermScreenCell) -> Cell {
+        Cell { ptr: ptr }
+    }
+
     pub fn new() -> Cell {
         let ptr = unsafe { ffi::vterm_cell_new() };
         Cell { ptr: ptr }
+    }
+
+    pub fn get_width(&self) -> usize {
+        unsafe { ffi::vterm_cell_get_width(self.ptr) as usize }
     }
 }
 

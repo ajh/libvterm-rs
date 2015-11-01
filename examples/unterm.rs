@@ -32,6 +32,17 @@ use std::io::prelude::*;
   //FORMAT_SGR,
 //} format = FORMAT_PLAIN;
 
+enum Format {
+    Plain,
+    Sgr,
+}
+
+struct Context {
+    cols_count: usize,
+    rows_count: usize,
+    format: Format,
+}
+
 //static int col2index(VTermColor target)
 //{
   //for(int index = 0; index < 256; index++) {
@@ -43,152 +54,137 @@ use std::io::prelude::*;
   //return -1;
 //}
 
-//static void dump_cell(const VTermScreenCell *cell, const VTermScreenCell *prevcell)
-//{
-  //switch(format) {
-    //case FORMAT_PLAIN:
-      //break;
-    //case FORMAT_SGR:
-      //{
-        //// If all 7 attributes change, that means 7 SGRs max
-        //// Each colour could consume up to 3
-        //int sgr[7 + 2*3]; int sgri = 0;
+fn dump_cell(cell: &Cell, prev_cell: &Cell, context: &Context) {
+    match context.format {
+        Format::Plain => {},
+        Format::Sgr => {
+          //{
+            //// If all 7 attributes change, that means 7 SGRs max
+            //// Each colour could consume up to 3
+            //int sgr[7 + 2*3]; int sgri = 0;
 
-        //if(!prevcell->attrs.bold && cell->attrs.bold)
-          //sgr[sgri++] = 1;
-        //if(prevcell->attrs.bold && !cell->attrs.bold)
-          //sgr[sgri++] = 22;
+            //if(!prevcell->attrs.bold && cell->attrs.bold)
+              //sgr[sgri++] = 1;
+            //if(prevcell->attrs.bold && !cell->attrs.bold)
+              //sgr[sgri++] = 22;
 
-        //if(!prevcell->attrs.underline && cell->attrs.underline)
-          //sgr[sgri++] = 4;
-        //if(prevcell->attrs.underline && !cell->attrs.underline)
-          //sgr[sgri++] = 24;
+            //if(!prevcell->attrs.underline && cell->attrs.underline)
+              //sgr[sgri++] = 4;
+            //if(prevcell->attrs.underline && !cell->attrs.underline)
+              //sgr[sgri++] = 24;
 
-        //if(!prevcell->attrs.italic && cell->attrs.italic)
-          //sgr[sgri++] = 3;
-        //if(prevcell->attrs.italic && !cell->attrs.italic)
-          //sgr[sgri++] = 23;
+            //if(!prevcell->attrs.italic && cell->attrs.italic)
+              //sgr[sgri++] = 3;
+            //if(prevcell->attrs.italic && !cell->attrs.italic)
+              //sgr[sgri++] = 23;
 
-        //if(!prevcell->attrs.blink && cell->attrs.blink)
-          //sgr[sgri++] = 5;
-        //if(prevcell->attrs.blink && !cell->attrs.blink)
-          //sgr[sgri++] = 25;
+            //if(!prevcell->attrs.blink && cell->attrs.blink)
+              //sgr[sgri++] = 5;
+            //if(prevcell->attrs.blink && !cell->attrs.blink)
+              //sgr[sgri++] = 25;
 
-        //if(!prevcell->attrs.reverse && cell->attrs.reverse)
-          //sgr[sgri++] = 7;
-        //if(prevcell->attrs.reverse && !cell->attrs.reverse)
-          //sgr[sgri++] = 27;
+            //if(!prevcell->attrs.reverse && cell->attrs.reverse)
+              //sgr[sgri++] = 7;
+            //if(prevcell->attrs.reverse && !cell->attrs.reverse)
+              //sgr[sgri++] = 27;
 
-        //if(!prevcell->attrs.strike && cell->attrs.strike)
-          //sgr[sgri++] = 9;
-        //if(prevcell->attrs.strike && !cell->attrs.strike)
-          //sgr[sgri++] = 29;
+            //if(!prevcell->attrs.strike && cell->attrs.strike)
+              //sgr[sgri++] = 9;
+            //if(prevcell->attrs.strike && !cell->attrs.strike)
+              //sgr[sgri++] = 29;
 
-        //if(!prevcell->attrs.font && cell->attrs.font)
-          //sgr[sgri++] = 10 + cell->attrs.font;
-        //if(prevcell->attrs.font && !cell->attrs.font)
-          //sgr[sgri++] = 10;
+            //if(!prevcell->attrs.font && cell->attrs.font)
+              //sgr[sgri++] = 10 + cell->attrs.font;
+            //if(prevcell->attrs.font && !cell->attrs.font)
+              //sgr[sgri++] = 10;
 
-        //if(prevcell->fg.red   != cell->fg.red   ||
-            //prevcell->fg.green != cell->fg.green ||
-            //prevcell->fg.blue  != cell->fg.blue) {
-          //int index = col2index(cell->fg);
-          //if(index == -1)
-            //sgr[sgri++] = 39;
-          //else if(index < 8)
-            //sgr[sgri++] = 30 + index;
-          //else if(index < 16)
-            //sgr[sgri++] = 90 + (index - 8);
-          //else {
-            //sgr[sgri++] = 38;
-            //sgr[sgri++] = 5 | (1<<31);
-            //sgr[sgri++] = index | (1<<31);
+            //if(prevcell->fg.red   != cell->fg.red   ||
+                //prevcell->fg.green != cell->fg.green ||
+                //prevcell->fg.blue  != cell->fg.blue) {
+              //int index = col2index(cell->fg);
+              //if(index == -1)
+                //sgr[sgri++] = 39;
+              //else if(index < 8)
+                //sgr[sgri++] = 30 + index;
+              //else if(index < 16)
+                //sgr[sgri++] = 90 + (index - 8);
+              //else {
+                //sgr[sgri++] = 38;
+                //sgr[sgri++] = 5 | (1<<31);
+                //sgr[sgri++] = index | (1<<31);
+              //}
+            //}
+
+            //if(prevcell->bg.red   != cell->bg.red   ||
+                //prevcell->bg.green != cell->bg.green ||
+                //prevcell->bg.blue  != cell->bg.blue) {
+              //int index = col2index(cell->bg);
+              //if(index == -1)
+                //sgr[sgri++] = 49;
+              //else if(index < 8)
+                //sgr[sgri++] = 40 + index;
+              //else if(index < 16)
+                //sgr[sgri++] = 100 + (index - 8);
+              //else {
+                //sgr[sgri++] = 48;
+                //sgr[sgri++] = 5 | (1<<31);
+                //sgr[sgri++] = index | (1<<31);
+              //}
+            //}
+
+            //if(!sgri)
+              //break;
+
+            //printf("\e[");
+            //for(int i = 0; i < sgri; i++)
+              //printf(!i               ? "%d" :
+                  //sgr[i] & (1<<31) ? ":%d" :
+                  //";%d",
+                  //sgr[i] & ~(1<<31));
+            //printf("m");
           //}
-        //}
-
-        //if(prevcell->bg.red   != cell->bg.red   ||
-            //prevcell->bg.green != cell->bg.green ||
-            //prevcell->bg.blue  != cell->bg.blue) {
-          //int index = col2index(cell->bg);
-          //if(index == -1)
-            //sgr[sgri++] = 49;
-          //else if(index < 8)
-            //sgr[sgri++] = 40 + index;
-          //else if(index < 16)
-            //sgr[sgri++] = 100 + (index - 8);
-          //else {
-            //sgr[sgri++] = 48;
-            //sgr[sgri++] = 5 | (1<<31);
-            //sgr[sgri++] = index | (1<<31);
-          //}
-        //}
-
-        //if(!sgri)
           //break;
-
-        //printf("\e[");
-        //for(int i = 0; i < sgri; i++)
-          //printf(!i               ? "%d" :
-              //sgr[i] & (1<<31) ? ":%d" :
-              //";%d",
-              //sgr[i] & ~(1<<31));
-        //printf("m");
-      //}
-      //break;
-  //}
+        }
+    }
 
   //for(int i = 0; i < VTERM_MAX_CHARS_PER_CELL && cell->chars[i]; i++) {
     //char bytes[6];
     //bytes[fill_utf8(cell->chars[i], bytes)] = 0;
     //printf("%s", bytes);
   //}
-//}
+}
 
-//static void dump_eol(const VTermScreenCell *prevcell)
-//{
-  //switch(format) {
-    //case FORMAT_PLAIN:
-      //break;
-    //case FORMAT_SGR:
-      //if(prevcell->attrs.bold || prevcell->attrs.underline || prevcell->attrs.italic ||
-         //prevcell->attrs.blink || prevcell->attrs.reverse || prevcell->attrs.strike ||
-         //prevcell->attrs.font)
-        //printf("\e[m");
-      //break;
-  //}
+fn dump_eol(prev_cell: &Cell, context: &Context) {
+    match context.format {
+        Format::Plain => {},
+        Format::Sgr => {
+            //if(prevcell->attrs.bold || prevcell->attrs.underline || prevcell->attrs.italic ||
+                //prevcell->attrs.blink || prevcell->attrs.reverse || prevcell->attrs.strike ||
+                //prevcell->attrs.font)
+            print!("\x1b[m");
+        }
+    }
 
-  //printf("\n");
-//}
+    print!("\n");
+}
 
-fn dump_row(vt: &VTerm, row: usize, cols_count: usize) {
-    let pos = Pos { row: row, col: 0 };
-    let prev_cell = Cell::new();
+fn dump_row(row: usize, vt: &VTerm, context: &Context) {
+    let mut pos = Pos { row: row, col: 0 };
+    let mut prev_cell = Cell::new();
     let (fg, bg) = vt.get_state().get_default_colors();
     let vts = vt.get_screen();
 
-    while pos.col < cols_count {
-        //cell = vt.get_cell(pos);
+    while pos.col < context.cols_count {
+        let cell = vts.get_cell(&pos);
+
+        dump_cell(&cell, &prev_cell, context);
+
+        pos.col += cell.get_width();
+        prev_cell = cell;
     }
+
+    dump_eol(&prev_cell, context);
 }
-
-//void dump_row(int row)
-//{
-  //VTermPos pos = { .row = row, .col = 0 };
-  //VTermScreenCell prevcell = {};
-  //vterm_state_get_default_colors(vterm_obtain_state(vt), &prevcell.fg, &prevcell.bg);
-
-  //while(pos.col < cols) {
-    //VTermScreenCell cell;
-    //vterm_screen_get_cell(vts, pos, &cell);
-
-    //dump_cell(&cell, &prevcell);
-
-    //pos.col += cell.width;
-    //prevcell = cell;
-  //}
-
-  //dump_eol(&prevcell);
-//}
 
 //static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user)
 //{
@@ -246,16 +242,20 @@ fn main() {
     args.flag_cols   = if args.flag_cols         != 0 { args.flag_cols   } else { 25 };
     args.flag_format = if args.flag_format.len() != 0 { args.flag_format } else { "sgr".to_string() };
 
+    let context = Context {
+        rows_count: args.flag_rows,
+        cols_count: args.flag_cols,
+        format: if args.flag_format == "sgr" { Format::Sgr } else { Format::Plain },
+    };
+
     println!("{:?}", args);
 
-    let mut vt = VTerm::new(args.flag_rows as usize, args.flag_cols as usize);
+    let mut vt = VTerm::new(context.rows_count, context.cols_count);
 
     vt.set_utf8(true);
 
     let mut vts: Screen = vt.get_screen();
-
-      //vterm_screen_set_callbacks(vts, &cb_screen, NULL);
-
+    //vterm_screen_set_callbacks(vts, &cb_screen, NULL);
     vts.reset(true);
 
     let mut file = std::fs::File::open(args.arg_file).unwrap();
@@ -269,6 +269,6 @@ fn main() {
     }
 
     for row in 0..args.flag_rows {
-        dump_row(&vt, row, args.flag_cols);
+        dump_row(row, &vt, &context);
     }
 }

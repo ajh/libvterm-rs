@@ -27,7 +27,12 @@ impl Screen {
         unsafe { ffi::vterm_screen_reset(self.ptr, super::bool_to_int(is_hard)) }
     }
 
-    //pub fn get_cell(&self, pos: Pos) -> VTermCell
+    pub fn get_cell(&self, pos: &Pos) -> Cell {
+        let pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
+        let cell_ptr = unsafe { ffi::vterm_cell_new() };
+        unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_ptr) };
+        Cell::from_ptr(cell_ptr)
+    }
 }
 
 mod tests {
