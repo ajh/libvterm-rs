@@ -147,6 +147,7 @@ fn dump_cell(cell: &Cell, prev_cell: &Cell, context: &Context) {
         }
     }
 
+
   //for(int i = 0; i < VTERM_MAX_CHARS_PER_CELL && cell->chars[i]; i++) {
     //char bytes[6];
     //bytes[fill_utf8(cell->chars[i], bytes)] = 0;

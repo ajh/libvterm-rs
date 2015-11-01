@@ -1,4 +1,5 @@
 #![feature(libc)]
+#![feature(unicode)]
 
 extern crate libc;
 
