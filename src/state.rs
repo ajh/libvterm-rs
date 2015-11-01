@@ -23,6 +23,16 @@ impl State {
             Color { red: bg.red, green: bg.green, blue: bg.blue },
         )
     }
+
+    pub fn get_palette_color(&self, index: usize) -> Color {
+        let mut ffi_color: ffi::VTermColor = Default::default();
+        unsafe { ffi::vterm_state_get_palette_color(self.ptr, index as c_int, &mut ffi_color); }
+        Color {
+            red: ffi_color.red,
+            green: ffi_color.green,
+            blue: ffi_color.blue,
+        }
+    }
 }
 
 mod tests {

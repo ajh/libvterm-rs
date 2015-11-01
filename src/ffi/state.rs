@@ -4,8 +4,11 @@ pub enum VTermState {}
 
 use super::*;
 
+use libc::{c_int};
+
 extern {
     pub fn vterm_state_get_default_colors(state: *const VTermState, default_fg: *mut VTermColor, default_bg: *mut VTermColor);
+    pub fn vterm_state_get_palette_color(state: *const VTermState, index: c_int, color: *mut VTermColor);
 }
 
 mod tests {

@@ -9,37 +9,7 @@ use libvterm_sys::*;
 use std::io::prelude::*;
 use std::slice;
 
-// port libvterms unterm example to rust
-
-//#include <stdio.h>
-//#include <string.h>
-
-//#include <errno.h>
-//#include <fcntl.h>
-//#include <getopt.h>
-//#include <unistd.h>
-
-//#include "vterm.h"
-
-//#include "../src/utf8.h" // fill_utf8
-
-//#define streq(a,b) (!strcmp(a,b))
-
-//static VTerm *vt;
-//static VTermScreen *vts;
-
-//static int cols;
-//static int rows;
-
-//static enum {
-  //FORMAT_PLAIN,
-  //FORMAT_SGR,
-//} format = FORMAT_PLAIN;
-
-enum Format {
-    Plain,
-    Sgr,
-}
+enum Format { Plain, Sgr }
 
 struct Context {
     cols_count: usize,
@@ -47,107 +17,129 @@ struct Context {
     format: Format,
 }
 
-//static int col2index(VTermColor target)
-//{
-  //for(int index = 0; index < 256; index++) {
-    //VTermColor col;
-    //vterm_state_get_palette_color(NULL, index, &col);
-    //if(col.red == target.red && col.green == target.green && col.blue == target.blue)
-      //return index;
-  //}
-  //return -1;
-//}
+fn color_to_index(state: &State, target: &Color) -> isize {
+    for i in 0..256 {
+        let color = state.get_palette_color(i);
+        if color.red == target.red && color.green == target.green && color.blue == target.blue {
+            return i as isize
+        }
+    }
+    -1
+}
 
-fn dump_cell(cell: &ScreenCell, prev_cell: &ScreenCell, context: &Context) {
+fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
-          //{
-            //// If all 7 attributes change, that means 7 SGRs max
-            //// Each colour could consume up to 3
-            //int sgr[7 + 2*3]; int sgri = 0;
+            let mut sgrs: Vec<isize> = vec!();
 
-            //if(!prevcell->attrs.bold && cell->attrs.bold)
-              //sgr[sgri++] = 1;
-            //if(prevcell->attrs.bold && !cell->attrs.bold)
-              //sgr[sgri++] = 22;
+            if(!prev_cell.attrs.bold && cell.attrs.bold) {
+                sgrs.push(1);
+            }
 
-            //if(!prevcell->attrs.underline && cell->attrs.underline)
-              //sgr[sgri++] = 4;
-            //if(prevcell->attrs.underline && !cell->attrs.underline)
-              //sgr[sgri++] = 24;
+            if(prev_cell.attrs.bold && !cell.attrs.bold) {
+                sgrs.push(22);
+            }
 
-            //if(!prevcell->attrs.italic && cell->attrs.italic)
-              //sgr[sgri++] = 3;
-            //if(prevcell->attrs.italic && !cell->attrs.italic)
-              //sgr[sgri++] = 23;
+            if(prev_cell.attrs.underline == 0 && cell.attrs.underline != 0) {
+                sgrs.push(4);
+            }
+            if(prev_cell.attrs.underline != 0 && cell.attrs.underline == 0) {
+                sgrs.push(24);
+            }
 
-            //if(!prevcell->attrs.blink && cell->attrs.blink)
-              //sgr[sgri++] = 5;
-            //if(prevcell->attrs.blink && !cell->attrs.blink)
-              //sgr[sgri++] = 25;
+            if(!prev_cell.attrs.italic && cell.attrs.italic) {
+                sgrs.push(3);
+            }
+            if(prev_cell.attrs.italic && !cell.attrs.italic) {
+                sgrs.push(23);
+            }
 
-            //if(!prevcell->attrs.reverse && cell->attrs.reverse)
-              //sgr[sgri++] = 7;
-            //if(prevcell->attrs.reverse && !cell->attrs.reverse)
-              //sgr[sgri++] = 27;
+            if(!prev_cell.attrs.blink && cell.attrs.blink) {
+                sgrs.push(5);
+            }
+            if(prev_cell.attrs.blink && !cell.attrs.blink) {
+                sgrs.push(25);
+            }
 
-            //if(!prevcell->attrs.strike && cell->attrs.strike)
-              //sgr[sgri++] = 9;
-            //if(prevcell->attrs.strike && !cell->attrs.strike)
-              //sgr[sgri++] = 29;
+            if(!prev_cell.attrs.reverse && cell.attrs.reverse) {
+                sgrs.push(7);
+            }
+            if(prev_cell.attrs.reverse && !cell.attrs.reverse) {
+                sgrs.push(27);
+            }
 
-            //if(!prevcell->attrs.font && cell->attrs.font)
-              //sgr[sgri++] = 10 + cell->attrs.font;
-            //if(prevcell->attrs.font && !cell->attrs.font)
-              //sgr[sgri++] = 10;
+            if(!prev_cell.attrs.strike && cell.attrs.strike) {
+                sgrs.push(9);
+            }
+            if(prev_cell.attrs.strike && !cell.attrs.strike) {
+                sgrs.push(29);
+            }
 
-            //if(prevcell->fg.red   != cell->fg.red   ||
-                //prevcell->fg.green != cell->fg.green ||
-                //prevcell->fg.blue  != cell->fg.blue) {
-              //int index = col2index(cell->fg);
-              //if(index == -1)
-                //sgr[sgri++] = 39;
-              //else if(index < 8)
-                //sgr[sgri++] = 30 + index;
-              //else if(index < 16)
-                //sgr[sgri++] = 90 + (index - 8);
-              //else {
-                //sgr[sgri++] = 38;
-                //sgr[sgri++] = 5 | (1<<31);
-                //sgr[sgri++] = index | (1<<31);
-              //}
-            //}
+            if(prev_cell.attrs.font == 0 && cell.attrs.font != 0) {
+                sgrs.push(10 + cell.attrs.font as isize);
+            }
+            if(prev_cell.attrs.font != 0 && cell.attrs.font == 0) {
+                sgrs.push(10);
+            }
 
-            //if(prevcell->bg.red   != cell->bg.red   ||
-                //prevcell->bg.green != cell->bg.green ||
-                //prevcell->bg.blue  != cell->bg.blue) {
-              //int index = col2index(cell->bg);
-              //if(index == -1)
-                //sgr[sgri++] = 49;
-              //else if(index < 8)
-                //sgr[sgri++] = 40 + index;
-              //else if(index < 16)
-                //sgr[sgri++] = 100 + (index - 8);
-              //else {
-                //sgr[sgri++] = 48;
-                //sgr[sgri++] = 5 | (1<<31);
-                //sgr[sgri++] = index | (1<<31);
-              //}
-            //}
+            if(prev_cell.fg.red   != cell.fg.red   ||
+               prev_cell.fg.green != cell.fg.green ||
+               prev_cell.fg.blue  != cell.fg.blue) {
+                let index = color_to_index(state, &cell.fg);
+                if(index == -1) {
+                    sgrs.push(39);
+                }
+                else if(index < 8) {
+                    sgrs.push(30 + index);
+                }
+                else if(index < 16) {
+                    sgrs.push(90 + (index - 8));
+                }
+                else {
+                    sgrs.push(38);
+                    sgrs.push(5 | (1<<31));
+                    sgrs.push(index | (1<<31));
+                }
+            }
 
-            //if(!sgri)
-              //break;
+            if(prev_cell.bg.red   != cell.bg.red   ||
+               prev_cell.bg.green != cell.bg.green ||
+               prev_cell.bg.blue  != cell.bg.blue) {
+                let index = color_to_index(state, &cell.bg);
+                if(index == -1) {
+                    sgrs.push(49);
+                }
+                else if(index < 8) {
+                    sgrs.push(40 + index);
+                }
+                else if(index < 16) {
+                    sgrs.push(100 + (index - 8));
+                }
+                else {
+                    sgrs.push(48);
+                    sgrs.push(5 | (1<<31));
+                    sgrs.push(index | (1<<31));
+                }
+            }
 
-            //printf("\e[");
-            //for(int i = 0; i < sgri; i++)
-              //printf(!i               ? "%d" :
-                  //sgr[i] & (1<<31) ? ":%d" :
-                  //";%d",
-                  //sgr[i] & ~(1<<31));
-            //printf("m");
-          //}
-          //break;
+            if sgrs.len() != 0 {
+                print!("\x1b[");
+                for (i, val) in sgrs.iter().enumerate() {
+                    // not sure if this is really c7
+                    let bare_val = val & !(1<<31);
+                    if i == 0 {
+                        print!("{}", bare_val);
+                    }
+                    else if val & (1<<31) != 0 {
+                        print!(":{}", bare_val);
+                    }
+                    else {
+                        print!(";{}", bare_val);
+                    }
+                }
+                print!("m");
+            }
         }
     }
 
@@ -158,10 +150,11 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
-            //if(prevcell->attrs.bold || prevcell->attrs.underline || prevcell->attrs.italic ||
-                //prevcell->attrs.blink || prevcell->attrs.reverse || prevcell->attrs.strike ||
-                //prevcell->attrs.font)
-            print!("\x1b[m");
+            if(prev_cell.attrs.bold || prev_cell.attrs.underline != 0|| prev_cell.attrs.italic ||
+                prev_cell.attrs.blink || prev_cell.attrs.reverse || prev_cell.attrs.strike ||
+                prev_cell.attrs.font != 0) {
+                print!("\x1b[m");
+            }
         }
     }
 
@@ -169,17 +162,18 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
 }
 
 fn dump_row(row: usize, vt: &VTerm, context: &Context) {
-    let mut pos = Pos { row: row, col: 0 };
     let mut prev_cell: ScreenCell = Default::default();
     let (fg, bg) = vt.get_state().get_default_colors();
-    //prev_cell.set_fg(fg);
-    //prev_cell.set_bg(bg);
+    prev_cell.fg = fg;
+    prev_cell.bg = bg;
+
     let vts = vt.get_screen();
 
+    let mut pos = Pos { row: row, col: 0 };
     while pos.col < context.cols_count {
         let cell = vts.get_cell(&pos);
 
-        dump_cell(&cell, &prev_cell, context);
+        dump_cell(&vt.get_state(), &cell, &prev_cell, context);
 
         pos.col += cell.width as usize;
         prev_cell = cell;
@@ -249,15 +243,17 @@ fn main() {
                 context.cols_count = cols;
             },
             ScreenEvent::SbPushLine{cells: cells} => {
+                let (fg, bg) = vt.get_state().get_default_colors();
                 let mut prev_cell: ScreenCell = Default::default();
-                //let (prev_cell.fg, prev_cell.bg) = vt.get_state().get_default_colors();
+                prev_cell.fg = fg;
+                prev_cell.bg = bg;
 
-                for cell in &cells {
-                    //dump_cell(&cell, &prev_cell, context);
-                    //prev_cell = cell
+                for cell in cells {
+                    dump_cell(&vt.get_state(), &cell, &prev_cell, &context);
+                    prev_cell = cell
                 }
 
-                //dump_eol(&prev_cell, context);
+                dump_eol(&prev_cell, &context);
             },
             _ => {},
         }

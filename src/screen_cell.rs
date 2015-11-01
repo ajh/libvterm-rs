@@ -6,7 +6,7 @@ use std::vec::Vec;
 
 use super::*;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Color {
     pub red: u8,
     pub green: u8,
