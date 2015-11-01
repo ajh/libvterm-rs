@@ -22,6 +22,8 @@
 //   } attrs;
 //   VTermColor fg, bg;
 // } VTermScreenCell;
+//
+// Can I use this instead? https://crates.io/crates/bitflags
 
 VTermScreenCell *vterm_cell_new()
 {
