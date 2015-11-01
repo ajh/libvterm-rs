@@ -161,6 +161,8 @@ use std::io::prelude::*;
 //}
 
 fn dump_row(row: usize) {
+    let pos = VTermPos { row: row, col: 0 };
+    let prev_cell = VTermScreenCell::new();
 }
 
 //void dump_row(int row)

@@ -37,8 +37,8 @@ extern {
     pub fn vterm_screen_get_cell(screen: *const VTermScreen, pos: VTermPos, cell: *mut VTermScreenCell) -> c_int;
 
     // These are my rust ffi bitfield workarounds
-    pub fn vterm_cell_new(vterm: *const VTerm) -> *mut VTermScreenCell;
-    pub fn vterm_cell_free(vterm: *const VTerm, cell: *mut VTermScreenCell);
+    pub fn vterm_cell_new() -> *mut VTermScreenCell;
+    pub fn vterm_cell_free(cell: *mut VTermScreenCell);
     pub fn vterm_cell_get_chars(cell: *const VTermScreenCell, chars: *mut libc::uint32_t, len: libc::size_t) -> c_int;
     pub fn vterm_cell_set_chars(cell: *mut VTermScreenCell, chars: *const libc::uint32_t, len: libc::size_t);
     pub fn vterm_cell_get_width(cell: *const VTermScreenCell) -> libc::c_char;
@@ -165,11 +165,11 @@ mod tests {
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
             let screen_ptr = vterm_obtain_screen(vterm_ptr);
             let pos = VTermPos { row: 1, col: 0 };
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
             let ret = vterm_screen_get_cell(screen_ptr, pos, cell_ptr);
             assert_eq!(0, ret);
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_cell_free(cell_ptr);
             vterm_free(vterm_ptr);
         }
     }
@@ -177,18 +177,15 @@ mod tests {
     #[test]
     fn cell_can_create_and_destroy() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_chars() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             let a = [b'a' as u32, b'b' as u32, b'c' as u32, 0 as u32, 0 as u32, 0 as u32];
             vterm_cell_set_chars(cell_ptr, a.as_ptr(), 3);
@@ -196,16 +193,14 @@ mod tests {
             vterm_cell_get_chars(cell_ptr, b.as_mut_ptr(), VTERM_MAX_CHARS_PER_CELL as libc::size_t);
             assert_eq!(a, b);
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_width() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_width(cell_ptr, 2);
             assert_eq!(2, vterm_cell_get_width(cell_ptr));
@@ -213,16 +208,14 @@ mod tests {
             vterm_cell_set_width(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_width(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_bold() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_bold(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_bold(cell_ptr));
@@ -230,16 +223,14 @@ mod tests {
             vterm_cell_set_bold(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_bold(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_underline() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_underline(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_underline(cell_ptr));
@@ -250,80 +241,70 @@ mod tests {
             vterm_cell_set_underline(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_underline(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_italic() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_italic(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_italic(cell_ptr));
             vterm_cell_set_italic(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_italic(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_blink() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_blink(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_blink(cell_ptr));
             vterm_cell_set_blink(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_blink(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_reverse() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_reverse(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_reverse(cell_ptr));
             vterm_cell_set_reverse(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_reverse(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_strike() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_strike(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_strike(cell_ptr));
             vterm_cell_set_strike(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_strike(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_font() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_font(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_font(cell_ptr));
@@ -334,32 +315,28 @@ mod tests {
             vterm_cell_set_font(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_font(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_dwl() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_dwl(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_dwl(cell_ptr));
             vterm_cell_set_dwl(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_dwl(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_dhl() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_dhl(cell_ptr, 1);
             assert_eq!(1, vterm_cell_get_dhl(cell_ptr));
@@ -370,16 +347,14 @@ mod tests {
             vterm_cell_set_dhl(cell_ptr, 0);
             assert_eq!(0, vterm_cell_get_dhl(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_bit_fields_dont_interact_with_each_other() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             vterm_cell_set_bold(cell_ptr, 1);
             vterm_cell_set_underline(cell_ptr, 0);
@@ -414,16 +389,14 @@ mod tests {
             assert_eq!(0, vterm_cell_get_dwl(cell_ptr));
             assert_eq!(1, vterm_cell_get_dhl(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_fg() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             let color = VTermColor { red: 0, green: 255, blue: 0 };
             vterm_cell_set_fg(cell_ptr, color.clone());
@@ -432,16 +405,14 @@ mod tests {
             vterm_cell_set_fg(cell_ptr, color.clone());
             assert_eq!(color, vterm_cell_get_fg(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 
     #[test]
     fn cell_can_get_and_set_bg() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
-            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
             let color = VTermColor { red: 0, green: 255, blue: 0 };
             vterm_cell_set_bg(cell_ptr, color.clone());
@@ -450,8 +421,7 @@ mod tests {
             vterm_cell_set_bg(cell_ptr, color.clone());
             assert_eq!(color, vterm_cell_get_bg(cell_ptr));
 
-            vterm_cell_free(vterm_ptr, cell_ptr);
-            vterm_free(vterm_ptr);
+            vterm_cell_free(cell_ptr);
         }
     }
 }

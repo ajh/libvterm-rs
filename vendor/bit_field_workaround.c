@@ -1,5 +1,8 @@
 #include "libvterm/src/vterm_internal.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 // Work around rust ffi compatibility issues with c bit fields
 //
 // typedef struct {
@@ -20,14 +23,18 @@
 //   VTermColor fg, bg;
 // } VTermScreenCell;
 
-VTermScreenCell *vterm_cell_new(VTerm *vt)
+VTermScreenCell *vterm_cell_new()
 {
-    return vterm_allocator_malloc(vt, sizeof(VTermScreenCell));
+  size_t size = sizeof(VTermScreenCell);
+  void *ptr = malloc(size);
+  if(ptr)
+    memset(ptr, 0, size);
+  return ptr;
 }
 
-void vterm_cell_free(VTerm *vt, VTermScreenCell *cell)
+void vterm_cell_free(VTermScreenCell *cell)
 {
-  vterm_allocator_free(vt, cell);
+  free(cell);
 }
 
 int vterm_cell_get_chars(const VTermScreenCell *cell, uint32_t *chars, size_t len) {
