@@ -20,17 +20,34 @@
 //   VTermColor fg, bg;
 // } VTermScreenCell;
 
-VTermScreenCell *vterm_cell_new(const VTerm *vt)
+VTermScreenCell *vterm_cell_new(VTerm *vt)
 {
     return vterm_allocator_malloc(vt, sizeof(VTermScreenCell));
 }
 
-void vterm_cell_free(const VTerm *vt, VTermScreenCell *cell)
+void vterm_cell_free(VTerm *vt, VTermScreenCell *cell)
 {
   vterm_allocator_free(vt, cell);
 }
 
-/*void vterm_cell_get_chars(const VTermScreenCell *cell) {};*/
+int vterm_cell_get_chars(const VTermScreenCell *cell, uint32_t *chars, size_t len) {
+  if (len < VTERM_MAX_CHARS_PER_CELL) {
+    return -1;
+  }
+
+  int i;
+  for(i = 0; i < VTERM_MAX_CHARS_PER_CELL && cell->chars[i]; i++) {
+    chars[i] = cell->chars[i];
+  }
+  return i;
+}
+
+void vterm_cell_set_chars(VTermScreenCell *cell, const uint32_t *chars, size_t len) {
+  int i;
+  for(i = 0; i < len && i < VTERM_MAX_CHARS_PER_CELL; i++) {
+    cell->chars[i] = chars[i];
+  }
+}
 
 char vterm_cell_get_width(const VTermScreenCell *cell)
 {

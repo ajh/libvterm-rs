@@ -6,6 +6,8 @@ pub enum VTerm {}
 pub enum VTermScreen {}
 pub enum VTermScreenCell {}
 
+pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
+
 #[repr(C)]
 #[derive(PartialEq, Debug)]
 pub struct VTermPos {
@@ -37,6 +39,8 @@ extern {
     // These are my rust ffi bitfield workarounds
     pub fn vterm_cell_new(vterm: *const VTerm) -> *mut VTermScreenCell;
     pub fn vterm_cell_free(vterm: *const VTerm, cell: *mut VTermScreenCell);
+    pub fn vterm_cell_get_chars(cell: *const VTermScreenCell, chars: *mut libc::uint32_t, len: libc::size_t) -> c_int;
+    pub fn vterm_cell_set_chars(cell: *mut VTermScreenCell, chars: *const libc::uint32_t, len: libc::size_t);
     pub fn vterm_cell_get_width(cell: *const VTermScreenCell) -> libc::c_char;
     pub fn vterm_cell_set_width(cell: *mut VTermScreenCell, width: libc::c_char);
     pub fn vterm_cell_get_bold(cell: *const VTermScreenCell) -> libc::c_uint;
@@ -175,6 +179,23 @@ mod tests {
         unsafe {
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+            vterm_cell_free(vterm_ptr, cell_ptr);
+            vterm_free(vterm_ptr);
+        }
+    }
+
+    #[test]
+    fn cell_can_get_and_set_chars() {
+        unsafe {
+            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let cell_ptr: *mut VTermScreenCell = vterm_cell_new(vterm_ptr);
+
+            let a = [b'a' as u32, b'b' as u32, b'c' as u32, 0 as u32, 0 as u32, 0 as u32];
+            vterm_cell_set_chars(cell_ptr, a.as_ptr(), 3);
+            let mut b = [0 as u32; VTERM_MAX_CHARS_PER_CELL];
+            vterm_cell_get_chars(cell_ptr, b.as_mut_ptr(), VTERM_MAX_CHARS_PER_CELL as libc::size_t);
+            assert_eq!(a, b);
+
             vterm_cell_free(vterm_ptr, cell_ptr);
             vterm_free(vterm_ptr);
         }
