@@ -7,7 +7,6 @@ extern crate libc;
 
 use libvterm_sys::*;
 use std::io::prelude::*;
-use std::slice;
 
 enum Format { Plain, Sgr }
 
@@ -33,67 +32,67 @@ fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
         Format::Sgr => {
             let mut sgrs: Vec<isize> = vec!();
 
-            if(!prev_cell.attrs.bold && cell.attrs.bold) {
+            if !prev_cell.attrs.bold && cell.attrs.bold {
                 sgrs.push(1);
             }
 
-            if(prev_cell.attrs.bold && !cell.attrs.bold) {
+            if prev_cell.attrs.bold && !cell.attrs.bold {
                 sgrs.push(22);
             }
 
-            if(prev_cell.attrs.underline == 0 && cell.attrs.underline != 0) {
+            if prev_cell.attrs.underline == 0 && cell.attrs.underline != 0 {
                 sgrs.push(4);
             }
-            if(prev_cell.attrs.underline != 0 && cell.attrs.underline == 0) {
+            if prev_cell.attrs.underline != 0 && cell.attrs.underline == 0 {
                 sgrs.push(24);
             }
 
-            if(!prev_cell.attrs.italic && cell.attrs.italic) {
+            if !prev_cell.attrs.italic && cell.attrs.italic {
                 sgrs.push(3);
             }
-            if(prev_cell.attrs.italic && !cell.attrs.italic) {
+            if prev_cell.attrs.italic && !cell.attrs.italic {
                 sgrs.push(23);
             }
 
-            if(!prev_cell.attrs.blink && cell.attrs.blink) {
+            if !prev_cell.attrs.blink && cell.attrs.blink {
                 sgrs.push(5);
             }
-            if(prev_cell.attrs.blink && !cell.attrs.blink) {
+            if prev_cell.attrs.blink && !cell.attrs.blink {
                 sgrs.push(25);
             }
 
-            if(!prev_cell.attrs.reverse && cell.attrs.reverse) {
+            if !prev_cell.attrs.reverse && cell.attrs.reverse {
                 sgrs.push(7);
             }
-            if(prev_cell.attrs.reverse && !cell.attrs.reverse) {
+            if prev_cell.attrs.reverse && !cell.attrs.reverse {
                 sgrs.push(27);
             }
 
-            if(!prev_cell.attrs.strike && cell.attrs.strike) {
+            if !prev_cell.attrs.strike && cell.attrs.strike {
                 sgrs.push(9);
             }
-            if(prev_cell.attrs.strike && !cell.attrs.strike) {
+            if prev_cell.attrs.strike && !cell.attrs.strike {
                 sgrs.push(29);
             }
 
-            if(prev_cell.attrs.font == 0 && cell.attrs.font != 0) {
+            if prev_cell.attrs.font == 0 && cell.attrs.font != 0 {
                 sgrs.push(10 + cell.attrs.font as isize);
             }
-            if(prev_cell.attrs.font != 0 && cell.attrs.font == 0) {
+            if prev_cell.attrs.font != 0 && cell.attrs.font == 0 {
                 sgrs.push(10);
             }
 
-            if(prev_cell.fg.red   != cell.fg.red   ||
+            if prev_cell.fg.red   != cell.fg.red   ||
                prev_cell.fg.green != cell.fg.green ||
-               prev_cell.fg.blue  != cell.fg.blue) {
+               prev_cell.fg.blue  != cell.fg.blue {
                 let index = color_to_index(state, &cell.fg);
-                if(index == -1) {
+                if index == -1 {
                     sgrs.push(39);
                 }
-                else if(index < 8) {
+                else if index < 8 {
                     sgrs.push(30 + index);
                 }
-                else if(index < 16) {
+                else if index < 16 {
                     sgrs.push(90 + (index - 8));
                 }
                 else {
@@ -103,17 +102,17 @@ fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
                 }
             }
 
-            if(prev_cell.bg.red   != cell.bg.red   ||
+            if prev_cell.bg.red   != cell.bg.red   ||
                prev_cell.bg.green != cell.bg.green ||
-               prev_cell.bg.blue  != cell.bg.blue) {
+               prev_cell.bg.blue  != cell.bg.blue {
                 let index = color_to_index(state, &cell.bg);
-                if(index == -1) {
+                if index == -1 {
                     sgrs.push(49);
                 }
-                else if(index < 8) {
+                else if index < 8 {
                     sgrs.push(40 + index);
                 }
-                else if(index < 16) {
+                else if index < 16 {
                     sgrs.push(100 + (index - 8));
                 }
                 else {
@@ -143,16 +142,18 @@ fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
         }
     }
 
-    std::io::stdout().write_all(&cell.chars_as_utf8_bytes());
+    std::io::stdout().write_all(&cell.chars_as_utf8_bytes())
+                     .ok()
+                     .expect("failed to write");
 }
 
 fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
-            if(prev_cell.attrs.bold || prev_cell.attrs.underline != 0|| prev_cell.attrs.italic ||
-                prev_cell.attrs.blink || prev_cell.attrs.reverse || prev_cell.attrs.strike ||
-                prev_cell.attrs.font != 0) {
+            if prev_cell.attrs.bold || prev_cell.attrs.underline != 0|| prev_cell.attrs.italic ||
+               prev_cell.attrs.blink || prev_cell.attrs.reverse || prev_cell.attrs.strike ||
+               prev_cell.attrs.font != 0 {
                 print!("\x1b[m");
             }
         }
@@ -238,11 +239,11 @@ fn main() {
 
     while let Ok(event) = rx.try_recv() {
         match event {
-            ScreenEvent::Resize{rows: rows, cols: cols} =>  {
+            ScreenEvent::Resize{rows, cols} =>  {
                 context.rows_count = rows;
                 context.cols_count = cols;
             },
-            ScreenEvent::SbPushLine{cells: cells} => {
+            ScreenEvent::SbPushLine{cells} => {
                 let (fg, bg) = vt.get_state().get_default_colors();
                 let mut prev_cell: ScreenCell = Default::default();
                 prev_cell.fg = fg;
