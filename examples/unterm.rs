@@ -186,20 +186,20 @@ const USAGE: &'static str = "
 unterm
 
 Usage:
-unterm [--cols=<cols>] [--rows=<size>] [--format=<size>] <file>
+unterm [-c <cols>] [-l <lines>] [-f <format>] <file>
 
 Options:
---cols=<size>      number of columns to display
---rows=<size>      number of rows to display
---format=<format>  plain or sgr
+-c <cols>      number of columns to display
+-l <lines>     number of lines in vterm before scrolling
+-f <format>    plain or sgr
 ";
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-    flag_cols:    usize,
-    flag_rows:    usize,
-    flag_format:  String,
-    arg_file:     String,
+    flag_c:    usize,
+    flag_l:    usize,
+    flag_f:    String,
+    arg_file:  String,
 }
 
 fn main() {
@@ -207,14 +207,14 @@ fn main() {
         .and_then(|d| d.decode())
         .unwrap_or_else(|e| e.exit());
 
-    args.flag_rows   = if args.flag_rows         != 0 { args.flag_rows   } else { 25 };
-    args.flag_cols   = if args.flag_cols         != 0 { args.flag_cols   } else { 80 };
-    args.flag_format = if args.flag_format.len() != 0 { args.flag_format } else { "sgr".to_string() };
+    args.flag_l = if args.flag_l       != 0 { args.flag_l } else { 25 };
+    args.flag_c = if args.flag_c       != 0 { args.flag_c } else { 80 };
+    args.flag_f = if args.flag_f.len() != 0 { args.flag_f } else { "sgr".to_string() };
 
     let mut context = Context {
-        rows_count: args.flag_rows,
-        cols_count: args.flag_cols,
-        format: if args.flag_format == "sgr" { Format::Sgr } else { Format::Plain },
+        rows_count:  args.flag_l,
+        cols_count:  args.flag_c,
+        format:      if args.flag_f == "sgr" { Format::Sgr } else { Format::Plain },
     };
 
     let mut vt = VTerm::new(context.rows_count, context.cols_count);
@@ -259,7 +259,7 @@ fn main() {
         }
     }
 
-    for row in 0..args.flag_rows {
+    for row in 0..context.rows_count {
         dump_row(row, &vt, &context);
     }
 }
