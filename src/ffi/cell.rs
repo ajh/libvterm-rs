@@ -46,6 +46,7 @@ extern {
     pub fn vterm_cell_set_fg(cell: *mut VTermScreenCell, color: VTermColor);
     pub fn vterm_cell_get_bg(cell: *const VTermScreenCell) -> VTermColor;
     pub fn vterm_cell_set_bg(cell: *mut VTermScreenCell, color: VTermColor);
+    pub fn vterm_cell_pointer_arithmetic(cell: *const VTermScreenCell, amount: c_int) -> *const VTermScreenCell;
 }
 
 mod tests {

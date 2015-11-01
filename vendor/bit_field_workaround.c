@@ -175,3 +175,9 @@ void vterm_cell_set_bg(VTermScreenCell *cell, VTermColor color)
 {
   cell->bg = color;
 };
+
+// Need this since rust doesn't know the size of a VTermScreenCell
+const VTermScreenCell *vterm_cell_pointer_arithmetic(VTermScreenCell *const cell, int amount)
+{
+  return cell + amount;
+}

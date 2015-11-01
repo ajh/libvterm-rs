@@ -108,9 +108,9 @@ extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScree
     match tx.as_ref() {
         Some(tx) => {
             let mut cells = vec!();
-            for i in 0..(cols as usize) {
-                cells.push(ScreenCell::from_ptr(cells_ptr));
-                unsafe { cells_ptr.offset(1) };
+            for i in 0..(cols as isize) {
+                let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
+                cells.push(ScreenCell::from_ptr(ptr));
             }
 
             tx.send(ScreenEvent::SbPushLine { cells: cells });

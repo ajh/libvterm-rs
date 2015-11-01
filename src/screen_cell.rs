@@ -47,7 +47,11 @@ impl ScreenCell {
         let mut chars: Vec<char> = Vec::with_capacity(ffi::VTERM_MAX_CHARS_PER_CELL);
 
         for i in 0..(chars_count as usize) {
-            let ch = char::from_u32(buf[i]).unwrap();
+            let ch = match char::from_u32(buf[i]) {
+                Some(ch) => ch,
+                None => '\u{2764}',
+            };
+
             chars.push(ch);
         }
 
