@@ -14,7 +14,9 @@ glob = "0.2.10"
 libc = "0.1"
 
 [dev-dependencies]
+docopt = "0.6"
 pty = "0.1.5"
 regex = "0.1.8"
+rustc-serialize = "0.3"
 term = { git = "https://github.com/ajh/term.git", branch = "add_stuff_that_i_need" }
 termios = "0.2"
