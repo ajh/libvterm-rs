@@ -8,7 +8,6 @@ pub enum VTermScreen {}
 
 
 // Temporarily stub these in
-pub enum VTermRect {}
 pub enum VTermProp {}
 pub enum VTermValue {}
 
@@ -20,15 +19,24 @@ pub struct VTermPos {
 }
 
 #[repr(C)]
-pub struct VTermScreenCallbacks<'a> {
-    damage:         &'a Fn(VTermRect, *mut c_void) -> (c_int),
-    move_rect:      &'a Fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
-    move_cursor:    &'a Fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int),
-    set_term_prop:  &'a Fn(VTermProp, VTermValue, *mut c_void) -> (c_int),
-    bell:           &'a Fn(*mut c_void) -> (c_int),
-    resize:         &'a Fn(c_int, c_int, *mut c_void) -> c_int,
-    sb_pushline:    &'a Fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
-    sb_popline:     &'a Fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
+#[derive(PartialEq, Debug)]
+pub struct VTermRect {
+    pub start_row: c_int,
+    pub end_row: c_int,
+    pub start_col: c_int,
+    pub end_col: c_int,
+}
+
+#[repr(C)]
+pub struct VTermScreenCallbacks {
+    damage:         extern fn(VTermRect, *mut c_void) -> (c_int),
+    move_rect:      extern fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
+    move_cursor:    extern fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int),
+    set_term_prop:  extern fn(VTermProp, VTermValue, *mut c_void) -> (c_int),
+    bell:           extern fn(*mut c_void) -> (c_int),
+    resize:         extern fn(c_int, c_int, *mut c_void) -> c_int,
+    sb_pushline:    extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
+    sb_popline:     extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
 }
 
 extern {
@@ -69,17 +77,44 @@ mod tests {
         }
     }
 
-    fn handler_helper(name: String, strings: *mut Vec<String>) {
-        unsafe { (*strings).push(name); }
+    fn handler_helper(name: String, strings: *mut c_void) {
+        println!("handler helper {}", name);
+        let mut strings: &mut Vec<String> = unsafe { &mut *(strings as *mut Vec<String>) };
+        strings.push(name);
     }
-    fn damage_handler(_: VTermRect, strings: *mut c_void) -> c_int { 1 }
-    fn move_rect_handler(_: VTermRect, _: VTermRect, strings: *mut c_void) -> c_int { 1 }
-    fn move_cursor_handler(_: VTermPos, _: VTermPos, _: c_int, strings: *mut c_void) -> c_int { 1 }
-    fn set_term_prop_handler(_: VTermProp, _: VTermValue, strings: *mut c_void) -> c_int { 1 }
-    fn bell_handler(strings: *mut c_void) -> c_int { 1 }
-    fn resize_handler(_: c_int, _: c_int, strings: *mut c_void) -> c_int { 1 }
-    fn sb_pushline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int { 1 }
-    fn sb_popline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int { 1 }
+
+    extern "C" fn damage_handler(_: VTermRect, strings: *mut c_void) -> c_int {
+        handler_helper("damage".to_string(), strings);
+        1
+    }
+    extern "C" fn move_rect_handler(_: VTermRect, _: VTermRect, strings: *mut c_void) -> c_int {
+        handler_helper("move_rect".to_string(), strings);
+        1
+    }
+    extern "C" fn move_cursor_handler(_: VTermPos, _: VTermPos, _: c_int, strings: *mut c_void) -> c_int {
+        handler_helper("move_cursor".to_string(), strings);
+        1
+    }
+    extern "C" fn set_term_prop_handler(_: VTermProp, _: VTermValue, strings: *mut c_void) -> c_int {
+        handler_helper("set_term_prop".to_string(), strings);
+        1
+    }
+    extern "C" fn bell_handler(strings: *mut c_void) -> c_int {
+        handler_helper("bell".to_string(), strings);
+        1
+    }
+    extern "C" fn resize_handler(_: c_int, _: c_int, strings: *mut c_void) -> c_int {
+        handler_helper("resize".to_string(), strings);
+        1
+    }
+    extern "C" fn sb_pushline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int {
+        handler_helper("sb_pushline".to_string(), strings);
+        1
+    }
+    extern "C" fn sb_popline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int {
+        handler_helper("sb_popline".to_string(), strings);
+        1
+    }
 
 
     #[test]
@@ -96,23 +131,25 @@ mod tests {
             vterm_screen_reset(screen_ptr, 1);
 
             let callbacks = VTermScreenCallbacks {
-                damage:         &damage_handler,
-                move_rect:      &move_rect_handler,
-                move_cursor:    &move_cursor_handler,
-                set_term_prop:  &set_term_prop_handler,
-                bell:           &bell_handler,
-                resize:         &resize_handler,
-                sb_pushline:    &sb_pushline_handler,
-                sb_popline:     &sb_popline_handler,
+                damage:         damage_handler,
+                move_rect:      move_rect_handler,
+                move_cursor:    move_cursor_handler,
+                set_term_prop:  set_term_prop_handler,
+                bell:           bell_handler,
+                resize:         resize_handler,
+                sb_pushline:    sb_pushline_handler,
+                sb_popline:     sb_popline_handler,
             };
 
             let mut strings: Vec<String> = vec!();
             let strings_ptr: *mut c_void = &mut strings as *mut _ as *mut c_void;
-            //vterm_screen_set_callbacks(screen_ptr, &callbacks, strings_ptr);
+            vterm_screen_set_callbacks(screen_ptr, &callbacks, strings_ptr);
 
-            let input_bytes = "xyz".as_bytes();
+            let input_bytes = "hi".as_bytes();
             let input_ptr = input_bytes.as_ptr();
             vterm_input_write(vterm_ptr, input_ptr, input_bytes.len() as libc::size_t);
+
+            assert_eq!("damage.damage.move_cursor", strings.connect("."));
 
             vterm_free(vterm_ptr);
         }
