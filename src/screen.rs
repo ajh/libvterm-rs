@@ -5,18 +5,19 @@ use std::sync::mpsc;
 
 use super::*;
 
+#[derive(Debug, Default)]
 pub struct ScreenSize {
     pub rows: usize,
     pub cols: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Pos {
     pub row: usize,
     pub col: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Rect {
     pub start_row: usize,
     pub end_row: usize,
@@ -103,7 +104,18 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
     }
 }
 extern "C" fn set_term_prop_handler(_: ffi::VTermProp, _: ffi::VTermValue, tx: *mut c_void) -> c_int { 0 }
-extern "C" fn bell_handler(tx: *mut c_void) -> c_int { 0 }
+extern "C" fn bell_handler(tx: *mut c_void) -> c_int {
+    let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
+    match tx.as_ref() {
+        Some(tx) => {
+            match tx.send(ScreenEvent::Bell) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
+        },
+        None => 0
+    }
+}
 extern "C" fn resize_handler(rows: c_int, cols: c_int, tx: *mut c_void) -> c_int {
     let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
     match tx.as_ref() {
@@ -135,7 +147,24 @@ extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScree
     }
 }
 
-extern "C" fn sb_popline_handler(cols: c_int, cells: *const ffi::VTermScreenCell, tx: *mut c_void) -> c_int { 0 }
+extern "C" fn sb_popline_handler(cols: c_int, cells_ptr: *const ffi::VTermScreenCell, tx: *mut c_void) -> c_int {
+    let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
+    match tx.as_ref() {
+        Some(tx) => {
+            let mut cells = vec!();
+            for i in 0..(cols as isize) {
+                let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
+                cells.push(ScreenCell::from_ptr(ptr));
+            }
+
+            match tx.send(ScreenEvent::SbPopLine { cells: cells }) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
+        },
+        None => 0
+    }
+}
 
 pub static SCREEN_CALLBACKS: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbacks {
     damage:             damage_handler,
@@ -153,7 +182,6 @@ pub struct Screen {
 }
 
 impl Screen {
-
     /// Create a new Screen from a pointer. This pointer will not get free'ed because the vterm
     /// handles that.
     pub fn from_ptr(ptr: *mut ffi::VTermScreen) -> Screen {
@@ -174,6 +202,10 @@ impl Screen {
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
         cell
+    }
+
+    pub fn flush_damage(&mut self) {
+        unsafe { ffi::vterm_screen_flush_damage(self.ptr) };
     }
 }
 

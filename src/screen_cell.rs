@@ -42,7 +42,7 @@ impl ScreenCell {
     // Copies data from the given pointer. Doesn't free the pointer or anything.
     pub fn from_ptr(ptr: *const ffi::VTermScreenCell) -> ScreenCell {
         let fg = unsafe { ffi::vterm_cell_get_fg(ptr) };
-        let bg = unsafe { ffi::vterm_cell_get_fg(ptr) };
+        let bg = unsafe { ffi::vterm_cell_get_bg(ptr) };
 
         let mut buf = [0 as libc::uint32_t; ffi::VTERM_MAX_CHARS_PER_CELL];
         let chars_count = unsafe { ffi::vterm_cell_get_chars(ptr, buf.as_mut_ptr(), ffi::VTERM_MAX_CHARS_PER_CELL as u64) };
@@ -74,21 +74,21 @@ impl ScreenCell {
                     dhl:        ffi::vterm_cell_get_dhl(ptr) as u8,
                 },
                 fg: Color {
-                    red: fg.red,
-                    green: fg.green,
-                    blue: fg.blue,
+                    red:    fg.red,
+                    green:  fg.green,
+                    blue:   fg.blue,
                 },
                 bg: Color {
-                    red: bg.red,
-                    green: bg.green,
-                    blue: bg.blue,
+                    red:    bg.red,
+                    green:  bg.green,
+                    blue:   bg.blue,
                 }
             }
         }
     }
 
     pub fn chars_as_utf8_bytes(&self) -> Vec<u8> {
-        const MAX_BYTES_PER_UTF8_CHAR: usize = 4; // wikipedia says so
+        const MAX_BYTES_PER_UTF8_CHAR: usize = 6; // wikipedia says so
         let mut output: Vec<u8> = Vec::with_capacity(ffi::VTERM_MAX_CHARS_PER_CELL * MAX_BYTES_PER_UTF8_CHAR);
 
         for ch in &self.chars {

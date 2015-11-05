@@ -125,7 +125,6 @@ fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
             if sgrs.len() != 0 {
                 print!("\x1b[");
                 for (i, val) in sgrs.iter().enumerate() {
-                    // not sure if this is really c7
                     let bare_val = val & !(1<<31);
                     if i == 0 {
                         print!("{}", bare_val);
