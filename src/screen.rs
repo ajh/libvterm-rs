@@ -125,6 +125,9 @@ extern "C" fn set_term_prop_handler(prop: ffi::VTermProp, value: ffi::VTermValue
         ffi::VTermProp::VTermPropTitle         => ScreenEvent::Title         { text: "fake title".to_string() },
     };
 
+    info!("prop event {:?}", event);
+    0
+
     // This crashes inside the channel somewhere. Don't know why.
     //match tx.as_ref() {
         //Some(tx) => {
@@ -135,7 +138,6 @@ extern "C" fn set_term_prop_handler(prop: ffi::VTermProp, value: ffi::VTermValue
         //},
         //None => 0
     //}
-    0
 }
 
 extern "C" fn bell_handler(tx: *mut c_void) -> c_int {
