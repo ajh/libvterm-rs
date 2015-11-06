@@ -6,8 +6,17 @@ use super::*;
 
 pub enum VTermScreen {}
 
-// Temporarily stub these in
-pub enum VTermProp {}
+#[repr(C)]
+pub enum VTermProp {
+  VTermPropCursorvisible = 1, // bool
+  VTermPropCursorblink,       // bool
+  VTermPropAltscreen,         // bool
+  VTermPropTitle,             // string
+  VTermPropIconname,          // string
+  VTermPropReverse,           // bool
+  VTermPropCursorshape,       // number
+  VTermPropMouse,             // number
+}
 pub enum VTermValue {}
 
 #[repr(C)]
@@ -26,6 +35,7 @@ pub struct VTermRect {
     pub end_col: c_int,
 }
 
+// These are lame and need to go away
 extern "C" fn default_damage_handler(_: VTermRect, strings: *mut c_void) -> c_int { 1 }
 extern "C" fn default_move_rect_handler(_: VTermRect, _: VTermRect, strings: *mut c_void) -> c_int { 1 }
 extern "C" fn default_move_cursor_handler(_: VTermPos, _: VTermPos, _: c_int, strings: *mut c_void) -> c_int { 1 }

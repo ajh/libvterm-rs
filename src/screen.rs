@@ -27,14 +27,21 @@ pub struct Rect {
 
 #[derive(Debug)]
 pub enum ScreenEvent {
-    Damage      { rect: Rect },
-    MoveRect    { dest: Rect,     src: Rect },
-    MoveCursor  { new: Pos,       old: Pos,    is_visible: bool },
-    //SetTermProp { prop: Prop,     value: Value },
+    AltScreen     { is_true: bool },
     Bell,
-    Resize      { rows: usize,         cols: usize },
-    SbPushLine  { cells: Vec<ScreenCell> },
-    SbPopLine   { cells: Vec<ScreenCell> },
+    CursorBlink   { is_true: bool },
+    CursorShape   { value: isize },
+    CursorVisible { is_true: bool },
+    Damage        { rect: Rect },
+    IconName      { text: String},
+    Mouse         { value: isize },
+    MoveCursor    { new: Pos,                  old: Pos,       is_visible: bool },
+    MoveRect      { dest: Rect,                src: Rect },
+    Resize        { rows: usize,               cols: usize },
+    Reverse       { is_true: bool },
+    SbPopLine     { cells: Vec<ScreenCell> },
+    SbPushLine    { cells: Vec<ScreenCell> },
+    Title         { text: String},
 }
 
 extern "C" fn damage_handler(rect: ffi::VTermRect, tx: *mut c_void) -> c_int {
@@ -103,7 +110,34 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
         None => 0
     }
 }
-extern "C" fn set_term_prop_handler(_: ffi::VTermProp, _: ffi::VTermValue, tx: *mut c_void) -> c_int { 0 }
+
+extern "C" fn set_term_prop_handler(prop: ffi::VTermProp, value: ffi::VTermValue, tx: *mut c_void) -> c_int {
+    let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
+
+    let event: ScreenEvent = match prop {
+        ffi::VTermProp::VTermPropAltscreen     => ScreenEvent::AltScreen     { is_true: true },
+        ffi::VTermProp::VTermPropCursorblink   => ScreenEvent::CursorBlink   { is_true: true },
+        ffi::VTermProp::VTermPropCursorshape   => ScreenEvent::CursorShape   { value: -1 },
+        ffi::VTermProp::VTermPropCursorvisible => ScreenEvent::CursorVisible { is_true: true },
+        ffi::VTermProp::VTermPropIconname      => ScreenEvent::IconName      { text: "fake icon name".to_string() },
+        ffi::VTermProp::VTermPropMouse         => ScreenEvent::Mouse         { value: -1 },
+        ffi::VTermProp::VTermPropReverse       => ScreenEvent::Reverse       { is_true: true },
+        ffi::VTermProp::VTermPropTitle         => ScreenEvent::Title         { text: "fake title".to_string() },
+    };
+
+    // This crashes inside the channel somewhere. Don't know why.
+    //match tx.as_ref() {
+        //Some(tx) => {
+            //match tx.send(event) {
+                //Ok(_) => 1,
+                //Err(_) => 0,
+            //}
+        //},
+        //None => 0
+    //}
+    0
+}
+
 extern "C" fn bell_handler(tx: *mut c_void) -> c_int {
     let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
     match tx.as_ref() {
