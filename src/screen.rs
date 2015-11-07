@@ -11,10 +11,11 @@ pub struct ScreenSize {
     pub cols: u16,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Pos {
-    pub row: u16,
-    pub col: u16,
+    /// negative numbers represent scroll buffer positions
+    pub row: i16,
+    pub col: i16,
 }
 
 #[derive(Debug, Default)]
@@ -95,8 +96,8 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
     let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
     match tx.as_ref() {
         Some(tx) => {
-            let rust_new = Pos { row: new.row as u16, col: new.col as u16 };
-            let rust_old = Pos { row: old.row as u16, col: old.col as u16 };
+            let rust_new = Pos { row: new.row as i16, col: new.col as i16 };
+            let rust_old = Pos { row: old.row as i16, col: old.col as i16 };
             let event = ScreenEvent::MoveCursor {
                 new: rust_new,
                 old: rust_old,
@@ -171,7 +172,7 @@ extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScree
             let mut cells = vec!();
             for i in 0..(cols as isize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr));
+                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1}));
             }
 
             match tx.send(ScreenEvent::SbPushLine { cells: cells }) {
@@ -190,7 +191,7 @@ extern "C" fn sb_popline_handler(cols: c_int, cells_ptr: *const ffi::VTermScreen
             let mut cells = vec!();
             for i in 0..(cols as isize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr));
+                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1}));
             }
 
             match tx.send(ScreenEvent::SbPopLine { cells: cells }) {
@@ -231,10 +232,10 @@ impl Screen {
 
     /// Return the cell at the given position
     pub fn get_cell(&self, pos: &Pos) -> ScreenCell {
-        let pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
+        let ffi_pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
         let cell_buf = unsafe { ffi::vterm_cell_new() };
-        unsafe { ffi::vterm_screen_get_cell(self.ptr, pos, cell_buf) };
-        let cell = ScreenCell::from_ptr(cell_buf);
+        unsafe { ffi::vterm_screen_get_cell(self.ptr, ffi_pos, cell_buf) };
+        let cell = ScreenCell::from_ptr(cell_buf, pos.clone());
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
         cell

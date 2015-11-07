@@ -27,6 +27,8 @@ pub struct ScreenCellAttr {
 
 #[derive(Debug, Default)]
 pub struct ScreenCell {
+    /// Where the cell is located
+    pub pos: Pos,
     /// The characters in the cell. I believe there are more than one to support overstrike.
     pub chars: Vec<char>,
     /// I think this is How wide the cell is in columns.
@@ -40,7 +42,7 @@ pub struct ScreenCell {
 
 impl ScreenCell {
     // Copies data from the given pointer. Doesn't free the pointer or anything.
-    pub fn from_ptr(ptr: *const ffi::VTermScreenCell) -> ScreenCell {
+    pub fn from_ptr(ptr: *const ffi::VTermScreenCell, pos: Pos) -> ScreenCell {
         let fg = unsafe { ffi::vterm_cell_get_fg(ptr) };
         let bg = unsafe { ffi::vterm_cell_get_bg(ptr) };
 
@@ -60,6 +62,7 @@ impl ScreenCell {
 
         unsafe {
             ScreenCell {
+                pos:   pos,
                 chars: chars,
                 width: ffi::vterm_cell_get_width(ptr) as u8,
                 attrs: ScreenCellAttr {

@@ -161,7 +161,7 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
     print!("\n");
 }
 
-fn dump_row(row: u16, vt: &VTerm, context: &Context) {
+fn dump_row(row: i16, vt: &VTerm, context: &Context) {
     let mut prev_cell: ScreenCell = Default::default();
     let (fg, bg) = vt.get_state().get_default_colors();
     prev_cell.fg = fg;
@@ -170,12 +170,12 @@ fn dump_row(row: u16, vt: &VTerm, context: &Context) {
     let vts = vt.get_screen();
 
     let mut pos = Pos { row: row, col: 0 };
-    while pos.col < context.cols_count {
+    while pos.col < context.cols_count as i16 {
         let cell = vts.get_cell(&pos);
 
         dump_cell(&vt.get_state(), &cell, &prev_cell, context);
 
-        pos.col += cell.width as u16;
+        pos.col += cell.width as i16;
         prev_cell = cell;
     }
 
@@ -260,6 +260,6 @@ fn main() {
     }
 
     for row in 0..context.rows_count {
-        dump_row(row, &vt, &context);
+        dump_row(row as i16, &vt, &context);
     }
 }
