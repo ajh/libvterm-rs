@@ -11,8 +11,8 @@ use std::io::prelude::*;
 enum Format { Plain, Sgr }
 
 struct Context {
-    cols_count: usize,
-    rows_count: usize,
+    cols_count: u16,
+    rows_count: u16,
     format: Format,
 }
 
@@ -161,7 +161,7 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
     print!("\n");
 }
 
-fn dump_row(row: usize, vt: &VTerm, context: &Context) {
+fn dump_row(row: u16, vt: &VTerm, context: &Context) {
     let mut prev_cell: ScreenCell = Default::default();
     let (fg, bg) = vt.get_state().get_default_colors();
     prev_cell.fg = fg;
@@ -175,7 +175,7 @@ fn dump_row(row: usize, vt: &VTerm, context: &Context) {
 
         dump_cell(&vt.get_state(), &cell, &prev_cell, context);
 
-        pos.col += cell.width as usize;
+        pos.col += cell.width as u16;
         prev_cell = cell;
     }
 
@@ -196,8 +196,8 @@ Options:
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-    flag_c:    usize,
-    flag_l:    usize,
+    flag_c:    u16,
+    flag_l:    u16,
     flag_f:    String,
     arg_file:  String,
 }

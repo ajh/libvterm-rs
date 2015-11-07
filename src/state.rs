@@ -24,7 +24,7 @@ impl State {
         )
     }
 
-    pub fn get_palette_color(&self, index: usize) -> Color {
+    pub fn get_palette_color(&self, index: u16) -> Color {
         let mut ffi_color: ffi::VTermColor = Default::default();
         unsafe { ffi::vterm_state_get_palette_color(self.ptr, index as c_int, &mut ffi_color); }
         Color {

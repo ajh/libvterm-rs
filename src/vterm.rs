@@ -11,7 +11,7 @@ pub struct VTerm {
 }
 
 impl VTerm {
-    pub fn new(rows: usize, cols: usize) -> VTerm {
+    pub fn new(rows: u16, cols: u16) -> VTerm {
         // TODO how to detect error?
         let vterm_ptr = unsafe { ffi::vterm_new(rows as c_int, cols as c_int) };
         VTerm { ptr: vterm_ptr, screen_event_tx: None }
@@ -21,7 +21,7 @@ impl VTerm {
         let mut cols: c_int = 0;
         let mut rows: c_int = 0;
         unsafe { ffi::vterm_get_size(self.ptr, &mut cols, &mut rows); }
-        ScreenSize { rows: rows as usize, cols: cols as usize }
+        ScreenSize { rows: rows as u16, cols: cols as u16 }
     }
 
     pub fn set_size(&mut self, size: ScreenSize) {
@@ -53,9 +53,9 @@ impl VTerm {
         State::from_ptr(state_ptr)
     }
 
-    pub fn write(&mut self, input: &[u8]) -> usize {
+    pub fn write(&mut self, input: &[u8]) -> u32 {
         unsafe {
-            ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as libc::size_t) as usize
+            ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as libc::size_t) as u32
         }
     }
 

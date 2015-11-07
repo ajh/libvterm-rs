@@ -7,22 +7,22 @@ use super::*;
 
 #[derive(Debug, Default)]
 pub struct ScreenSize {
-    pub rows: usize,
-    pub cols: usize,
+    pub rows: u16,
+    pub cols: u16,
 }
 
 #[derive(Debug, Default)]
 pub struct Pos {
-    pub row: usize,
-    pub col: usize,
+    pub row: u16,
+    pub col: u16,
 }
 
 #[derive(Debug, Default)]
 pub struct Rect {
-    pub start_row: usize,
-    pub end_row: usize,
-    pub start_col: usize,
-    pub end_col: usize,
+    pub start_row: u16,
+    pub end_row: u16,
+    pub start_col: u16,
+    pub end_col: u16,
 }
 
 #[derive(Debug)]
@@ -37,7 +37,7 @@ pub enum ScreenEvent {
     Mouse         { value: isize },
     MoveCursor    { new: Pos,                  old: Pos,       is_visible: bool },
     MoveRect      { dest: Rect,                src: Rect },
-    Resize        { rows: usize,               cols: usize },
+    Resize        { rows: u16,               cols: u16 },
     Reverse       { is_true: bool },
     SbPopLine     { cells: Vec<ScreenCell> },
     SbPushLine    { cells: Vec<ScreenCell> },
@@ -49,10 +49,10 @@ extern "C" fn damage_handler(rect: ffi::VTermRect, tx: *mut c_void) -> c_int {
     match tx.as_ref() {
         Some(tx) => {
             let rust_rect = Rect {
-                start_row: rect.start_row as usize,
-                end_row: rect.end_row as usize,
-                start_col: rect.start_col as usize,
-                end_col: rect.end_col as usize,
+                start_row: rect.start_row as u16,
+                end_row: rect.end_row as u16,
+                start_col: rect.start_col as u16,
+                end_col: rect.end_col as u16,
             };
 
             match tx.send(ScreenEvent::Damage { rect: rust_rect }) {
@@ -69,17 +69,17 @@ extern "C" fn move_rect_handler(dest: ffi::VTermRect, src: ffi::VTermRect, tx: *
     match tx.as_ref() {
         Some(tx) => {
             let rust_dest = Rect {
-                start_row: dest.start_row as usize,
-                end_row: dest.end_row as usize,
-                start_col: dest.start_col as usize,
-                end_col: dest.end_col as usize,
+                start_row: dest.start_row as u16,
+                end_row: dest.end_row as u16,
+                start_col: dest.start_col as u16,
+                end_col: dest.end_col as u16,
             };
 
             let rust_src = Rect {
-                start_row: src.start_row as usize,
-                end_row: src.end_row as usize,
-                start_col: src.start_col as usize,
-                end_col: src.end_col as usize,
+                start_row: src.start_row as u16,
+                end_row: src.end_row as u16,
+                start_col: src.start_col as u16,
+                end_col: src.end_col as u16,
             };
 
             match tx.send(ScreenEvent::MoveRect { dest: rust_dest, src: rust_src }) {
@@ -95,8 +95,8 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
     let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
     match tx.as_ref() {
         Some(tx) => {
-            let rust_new = Pos { row: new.row as usize, col: new.col as usize };
-            let rust_old = Pos { row: old.row as usize, col: old.col as usize };
+            let rust_new = Pos { row: new.row as u16, col: new.col as u16 };
+            let rust_old = Pos { row: old.row as u16, col: old.col as u16 };
             let event = ScreenEvent::MoveCursor {
                 new: rust_new,
                 old: rust_old,
@@ -156,7 +156,7 @@ extern "C" fn resize_handler(rows: c_int, cols: c_int, tx: *mut c_void) -> c_int
     let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
     match tx.as_ref() {
         Some(tx) => {
-            match tx.send(ScreenEvent::Resize { rows: rows as usize, cols: cols as usize} ) {
+            match tx.send(ScreenEvent::Resize { rows: rows as u16, cols: cols as u16} ) {
                 Ok(_) => 1,
                 Err(_) => 0,
             }
