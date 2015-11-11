@@ -5,7 +5,7 @@ use std::sync::mpsc;
 
 use super::*;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ScreenSize {
     pub rows: u16,
     pub cols: u16,
