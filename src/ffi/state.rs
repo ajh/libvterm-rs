@@ -1,12 +1,61 @@
 extern crate libc;
 
-pub enum VTermState {}
-
+use libc::{c_int, c_void};
 use super::*;
 
-use libc::{c_int};
+pub enum VTermState {}
+pub enum VTermGlyphInfo {} // need to flesh this out
+pub enum VTermLineInfo {}  // need to flesh this out
+
+pub enum VTermAttr {
+  /* VTERM_ATTR_NONE = 0 */
+  VTERM_ATTR_BOLD = 1,   // bool:   1, 22
+  VTERM_ATTR_UNDERLINE,  // number: 4, 21, 24
+  VTERM_ATTR_ITALIC,     // bool:   3, 23
+  VTERM_ATTR_BLINK,      // bool:   5, 25
+  VTERM_ATTR_REVERSE,    // bool:   7, 27
+  VTERM_ATTR_STRIKE,     // bool:   9, 29
+  VTERM_ATTR_FONT,       // number: 10-19
+  VTERM_ATTR_FOREGROUND, // color:  30-39 90-97
+  VTERM_ATTR_BACKGROUND, // color:  40-49 100-107
+}
+
+#[repr(C)]
+pub struct VTermStateCallbacks {
+    pub put_glyph: extern fn(*mut VTermGlyphInfo, VTermPos, *mut c_void) -> (c_int),
+    pub move_cursor: extern fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int),
+    pub scroll_rect: extern fn(VTermRect, c_int, c_int, *mut c_void) -> (c_int),
+    pub move_rect: extern fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
+    pub erase: extern fn(VTermRect, c_int, *mut c_void) -> (c_int),
+    pub initpen: extern fn(*mut c_void) -> (c_int),
+    pub setpenattr: extern fn(VTermAttr, VTermValue, *mut c_void) -> (c_int),
+    pub settermprop: extern fn(VTermProp, VTermValue, *mut c_void) -> (c_int),
+    pub bell: extern fn(*mut c_void) -> (c_int),
+    pub resize: extern fn(c_int, c_int, VTermPos, *mut c_void) -> (c_int),
+    pub set_line_info: extern fn(c_int, *const VTermLineInfo, *const VTermLineInfo, *mut c_void) -> (c_int),
+}
 
 extern {
+    pub fn vterm_obtain_state(vt: *mut VTerm) -> *mut VTermState;
+
+    pub fn vterm_state_set_callbacks(state: *mut VTermState, callbacks: *const VTermStateCallbacks, user: *mut libc::c_void);
+// void *vterm_state_get_cbdata(VTermState *state);
+//
+// // Only invokes control, csi, osc, dcs
+// void  vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermParserCallbacks *fallbacks, void *user);
+// void *vterm_state_get_unrecognised_fbdata(VTermState *state);
+//
+// void vterm_state_reset(VTermState *state, int hard);
+// void vterm_state_get_cursorpos(const VTermState *state, VTermPos *cursorpos);
+// void vterm_state_get_default_colors(const VTermState *state, VTermColor *default_fg, VTermColor *default_bg);
+// void vterm_state_get_palette_color(const VTermState *state, int index, VTermColor *col);
+// void vterm_state_set_default_colors(VTermState *state, const VTermColor *default_fg, const VTermColor *default_bg);
+// void vterm_state_set_palette_color(VTermState *state, int index, const VTermColor *col);
+// void vterm_state_set_bold_highbright(VTermState *state, int bold_is_highbright);
+// int  vterm_state_get_penattr(const VTermState *state, VTermAttr attr, VTermValue *val);
+// int  vterm_state_set_termprop(VTermState *state, VTermProp prop, VTermValue *val);
+// const VTermLineInfo *vterm_state_get_lineinfo(const VTermState *state, int row);
+
     pub fn vterm_state_get_default_colors(state: *const VTermState, default_fg: *mut VTermColor, default_bg: *mut VTermColor);
     pub fn vterm_state_get_palette_color(state: *const VTermState, index: c_int, color: *mut VTermColor);
 }

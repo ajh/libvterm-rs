@@ -73,6 +73,7 @@ impl Default for VTermScreenCallbacks {
 }
 
 extern {
+    pub fn vterm_obtain_screen(vt: *mut VTerm) -> *mut VTermScreen;
     pub fn vterm_screen_reset(screen: *mut VTermScreen, hard: c_int);
     pub fn vterm_screen_get_cell(screen: *const VTermScreen, pos: VTermPos, cell: *mut VTermScreenCell) -> c_int;
     pub fn vterm_screen_set_callbacks(screen: *mut VTermScreen, callbacks: *const VTermScreenCallbacks, user: *mut c_void);

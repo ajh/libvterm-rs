@@ -37,7 +37,7 @@ impl VTerm {
     }
 
     // TODO: figure out lifetime and data race issues
-    //
+    //:
     // I think I don't want this, instead provide access to an owned screen stored in the struct.
     //
     // The field could either be public, or have a method to borrow the screen. I've seen borrow()
