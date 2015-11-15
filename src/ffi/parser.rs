@@ -14,3 +14,8 @@ pub struct VTermParserCallbacks {
     pub dcs: extern fn(command: *const c_char, cmdlen: size_t, user: *mut c_void) -> c_int,
     pub resize: extern fn(rows: c_int, cols: c_int, user: *mut c_void) -> c_int,
 }
+
+extern {
+    pub fn vterm_parser_set_callbacks(vt: *mut VTerm, callbacks: *const VTermParserCallbacks, user: *mut c_void) -> *mut VTermState;
+    pub fn vterm_parser_get_callbacks(vt: *mut VTerm) -> *mut c_void;
+}

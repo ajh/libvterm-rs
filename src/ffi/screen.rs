@@ -1,6 +1,7 @@
 extern crate libc;
 
-use libc::{c_int, c_void};
+use libc::{c_int, c_void, size_t, uint32_t};
+use std::ffi::CString;
 
 use super::*;
 
@@ -34,6 +35,16 @@ pub struct VTermRect {
     pub start_col: c_int,
     pub end_col: c_int,
 }
+
+#[repr(C)]
+pub enum VTermDamageSize {
+  VTermDamageCell,    /* every cell */
+  VTermDamageRow,     /* entire rows */
+  VTermDamageScreen,  /* entire screen */
+  VTermDamageScroll,  /* entire screen + scrollrect */
+}
+
+pub enum VTermAttrMask {}
 
 // These are lame and need to go away
 extern "C" fn default_damage_handler(_: VTermRect, strings: *mut c_void) -> c_int { 1 }
@@ -74,10 +85,28 @@ impl Default for VTermScreenCallbacks {
 
 extern {
     pub fn vterm_obtain_screen(vt: *mut VTerm) -> *mut VTermScreen;
-    pub fn vterm_screen_reset(screen: *mut VTermScreen, hard: c_int);
-    pub fn vterm_screen_get_cell(screen: *const VTermScreen, pos: VTermPos, cell: *mut VTermScreenCell) -> c_int;
+
     pub fn vterm_screen_set_callbacks(screen: *mut VTermScreen, callbacks: *const VTermScreenCallbacks, user: *mut c_void);
+    pub fn vterm_screen_get_cbdata(screen: *mut VTermScreen) -> *mut c_void;
+
+    pub fn vterm_screen_set_unrecognised_fallbacks(screen: *mut VTermScreen, fallbacks: *const VTermParserCallbacks, user: *mut c_void) -> *mut c_void;
+    pub fn vterm_screen_get_unrecognised_fbdata(screen: *mut VTermScreen) -> *mut c_void;
+
+    pub fn vterm_screen_enable_altscreen(screen: *mut VTermScreen, altscreen: c_int);
+
     pub fn vterm_screen_flush_damage(screen: *mut VTermScreen);
+    pub fn vterm_screen_set_damage_merge(screen: *mut VTermScreen, size: VTermDamageSize);
+
+    pub fn vterm_screen_reset(screen: *mut VTermScreen, hard: c_int);
+
+    pub fn vterm_screen_get_chars(screen: *mut VTermScreen, chars: *mut uint32_t, len: size_t, rect: VTermRect) -> size_t;
+    pub fn vterm_screen_get_text(screen: *mut VTermScreen, chars: *mut CString, len: size_t, rect: VTermRect) -> size_t;
+
+    pub fn vterm_screen_get_attrs_extent(screen: *const VTermScreen, extent: *mut VTermRect, pos: VTermPos, attrs: VTermAttrMask) -> c_int;
+
+    pub fn vterm_screen_get_cell(screen: *const VTermScreen, pos: VTermPos, cell: *mut VTermScreenCell) -> c_int;
+
+    pub fn vterm_screen_is_eol(screen: *const VTermScreen, pos: VTermPos) -> c_int;
 }
 
 mod tests {
