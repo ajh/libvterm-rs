@@ -163,17 +163,15 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
 
 fn dump_row(row: i16, vt: &VTerm, context: &Context) {
     let mut prev_cell: ScreenCell = Default::default();
-    let (fg, bg) = vt.get_state().get_default_colors();
+    let (fg, bg) = vt.state.get_default_colors();
     prev_cell.fg = fg;
     prev_cell.bg = bg;
 
-    let vts = vt.get_screen();
-
     let mut pos = Pos { row: row, col: 0 };
     while pos.col < context.cols_count as i16 {
-        let cell = vts.get_cell(&pos);
+        let cell = vt.screen.get_cell(&pos);
 
-        dump_cell(&vt.get_state(), &cell, &prev_cell, context);
+        dump_cell(&vt.state, &cell, &prev_cell, context);
 
         pos.col += cell.width as i16;
         prev_cell = cell;
@@ -223,8 +221,7 @@ fn main() {
 
     let rx = vt.receive_screen_events();
 
-    let mut vts: Screen = vt.get_screen();
-    vts.reset(true);
+    vt.screen.reset(true);
 
     let mut file = std::fs::File::open(args.arg_file).unwrap();
     let mut read_buf = [0 as u8; 1024];
@@ -243,13 +240,13 @@ fn main() {
                 context.cols_count = cols;
             },
             ScreenEvent::SbPushLine{cells} => {
-                let (fg, bg) = vt.get_state().get_default_colors();
+                let (fg, bg) = vt.state.get_default_colors();
                 let mut prev_cell: ScreenCell = Default::default();
                 prev_cell.fg = fg;
                 prev_cell.bg = bg;
 
                 for cell in cells {
-                    dump_cell(&vt.get_state(), &cell, &prev_cell, &context);
+                    dump_cell(&vt.state, &cell, &prev_cell, &context);
                     prev_cell = cell
                 }
 

@@ -251,8 +251,7 @@ mod tests {
 
     #[test]
     fn screen_can_reset() {
-        let vterm: VTerm = VTerm::new(2, 2);
-        let mut screen = vterm.get_screen();
-        screen.reset(true);
+        let mut vterm: VTerm = VTerm::new(2, 2);
+        vterm.screen.reset(true);
     }
 }

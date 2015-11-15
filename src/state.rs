@@ -41,7 +41,6 @@ mod tests {
     #[test]
     fn state_can_get_default_colors() {
         let vterm: VTerm = VTerm::new(2, 2);
-        let state = vterm.get_state();
-        state.get_default_colors();
+        vterm.state.get_default_colors();
     }
 }
