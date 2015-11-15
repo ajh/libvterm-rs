@@ -40,7 +40,7 @@ mod tests {
 
     #[test]
     fn state_can_get_default_colors() {
-        let vterm: VTerm = VTerm::new(2, 2);
+        let vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
         vterm.state.get_default_colors();
     }
 }

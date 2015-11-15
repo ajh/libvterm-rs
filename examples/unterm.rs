@@ -215,7 +215,7 @@ fn main() {
         format:      if args.flag_f == "sgr" { Format::Sgr } else { Format::Plain },
     };
 
-    let mut vt = VTerm::new(context.rows_count, context.cols_count);
+    let mut vt = VTerm::new(ScreenSize { rows: context.rows_count, cols: context.cols_count });
 
     vt.set_utf8(true);
 

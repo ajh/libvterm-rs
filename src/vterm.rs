@@ -13,9 +13,9 @@ pub struct VTerm {
 }
 
 impl VTerm {
-    pub fn new(rows: u16, cols: u16) -> VTerm {
+    pub fn new(size: ScreenSize) -> VTerm {
         // TODO how to detect error?
-        let vterm_ptr = unsafe { ffi::vterm_new(rows as c_int, cols as c_int) };
+        let vterm_ptr = unsafe { ffi::vterm_new(size.rows as c_int, size.cols as c_int) };
         let screen_ptr = unsafe { ffi::vterm_obtain_screen(vterm_ptr) };
         let state_ptr = unsafe { ffi::vterm_obtain_state(vterm_ptr) };
 
@@ -82,20 +82,20 @@ mod tests {
 
     #[test]
     fn vterm_can_create_and_destroy() {
-        let vterm: VTerm = VTerm::new(2, 2);
+        let vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
         drop(vterm);
     }
 
     #[test]
     fn vterm_can_get_size() {
-        let vterm: VTerm = VTerm::new(2, 2);
+        let vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
         let size = vterm.get_size();
         assert_eq!((2, 2), (size.rows, size.cols));
     }
 
     #[test]
     fn vterm_can_set_size() {
-        let mut vterm: VTerm = VTerm::new(2, 2);
+        let mut vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
         vterm.set_size(ScreenSize { cols: 1, rows: 1 });
         let size = vterm.get_size();
         assert_eq!((1, 1), (size.rows, size.cols));
@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn vterm_can_get_and_set_utf8() {
-        let mut vterm: VTerm = VTerm::new(2, 2);
+        let mut vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
         vterm.set_utf8(true);
         assert_eq!(true, vterm.get_utf8());
 
@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn vterm_can_write() {
-        let mut vterm: VTerm = VTerm::new(2, 2);
+        let mut vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
         let input: &[u8] = "abcd".as_bytes();
         assert_eq!(4, vterm.write(input));
     }
