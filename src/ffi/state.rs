@@ -47,7 +47,7 @@ extern {
     pub fn vterm_state_get_cursorpos(state: *const VTermState, cursorpos: *mut VTermPos);
     pub fn vterm_state_get_default_colors(state: *const VTermState, default_fg: *mut VTermColor, default_bg: *mut VTermColor);
     pub fn vterm_state_get_palette_color(state: *const VTermState, index: c_int, color: *mut VTermColor);
-    pub fn vterm_state_set_default_colors(state: *const VTermState, default_fg: *const VTermColor, default_bg: *const VTermColor);
+    pub fn vterm_state_set_default_colors(state: *mut VTermState, default_fg: *const VTermColor, default_bg: *const VTermColor);
     pub fn vterm_state_set_palette_color(state: *mut VTermState, index: c_int, col: *const VTermColor);
     pub fn vterm_state_set_bold_highbright(state: *mut VTermState, bold_is_highbright: c_int);
     pub fn vterm_state_get_penattr(state: *const VTermState, attr: VTermAttr, val: *mut VTermValue) -> c_int;
@@ -61,18 +61,26 @@ mod tests {
     use super::super::*;
 
     #[test]
-    fn ffi_state_can_get_default_colors() {
+    fn ffi_state_can_get_and_set_default_colors() {
         unsafe {
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
             let state_ptr = vterm_obtain_state(vterm_ptr);
+
+            let fg = VTermColor { red: 200, green: 201, blue: 202 };
+            let bg = VTermColor { red: 10, green: 11, blue: 12 };
+            vterm_state_set_default_colors(state_ptr, &fg, &bg);
 
             let mut fg: VTermColor = Default::default();
             let mut bg: VTermColor = Default::default();
             vterm_state_get_default_colors(state_ptr, &mut fg, &mut bg);
 
-            assert!(fg.red > 200 && fg.red < 255);
-            assert!(fg.green > 200 && fg.green < 255);
-            assert!(fg.blue > 200 && fg.blue < 255);
+            assert_eq!(fg.red, 200);
+            assert_eq!(fg.green, 201);
+            assert_eq!(fg.blue, 202);
+
+            assert_eq!(bg.red, 10);
+            assert_eq!(bg.green, 11);
+            assert_eq!(bg.blue, 12);
 
             vterm_free(vterm_ptr);
         }

@@ -12,7 +12,7 @@ pub struct Color {
     pub blue: u8,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct ScreenCellAttr {
     pub bold:       bool,
     pub underline:  u8, // 0 to 3
@@ -25,7 +25,7 @@ pub struct ScreenCellAttr {
     pub dhl:        u8, // On a DECDHL line (1=top 2=bottom)
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, PartialEq)]
 pub struct ScreenCell {
     /// Where the cell is located
     pub pos: Pos,
@@ -107,6 +107,19 @@ impl ScreenCell {
         }
 
         output
+    }
+}
+
+impl Default for ScreenCell {
+    fn default() -> ScreenCell {
+        ScreenCell {
+            pos: Default::default(),
+            chars: vec!(),
+            width: 1,
+            attrs: Default::default(),
+            fg: Color { red: 230, green: 230, blue: 230 },
+            bg: Color { red: 5, green: 5, blue: 5 },
+        }
     }
 }
 

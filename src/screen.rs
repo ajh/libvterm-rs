@@ -5,20 +5,20 @@ use std::sync::mpsc;
 
 use super::*;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct ScreenSize {
     pub rows: u16,
     pub cols: u16,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Pos {
     /// negative numbers represent scroll buffer positions
     pub row: i16,
     pub col: i16,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Rect {
     pub start_row: u16,
     pub end_row: u16,
