@@ -5,14 +5,14 @@ use std::vec::Vec;
 
 use super::*;
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct Color {
     pub red: u8,
     pub green: u8,
     pub blue: u8,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct ScreenCellAttr {
     pub bold:       bool,
     pub underline:  u8, // 0 to 3

@@ -244,6 +244,10 @@ impl Screen {
     pub fn flush_damage(&mut self) {
         unsafe { ffi::vterm_screen_flush_damage(self.ptr) };
     }
+
+    pub fn set_damage_merge(&mut self, size: ffi::VTermDamageSize) {
+        unsafe { ffi::vterm_screen_set_damage_merge(self.ptr, size) };
+    }
 }
 
 mod tests {
