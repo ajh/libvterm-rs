@@ -2,10 +2,10 @@
 
 extern crate rustc_serialize;
 extern crate docopt;
-extern crate libvterm_sys;
+extern crate vterm_sys;
 extern crate libc;
 
-use libvterm_sys::*;
+use vterm_sys::*;
 use std::io::prelude::*;
 
 enum Format { Plain, Sgr }
