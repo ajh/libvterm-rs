@@ -14,5 +14,5 @@ fn main() {
     config.file(vendor_path.join("bit_field_workaround.c").to_str().unwrap());
     config.include(vendor_path.join("libvterm/include").to_str().unwrap());
     config.include(vendor_path.join("libvterm/src").to_str().unwrap());
-    config.compile("libtsm.a");
+    config.compile("libvterm.a");
 }
