@@ -1,3 +1,9 @@
+This library provides rust bindings for libvterm:
+http://www.leonerd.org.uk/code/libvterm/
+
+libvterm is "An abstract library implementation of a VT220/xterm/ECMA-48
+terminal emulator"
+
 # How to build
 
     git submodule init

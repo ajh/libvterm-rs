@@ -131,10 +131,10 @@ mod tests {
             // TODO: write something so the cell will have a known value
             let vterm_ptr: *mut VTerm = vterm_new(2, 2);
             let screen_ptr = vterm_obtain_screen(vterm_ptr);
-            let pos = VTermPos { row: 1, col: 0 };
+            let pos = VTermPos { row: 0, col: 0 };
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
             let ret = vterm_screen_get_cell(screen_ptr, pos, cell_ptr);
-            assert_eq!(0, ret);
+            assert_eq!(1, ret); // one seems to mean success here
 
             vterm_cell_free(cell_ptr);
             vterm_free(vterm_ptr);
