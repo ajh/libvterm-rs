@@ -1,9 +1,12 @@
 [package]
 authors = ["Andy Hartford <hartforda@gmail.com>"]
 description = "FFI bindings to libtsm"
-name = "vterm-sys"
-version = "0.0.0"
+homepage = "https://github.com/ajh/libvterm-rs"
 license = "MIT"
+name = "vterm-sys"
+readme = "README.md"
+repository = "https://github.com/ajh/libvterm-rs"
+version = "0.0.0"
 
 build = "build.rs"
 links = "libvterm"
