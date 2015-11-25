@@ -25,7 +25,7 @@ pub struct ScreenCellAttr {
     pub dhl:        u8, // On a DECDHL line (1=top 2=bottom)
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ScreenCell {
     /// Where the cell is located
     pub pos: Pos,
