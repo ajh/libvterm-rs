@@ -1,9 +1,6 @@
-#![feature(libc)]
-
 extern crate rustc_serialize;
 extern crate docopt;
 extern crate vterm_sys;
-extern crate libc;
 
 use vterm_sys::*;
 use std::io::prelude::*;

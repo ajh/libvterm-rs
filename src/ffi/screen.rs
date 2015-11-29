@@ -1,5 +1,3 @@
-extern crate libc;
-
 use libc::{c_int, c_void, size_t, uint32_t};
 use std::ffi::CString;
 
@@ -46,16 +44,6 @@ pub enum VTermDamageSize {
 
 pub enum VTermAttrMask {}
 
-// These are lame and need to go away
-extern "C" fn default_damage_handler(_: VTermRect, strings: *mut c_void) -> c_int { 1 }
-extern "C" fn default_move_rect_handler(_: VTermRect, _: VTermRect, strings: *mut c_void) -> c_int { 1 }
-extern "C" fn default_move_cursor_handler(_: VTermPos, _: VTermPos, _: c_int, strings: *mut c_void) -> c_int { 1 }
-extern "C" fn default_set_term_prop_handler(_: VTermProp, _: VTermValue, strings: *mut c_void) -> c_int { 1 }
-extern "C" fn default_bell_handler(strings: *mut c_void) -> c_int { 1 }
-extern "C" fn default_resize_handler(_: c_int, _: c_int, strings: *mut c_void) -> c_int { 1 }
-extern "C" fn default_sb_pushline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int { 1 }
-extern "C" fn default_sb_popline_handler(_: c_int, _: *const VTermScreenCell, strings: *mut c_void) -> c_int { 1 }
-
 #[repr(C)]
 pub struct VTermScreenCallbacks {
     pub damage:         extern fn(VTermRect, *mut c_void) -> (c_int),
@@ -66,21 +54,6 @@ pub struct VTermScreenCallbacks {
     pub resize:         extern fn(c_int, c_int, *mut c_void) -> c_int,
     pub sb_pushline:    extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
     pub sb_popline:     extern fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
-}
-
-impl Default for VTermScreenCallbacks {
-    fn default() -> VTermScreenCallbacks {
-        VTermScreenCallbacks {
-            damage:             default_damage_handler,
-            move_rect:          default_move_rect_handler,
-            move_cursor:        default_move_cursor_handler,
-            set_term_prop:      default_set_term_prop_handler,
-            bell:               default_bell_handler,
-            resize:             default_resize_handler,
-            sb_pushline:        default_sb_pushline_handler,
-            sb_popline:         default_sb_popline_handler,
-        }
-    }
 }
 
 extern {
@@ -110,10 +83,8 @@ extern {
 }
 
 mod tests {
-    extern crate libc;
-
     use super::super::*;
-    use libc::{c_int, c_void};
+    use libc::{c_int, c_void, size_t};
 
     #[test]
     fn ffi_screen_can_reset() {
@@ -206,7 +177,7 @@ mod tests {
 
             let input_bytes = "hi".as_bytes();
             let input_ptr = input_bytes.as_ptr();
-            vterm_input_write(vterm_ptr, input_ptr, input_bytes.len() as libc::size_t);
+            vterm_input_write(vterm_ptr, input_ptr, input_bytes.len() as size_t);
 
             assert_eq!("damage.damage.move_cursor", strings.join("."));
 

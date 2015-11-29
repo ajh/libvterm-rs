@@ -1,5 +1,3 @@
-extern crate libc;
-
 use std::char;
 use std::vec::Vec;
 
@@ -47,7 +45,7 @@ impl ScreenCell {
         let bg = unsafe { ffi::vterm_cell_get_bg(ptr) };
 
         let mut buf = [0 as libc::uint32_t; ffi::VTERM_MAX_CHARS_PER_CELL];
-        let chars_count = unsafe { ffi::vterm_cell_get_chars(ptr, buf.as_mut_ptr(), ffi::VTERM_MAX_CHARS_PER_CELL as u64) };
+        let chars_count = unsafe { ffi::vterm_cell_get_chars(ptr, buf.as_mut_ptr(), ffi::VTERM_MAX_CHARS_PER_CELL as libc::size_t) };
 
         let mut chars: Vec<char> = Vec::with_capacity(ffi::VTERM_MAX_CHARS_PER_CELL);
 
@@ -121,8 +119,4 @@ impl Default for ScreenCell {
             bg: Color { red: 5, green: 5, blue: 5 },
         }
     }
-}
-
-mod tests {
-    use super::super::*;
 }

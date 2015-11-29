@@ -1,8 +1,4 @@
-extern crate libc;
-
-use libc::{c_int};
-
-use super::*;
+use libc::{c_int, c_uint, uint32_t, size_t, c_char, uint8_t};
 
 pub enum VTermScreenCell {}
 
@@ -11,37 +7,37 @@ pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
 #[repr(C)]
 #[derive(PartialEq, Debug, Clone, Default)]
 pub struct VTermColor {
-    pub red:   libc::uint8_t,
-    pub green: libc::uint8_t,
-    pub blue:  libc::uint8_t,
+    pub red:   uint8_t,
+    pub green: uint8_t,
+    pub blue:  uint8_t,
 }
 
 extern {
     // These are my rust ffi bitfield workarounds
     pub fn vterm_cell_new() -> *mut VTermScreenCell;
     pub fn vterm_cell_free(cell: *mut VTermScreenCell);
-    pub fn vterm_cell_get_chars(cell: *const VTermScreenCell, chars: *mut libc::uint32_t, len: libc::size_t) -> c_int;
-    pub fn vterm_cell_set_chars(cell: *mut VTermScreenCell, chars: *const libc::uint32_t, len: libc::size_t);
-    pub fn vterm_cell_get_width(cell: *const VTermScreenCell) -> libc::c_char;
-    pub fn vterm_cell_set_width(cell: *mut VTermScreenCell, width: libc::c_char);
-    pub fn vterm_cell_get_bold(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_bold(cell: *mut VTermScreenCell, is_bold: libc::c_uint);
-    pub fn vterm_cell_get_underline(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_underline(cell: *mut VTermScreenCell, underline_value: libc::c_uint);
-    pub fn vterm_cell_get_italic(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_italic(cell: *mut VTermScreenCell, is_italic: libc::c_uint);
-    pub fn vterm_cell_get_blink(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_blink(cell: *mut VTermScreenCell, is_blink: libc::c_uint);
-    pub fn vterm_cell_get_reverse(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_reverse(cell: *mut VTermScreenCell, is_reverse: libc::c_uint);
-    pub fn vterm_cell_get_strike(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_strike(cell: *mut VTermScreenCell, is_strike: libc::c_uint);
-    pub fn vterm_cell_get_font(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_font(cell: *mut VTermScreenCell, font_value: libc::c_uint);
-    pub fn vterm_cell_get_dwl(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_dwl(cell: *mut VTermScreenCell, dwl: libc::c_uint);
-    pub fn vterm_cell_get_dhl(cell: *const VTermScreenCell) -> libc::c_uint;
-    pub fn vterm_cell_set_dhl(cell: *mut VTermScreenCell, dhl: libc::c_uint);
+    pub fn vterm_cell_get_chars(cell: *const VTermScreenCell, chars: *mut uint32_t, len: size_t) -> c_int;
+    pub fn vterm_cell_set_chars(cell: *mut VTermScreenCell, chars: *const uint32_t, len: size_t);
+    pub fn vterm_cell_get_width(cell: *const VTermScreenCell) -> c_char;
+    pub fn vterm_cell_set_width(cell: *mut VTermScreenCell, width: c_char);
+    pub fn vterm_cell_get_bold(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_bold(cell: *mut VTermScreenCell, is_bold: c_uint);
+    pub fn vterm_cell_get_underline(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_underline(cell: *mut VTermScreenCell, underline_value: c_uint);
+    pub fn vterm_cell_get_italic(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_italic(cell: *mut VTermScreenCell, is_italic: c_uint);
+    pub fn vterm_cell_get_blink(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_blink(cell: *mut VTermScreenCell, is_blink: c_uint);
+    pub fn vterm_cell_get_reverse(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_reverse(cell: *mut VTermScreenCell, is_reverse: c_uint);
+    pub fn vterm_cell_get_strike(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_strike(cell: *mut VTermScreenCell, is_strike: c_uint);
+    pub fn vterm_cell_get_font(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_font(cell: *mut VTermScreenCell, font_value: c_uint);
+    pub fn vterm_cell_get_dwl(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_dwl(cell: *mut VTermScreenCell, dwl: c_uint);
+    pub fn vterm_cell_get_dhl(cell: *const VTermScreenCell) -> c_uint;
+    pub fn vterm_cell_set_dhl(cell: *mut VTermScreenCell, dhl: c_uint);
     pub fn vterm_cell_get_fg(cell: *const VTermScreenCell) -> VTermColor;
     pub fn vterm_cell_set_fg(cell: *mut VTermScreenCell, color: VTermColor);
     pub fn vterm_cell_get_bg(cell: *const VTermScreenCell) -> VTermColor;
@@ -50,8 +46,7 @@ extern {
 }
 
 mod tests {
-    extern crate libc;
-
+    use libc::size_t;
     use super::super::*;
 
     #[test]
@@ -70,7 +65,7 @@ mod tests {
             let a = [b'a' as u32, b'b' as u32, b'c' as u32, 0 as u32, 0 as u32, 0 as u32];
             vterm_cell_set_chars(cell_ptr, a.as_ptr(), 3);
             let mut b = [0 as u32; VTERM_MAX_CHARS_PER_CELL];
-            vterm_cell_get_chars(cell_ptr, b.as_mut_ptr(), VTERM_MAX_CHARS_PER_CELL as libc::size_t);
+            vterm_cell_get_chars(cell_ptr, b.as_mut_ptr(), VTERM_MAX_CHARS_PER_CELL as size_t);
             assert_eq!(a, b);
 
             vterm_cell_free(cell_ptr);

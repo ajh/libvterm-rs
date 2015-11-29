@@ -1,5 +1,3 @@
-extern crate libc;
-
 use libc::{c_int, c_void};
 use std::sync::mpsc;
 
@@ -112,22 +110,24 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
     }
 }
 
-extern "C" fn set_term_prop_handler(prop: ffi::VTermProp, value: ffi::VTermValue, tx: *mut c_void) -> c_int {
-    let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
+extern "C" fn set_term_prop_handler(_: ffi::VTermProp, _: ffi::VTermValue, _: *mut c_void) -> c_int {
+    return 0
 
-    let event: ScreenEvent = match prop {
-        ffi::VTermProp::VTermPropAltscreen     => ScreenEvent::AltScreen     { is_true: true },
-        ffi::VTermProp::VTermPropCursorblink   => ScreenEvent::CursorBlink   { is_true: true },
-        ffi::VTermProp::VTermPropCursorshape   => ScreenEvent::CursorShape   { value: -1 },
-        ffi::VTermProp::VTermPropCursorvisible => ScreenEvent::CursorVisible { is_true: true },
-        ffi::VTermProp::VTermPropIconname      => ScreenEvent::IconName      { text: "fake icon name".to_string() },
-        ffi::VTermProp::VTermPropMouse         => ScreenEvent::Mouse         { value: -1 },
-        ffi::VTermProp::VTermPropReverse       => ScreenEvent::Reverse       { is_true: true },
-        ffi::VTermProp::VTermPropTitle         => ScreenEvent::Title         { text: "fake title".to_string() },
-    };
+    //let tx: &mut Option<mpsc::Sender<ScreenEvent>> = unsafe { &mut *(tx as *mut Option<mpsc::Sender<ScreenEvent>>) };
 
-    info!("prop event {:?}", event);
-    0
+    //let event: ScreenEvent = match prop {
+        //ffi::VTermProp::VTermPropAltscreen     => ScreenEvent::AltScreen     { is_true: true },
+        //ffi::VTermProp::VTermPropCursorblink   => ScreenEvent::CursorBlink   { is_true: true },
+        //ffi::VTermProp::VTermPropCursorshape   => ScreenEvent::CursorShape   { value: -1 },
+        //ffi::VTermProp::VTermPropCursorvisible => ScreenEvent::CursorVisible { is_true: true },
+        //ffi::VTermProp::VTermPropIconname      => ScreenEvent::IconName      { text: "fake icon name".to_string() },
+        //ffi::VTermProp::VTermPropMouse         => ScreenEvent::Mouse         { value: -1 },
+        //ffi::VTermProp::VTermPropReverse       => ScreenEvent::Reverse       { is_true: true },
+        //ffi::VTermProp::VTermPropTitle         => ScreenEvent::Title         { text: "fake title".to_string() },
+    //};
+
+    //info!("prop event {:?}", event);
+    //0
 
     // This crashes inside the channel somewhere. Don't know why.
     //match tx.as_ref() {
@@ -251,11 +251,9 @@ impl Screen {
 }
 
 mod tests {
-    use super::super::*;
-
     #[test]
     fn screen_can_reset() {
-        let mut vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
+        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
         vterm.screen.reset(true);
     }
 }

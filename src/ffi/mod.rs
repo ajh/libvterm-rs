@@ -1,5 +1,3 @@
-extern crate libc;
-
 mod cell;
 mod parser;
 mod screen;

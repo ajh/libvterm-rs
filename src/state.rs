@@ -1,5 +1,3 @@
-extern crate libc;
-
 use libc::{c_int};
 
 use super::*;
@@ -25,12 +23,12 @@ impl State {
     }
 
     pub fn set_default_colors(&mut self, default_fg: Color, default_bg: Color) {
-        let mut fg = ffi::VTermColor {
+        let fg = ffi::VTermColor {
             red: default_fg.red,
             green: default_fg.green,
             blue: default_fg.blue
         };
-        let mut bg = ffi::VTermColor {
+        let bg = ffi::VTermColor {
             red: default_bg.red,
             green: default_bg.green,
             blue: default_bg.blue
@@ -55,13 +53,11 @@ impl State {
 }
 
 mod tests {
-    use super::super::*;
-
     #[test]
     fn state_can_get_and_set_default_colors() {
-        let mut vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
-        vterm.state.set_default_colors(Color { red: 200, green: 201, blue: 202 },
-                                       Color { red: 0, green: 1, blue: 2 });
+        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
+        vterm.state.set_default_colors(::Color { red: 200, green: 201, blue: 202 },
+                                       ::Color { red: 0, green: 1, blue: 2 });
         let (fg, bg) = vterm.state.get_default_colors();
 
         assert_eq!(fg.red, 200);

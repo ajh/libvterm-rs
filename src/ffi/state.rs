@@ -1,5 +1,3 @@
-extern crate libc;
-
 use libc::{c_int, c_void};
 use super::*;
 
@@ -7,6 +5,7 @@ pub enum VTermState {}
 pub enum VTermGlyphInfo {} // need to flesh this out
 pub enum VTermLineInfo {}  // need to flesh this out
 
+#[repr(C)]
 pub enum VTermAttr {
   VTERM_ATTR_BOLD = 1,   // bool:   1, 22
   VTERM_ATTR_UNDERLINE,  // number: 4, 21, 24
@@ -37,7 +36,7 @@ pub struct VTermStateCallbacks {
 extern {
     pub fn vterm_obtain_state(vt: *mut VTerm) -> *mut VTermState;
 
-    pub fn vterm_state_set_callbacks(state: *mut VTermState, callbacks: *const VTermStateCallbacks, user: *mut libc::c_void);
+    pub fn vterm_state_set_callbacks(state: *mut VTermState, callbacks: *const VTermStateCallbacks, user: *mut c_void);
     pub fn vterm_state_get_cbdata(state: *mut VTermState) -> *mut c_void;
 
     pub fn vterm_state_set_unrecognised_fallbacks(state: *mut VTermState, fallbacks: *const VTermParserCallbacks, user: *mut c_void);
@@ -56,22 +55,20 @@ extern {
 }
 
 mod tests {
-    extern crate libc;
-
-    use super::super::*;
+    use super::*;
 
     #[test]
     fn ffi_state_can_get_and_set_default_colors() {
         unsafe {
-            let vterm_ptr: *mut VTerm = vterm_new(2, 2);
+            let vterm_ptr: *mut ::ffi::VTerm = ::ffi::vterm_new(2, 2);
             let state_ptr = vterm_obtain_state(vterm_ptr);
 
-            let fg = VTermColor { red: 200, green: 201, blue: 202 };
-            let bg = VTermColor { red: 10, green: 11, blue: 12 };
+            let fg = ::ffi::VTermColor { red: 200, green: 201, blue: 202 };
+            let bg = ::ffi::VTermColor { red: 10, green: 11, blue: 12 };
             vterm_state_set_default_colors(state_ptr, &fg, &bg);
 
-            let mut fg: VTermColor = Default::default();
-            let mut bg: VTermColor = Default::default();
+            let mut fg: ::ffi::VTermColor = Default::default();
+            let mut bg: ::ffi::VTermColor = Default::default();
             vterm_state_get_default_colors(state_ptr, &mut fg, &mut bg);
 
             assert_eq!(fg.red, 200);
@@ -82,7 +79,7 @@ mod tests {
             assert_eq!(bg.green, 11);
             assert_eq!(bg.blue, 12);
 
-            vterm_free(vterm_ptr);
+            ::ffi::vterm_free(vterm_ptr);
         }
     }
 }

@@ -1,9 +1,8 @@
-extern crate libc;
-
 use libc::{c_int, c_void, c_char, size_t, c_long, c_uchar};
 
 use super::*;
 
+#[repr(C)]
 pub struct VTermParserCallbacks {
     pub text: extern fn(bytes: *const c_char, len: size_t, user: *mut c_void) -> c_int,
     pub control: extern fn(control: c_uchar, user: *mut c_void) -> c_int,
