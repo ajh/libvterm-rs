@@ -1,4 +1,4 @@
-use libc::{c_int, c_void, size_t, uint32_t};
+use libc::{c_int, c_void, size_t, uint32_t, c_char};
 use std::ffi::CString;
 
 use super::*;
@@ -72,8 +72,8 @@ extern {
 
     pub fn vterm_screen_reset(screen: *mut VTermScreen, hard: c_int);
 
-    pub fn vterm_screen_get_chars(screen: *mut VTermScreen, chars: *mut uint32_t, len: size_t, rect: VTermRect) -> size_t;
-    pub fn vterm_screen_get_text(screen: *mut VTermScreen, chars: *mut CString, len: size_t, rect: VTermRect) -> size_t;
+    pub fn vterm_screen_get_chars(screen: *const VTermScreen, chars: *mut uint32_t, len: size_t, rect: VTermRect) -> size_t;
+    pub fn vterm_screen_get_text(screen: *const VTermScreen, chars: *mut c_char, len: size_t, rect: VTermRect) -> size_t;
 
     pub fn vterm_screen_get_attrs_extent(screen: *const VTermScreen, extent: *mut VTermRect, pos: VTermPos, attrs: VTermAttrMask) -> c_int;
 

@@ -1,4 +1,4 @@
-use libc::{c_int, c_void};
+use libc::{c_int, c_void, size_t, c_char};
 use std::sync::mpsc;
 
 use super::*;
@@ -235,10 +235,24 @@ impl Screen {
         let ffi_pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
         let cell_buf = unsafe { ffi::vterm_cell_new() };
         unsafe { ffi::vterm_screen_get_cell(self.ptr, ffi_pos, cell_buf) };
-        let cell = ScreenCell::from_ptr(cell_buf, pos.clone());
+        let cell = ScreenCell::from_ptr(cell_buf, pos.clone()); // shouldn't this take &cell_buf?
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
         cell
+    }
+
+    pub fn get_text(&mut self, rect: Rect) -> String {
+        let size: usize = ((rect.end_row - rect.start_row + 1) * (rect.end_col - rect.start_col + 1)) as usize;
+        let mut text: Vec<c_char> = vec![0x0; size];
+        let rect = ffi::VTermRect { start_row: rect.start_row as i32,
+                                    end_row: rect.end_row as i32,
+                                    start_col: rect.start_col as i32,
+                                    end_col: rect.end_col as i32 };
+        let text_ptr: *mut c_char = text.as_mut_slice().as_mut_ptr();
+        unsafe { ffi::vterm_screen_get_text(self.ptr, text_ptr, text.len() as size_t, rect); }
+
+        let text: Vec<u8> = text.into_iter().map( |c| c as u8 ).collect();
+        String::from_utf8_lossy(&text).into_owned()
     }
 
     pub fn flush_damage(&mut self) {
