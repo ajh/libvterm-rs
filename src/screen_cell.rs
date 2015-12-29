@@ -1,5 +1,6 @@
 use std::char;
 use std::vec::Vec;
+use libc::{uint32_t, size_t};
 
 use super::*;
 
@@ -44,8 +45,8 @@ impl ScreenCell {
         let fg = unsafe { ffi::vterm_cell_get_fg(ptr) };
         let bg = unsafe { ffi::vterm_cell_get_bg(ptr) };
 
-        let mut buf = [0 as libc::uint32_t; ffi::VTERM_MAX_CHARS_PER_CELL];
-        let chars_count = unsafe { ffi::vterm_cell_get_chars(ptr, buf.as_mut_ptr(), ffi::VTERM_MAX_CHARS_PER_CELL as libc::size_t) };
+        let mut buf = [0 as uint32_t; ffi::VTERM_MAX_CHARS_PER_CELL];
+        let chars_count = unsafe { ffi::vterm_cell_get_chars(ptr, buf.as_mut_ptr(), ffi::VTERM_MAX_CHARS_PER_CELL as size_t) };
 
         let mut chars: Vec<char> = Vec::with_capacity(ffi::VTERM_MAX_CHARS_PER_CELL);
 

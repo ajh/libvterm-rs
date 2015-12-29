@@ -1,4 +1,4 @@
-use libc::{c_int, c_void};
+use libc::{c_int, c_void, size_t};
 use std::sync::mpsc;
 
 use super::*;
@@ -50,7 +50,7 @@ impl VTerm {
 
     pub fn write(&mut self, input: &[u8]) -> u32 {
         unsafe {
-            ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as libc::size_t) as u32
+            ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as size_t) as u32
         }
     }
 
