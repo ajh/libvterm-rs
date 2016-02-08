@@ -85,6 +85,7 @@ extern {
 }
 
 mod tests {
+    #![allow(unused_imports)]
     use libc::{c_int, c_uchar};
     use super::*;
 

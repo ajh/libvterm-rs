@@ -248,7 +248,7 @@ impl Screen {
                                     end_row: rect.end_row as i32,
                                     start_col: rect.start_col as i32,
                                     end_col: rect.end_col as i32 };
-        let text_ptr: *mut c_char = text.as_mut_slice().as_mut_ptr();
+        let text_ptr: *mut c_char = (&mut text[0..size]).as_mut_ptr();
         unsafe { ffi::vterm_screen_get_text(self.ptr, text_ptr, text.len() as size_t, rect); }
 
         let text: Vec<u8> = text.into_iter().map( |c| c as u8 ).collect();

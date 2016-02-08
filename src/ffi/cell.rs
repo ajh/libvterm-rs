@@ -46,6 +46,7 @@ extern {
 }
 
 mod tests {
+    #![allow(unused_imports)]
     use libc::size_t;
     use super::super::*;
 

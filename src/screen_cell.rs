@@ -90,22 +90,9 @@ impl ScreenCell {
     }
 
     pub fn chars_as_utf8_bytes(&self) -> Vec<u8> {
-        const MAX_BYTES_PER_UTF8_CHAR: usize = 6; // wikipedia says so
-        let mut output: Vec<u8> = Vec::with_capacity(ffi::VTERM_MAX_CHARS_PER_CELL * MAX_BYTES_PER_UTF8_CHAR);
-
-        for ch in &self.chars {
-            let mut bytes = [0 as u8; MAX_BYTES_PER_UTF8_CHAR];
-            match ch.encode_utf8(&mut bytes) {
-                Some(size) => {
-                    for byte in &bytes[0..size] {
-                        output.push(*byte);
-                    }
-                },
-                None => panic!("char couldn't be encoded as utf8: {:?}", ch),
-            }
-        }
-
-        output
+        let mut output = String::new();
+        for ch in &self.chars { output.push(*ch) }
+        output.into_bytes()
     }
 }
 

@@ -1,5 +1,4 @@
 use libc::{c_int, c_void, size_t, uint32_t, c_char};
-use std::ffi::CString;
 
 use super::*;
 
@@ -83,6 +82,9 @@ extern {
 }
 
 mod tests {
+    #![allow(unused_imports)]
+    #![allow(dead_code)]
+
     use super::super::*;
     use libc::{c_int, c_void, size_t};
 
