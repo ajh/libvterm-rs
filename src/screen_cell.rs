@@ -46,7 +46,7 @@ pub struct ScreenCell {
 
 impl ScreenCell {
     // Copies data from the given pointer. Doesn't free the pointer or anything.
-    pub fn from_ptr(ptr: *const ffi::VTermScreenCell, pos: Pos, state: &State) -> ScreenCell {
+    pub fn from_ptr(ptr: *const ffi::VTermScreenCell, pos: Pos, vterm: &VTerm) -> ScreenCell {
         let fg_rgb = unsafe { ffi::vterm_cell_get_fg(ptr) };
         let bg_rgb = unsafe { ffi::vterm_cell_get_bg(ptr) };
 
@@ -90,8 +90,8 @@ impl ScreenCell {
                     green:  bg_rgb.green,
                     blue:   bg_rgb.blue,
                 },
-                fg_palette: state.color_to_index(&fg_rgb),
-                bg_palette: state.color_to_index(&bg_rgb),
+                fg_palette: vterm.state_get_palette_color_from_c_rgb(&fg_rgb),
+                bg_palette: vterm.state_get_palette_color_from_c_rgb(&bg_rgb),
             }
         }
     }

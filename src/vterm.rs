@@ -4,10 +4,10 @@ use std::sync::mpsc;
 use super::*;
 
 pub struct VTerm {
-    pub screen: Screen,
-    pub state: State,
-    ptr: *mut ffi::VTerm,
+    pub ptr: *mut ffi::VTerm,
     pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
+    pub screen_ptr: *mut ffi::VTermScreen,
+    pub state_ptr: *mut ffi::VTermState,
 }
 
 impl VTerm {
@@ -20,11 +20,11 @@ impl VTerm {
         let mut vterm = VTerm {
             ptr: vterm_ptr,
             screen_event_tx: None,
-            screen: Screen::from_ptr(screen_ptr),
-            state: State::from_ptr(state_ptr),
+            screen_ptr: screen_ptr,
+            state_ptr: state_ptr,
         };
 
-        vterm.screen.reset(true);
+        vterm.screen_reset(true);
 
         vterm
     }
@@ -62,15 +62,10 @@ impl VTerm {
         unsafe {
             let screen_ptr = ffi::vterm_obtain_screen(self.ptr);
             let ptr: *mut c_void = self as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(screen_ptr, &SCREEN_CALLBACKS, ptr);
+            ffi::vterm_screen_set_callbacks(screen_ptr, &::screen::SCREEN_CALLBACKS, ptr);
         }
 
         rx
-    }
-
-    /// Return the cell at the given position
-    pub fn get_cell(&self, pos: &Pos) -> ScreenCell {
-        self.screen.get_cell(pos, &self.state)
     }
 }
 

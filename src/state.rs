@@ -2,29 +2,12 @@ use libc::{c_int};
 
 use super::*;
 
-pub struct State {
-    ptr: *mut ffi::VTermState
-}
+impl VTerm {
 
-impl State {
-    pub fn from_ptr(ptr: *mut ffi::VTermState) -> State {
-        State { ptr: ptr }
-    }
-
-    pub fn color_to_index(&self, target: &ffi::VTermColor) -> u16 {
-        for i in 0..256 {
-            let color = self.get_palette_color(i);
-            if color.red == target.red && color.green == target.green && color.blue == target.blue {
-                return i as u16
-            }
-        }
-        0
-    }
-
-    pub fn get_default_colors(&self) -> (ColorRGB, ColorRGB) {
+    pub fn state_get_default_colors(&self) -> (ColorRGB, ColorRGB) {
         let mut fg_rgb: ffi::VTermColor = Default::default();
         let mut bg_rgb: ffi::VTermColor = Default::default();
-        unsafe { ffi::vterm_state_get_default_colors(self.ptr, &mut fg_rgb, &mut bg_rgb) };
+        unsafe { ffi::vterm_state_get_default_colors(self.state_ptr, &mut fg_rgb, &mut bg_rgb) };
 
         (
             ColorRGB { red: fg_rgb.red, green: fg_rgb.green, blue: fg_rgb.blue },
@@ -32,7 +15,7 @@ impl State {
         )
     }
 
-    pub fn set_default_colors(&mut self, default_fg: ColorRGB, default_bg: ColorRGB) {
+    pub fn state_set_default_colors(&mut self, default_fg: ColorRGB, default_bg: ColorRGB) {
         let fg_rgb = ffi::VTermColor {
             red: default_fg.red,
             green: default_fg.green,
@@ -44,12 +27,12 @@ impl State {
             blue: default_bg.blue
         };
 
-        unsafe { ffi::vterm_state_set_default_colors(self.ptr, &fg_rgb, &bg_rgb); };
+        unsafe { ffi::vterm_state_set_default_colors(self.state_ptr, &fg_rgb, &bg_rgb); };
     }
 
-    pub fn get_palette_color(&self, index: u16) -> ColorRGB {
+    pub fn state_get_rgb_color_from_palette(&self, index: u16) -> ColorRGB {
         let mut ffi_color: ffi::VTermColor = Default::default();
-        unsafe { ffi::vterm_state_get_palette_color(self.ptr, index as c_int, &mut ffi_color); }
+        unsafe { ffi::vterm_state_get_palette_color(self.state_ptr, index as c_int, &mut ffi_color); }
         ColorRGB {
             red: ffi_color.red,
             green: ffi_color.green,
@@ -57,8 +40,29 @@ impl State {
         }
     }
 
-    pub fn reset(&mut self, hard: bool) {
-      unsafe { ffi::vterm_state_reset(self.ptr, ::bool_to_int(hard)); }
+    pub fn state_get_palette_color_from_rgb(&self, target: &ColorRGB) -> u16 {
+        for i in 0..256 {
+            let color = self.state_get_rgb_color_from_palette(i);
+            if color.red == target.red && color.green == target.green && color.blue == target.blue {
+                return i as u16
+            }
+        }
+        0
+    }
+
+    /// move this to ffi classes since it deals with the ffi color type
+    pub fn state_get_palette_color_from_c_rgb(&self, target: &ffi::VTermColor) -> u16 {
+        for i in 0..256 {
+            let color = self.state_get_rgb_color_from_palette(i);
+            if color.red == target.red && color.green == target.green && color.blue == target.blue {
+                return i as u16
+            }
+        }
+        0
+    }
+
+    pub fn state_reset(&mut self, hard: bool) {
+      unsafe { ffi::vterm_state_reset(self.state_ptr, ::bool_to_int(hard)); }
     }
 }
 
@@ -66,9 +70,9 @@ mod tests {
     #[test]
     fn state_can_get_and_set_default_colors() {
         let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
-        vterm.state.set_default_colors(::ColorRGB { red: 200, green: 201, blue: 202 },
+        vterm.state_set_default_colors(::ColorRGB { red: 200, green: 201, blue: 202 },
                                        ::ColorRGB { red: 0, green: 1, blue: 2 });
-        let (fg_rgb, bg_rgb) = vterm.state.get_default_colors();
+        let (fg_rgb, bg_rgb) = vterm.state_get_default_colors();
 
         assert_eq!(fg_rgb.red, 200);
         assert_eq!(fg_rgb.green, 201);

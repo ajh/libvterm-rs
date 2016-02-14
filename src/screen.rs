@@ -2,46 +2,6 @@ use libc::{c_int, c_void, size_t, c_char};
 
 use super::*;
 
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct ScreenSize {
-    pub rows: u16,
-    pub cols: u16,
-}
-
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct Pos {
-    /// negative numbers represent scroll buffer positions
-    pub row: i16,
-    pub col: i16,
-}
-
-#[derive(Debug, Default, PartialEq)]
-pub struct Rect {
-    pub start_row: u16,
-    pub end_row: u16,
-    pub start_col: u16,
-    pub end_col: u16,
-}
-
-#[derive(Debug)]
-pub enum ScreenEvent {
-    AltScreen     { is_true: bool },
-    Bell,
-    CursorBlink   { is_true: bool },
-    CursorShape   { value: isize },
-    CursorVisible { is_true: bool },
-    Damage        { rect: Rect },
-    IconName      { text: String},
-    Mouse         { value: isize },
-    MoveCursor    { new: Pos,                  old: Pos,       is_visible: bool },
-    MoveRect      { dest: Rect,                src: Rect },
-    Resize        { rows: u16,               cols: u16 },
-    Reverse       { is_true: bool },
-    SbPopLine     { cells: Vec<ScreenCell> },
-    SbPushLine    { cells: Vec<ScreenCell> },
-    Title         { text: String},
-}
-
 extern "C" fn damage_handler(rect: ffi::VTermRect, vterm: *mut c_void) -> c_int {
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
@@ -167,7 +127,7 @@ extern "C" fn sb_pushline_handler(cols: c_int, cells_ptr: *const ffi::VTermScree
             let mut cells = vec!();
             for i in 0..(cols as isize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1}, &vterm.state));
+                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1}, &vterm));
             }
 
             match tx.send(ScreenEvent::SbPushLine { cells: cells }) {
@@ -186,7 +146,7 @@ extern "C" fn sb_popline_handler(cols: c_int, cells_ptr: *const ffi::VTermScreen
             let mut cells = vec!();
             for i in 0..(cols as isize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1}, &vterm.state));
+                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1}, &vterm));
             }
 
             match tx.send(ScreenEvent::SbPopLine { cells: cells }) {
@@ -209,34 +169,24 @@ pub static SCREEN_CALLBACKS: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbac
     sb_popline:         sb_popline_handler,
 };
 
-pub struct Screen {
-    ptr: *mut ffi::VTermScreen
-}
-
-impl Screen {
-    /// Create a new Screen from a pointer. This pointer will not get free'ed because the vterm
-    /// handles that.
-    pub fn from_ptr(ptr: *mut ffi::VTermScreen) -> Screen {
-        Screen { ptr: ptr }
-    }
-
+impl VTerm {
     /// Reset the screen. I've observed this needs to happen before using or segfaults will occur.
-    pub fn reset(&mut self, is_hard: bool) {
-        unsafe { ffi::vterm_screen_reset(self.ptr, super::bool_to_int(is_hard)) }
+    pub fn screen_reset(&mut self, is_hard: bool) {
+        unsafe { ffi::vterm_screen_reset(self.screen_ptr, super::bool_to_int(is_hard)) }
     }
 
-    /// Return the cell at the given position. Use the method on VTerm please.
-    pub fn get_cell(&self, pos: &Pos, state: &State) -> ScreenCell {
+    /// Return the cell at the given position
+    pub fn screen_get_cell(&self, pos: &Pos) -> ScreenCell {
         let ffi_pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
         let cell_buf = unsafe { ffi::vterm_cell_new() };
-        unsafe { ffi::vterm_screen_get_cell(self.ptr, ffi_pos, cell_buf) };
-        let cell = ScreenCell::from_ptr(cell_buf, pos.clone(), state); // shouldn't this take &cell_buf?
+        unsafe { ffi::vterm_screen_get_cell(self.screen_ptr, ffi_pos, cell_buf) };
+        let cell = ScreenCell::from_ptr(cell_buf, pos.clone(), &self); // shouldn't this take &cell_buf?
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
         cell
     }
 
-    pub fn get_text(&mut self, rect: Rect) -> String {
+    pub fn screen_get_text(&mut self, rect: Rect) -> String {
         let size: usize = ((rect.end_row - rect.start_row + 1) * (rect.end_col - rect.start_col + 1)) as usize;
         let mut text: Vec<c_char> = vec![0x0; size];
         let rect = ffi::VTermRect { start_row: rect.start_row as i32,
@@ -244,18 +194,18 @@ impl Screen {
                                     start_col: rect.start_col as i32,
                                     end_col: rect.end_col as i32 };
         let text_ptr: *mut c_char = (&mut text[0..size]).as_mut_ptr();
-        unsafe { ffi::vterm_screen_get_text(self.ptr, text_ptr, text.len() as size_t, rect); }
+        unsafe { ffi::vterm_screen_get_text(self.screen_ptr, text_ptr, text.len() as size_t, rect); }
 
         let text: Vec<u8> = text.into_iter().map( |c| c as u8 ).collect();
         String::from_utf8_lossy(&text).into_owned()
     }
 
-    pub fn flush_damage(&mut self) {
-        unsafe { ffi::vterm_screen_flush_damage(self.ptr) };
+    pub fn screen_flush_damage(&mut self) {
+        unsafe { ffi::vterm_screen_flush_damage(self.screen_ptr) };
     }
 
-    pub fn set_damage_merge(&mut self, size: ffi::VTermDamageSize) {
-        unsafe { ffi::vterm_screen_set_damage_merge(self.ptr, size) };
+    pub fn screen_set_damage_merge(&mut self, size: ffi::VTermDamageSize) {
+        unsafe { ffi::vterm_screen_set_damage_merge(self.screen_ptr, size) };
     }
 }
 
@@ -263,6 +213,6 @@ mod tests {
     #[test]
     fn screen_can_reset() {
         let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
-        vterm.screen.reset(true);
+        vterm.screen_reset(true);
     }
 }

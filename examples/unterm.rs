@@ -13,17 +13,7 @@ struct Context {
     format: Format,
 }
 
-fn color_to_index(state: &State, target: &ColorRGB) -> isize {
-    for i in 0..256 {
-        let color = state.get_palette_color(i);
-        if color.red == target.red && color.green == target.green && color.blue == target.blue {
-            return i as isize
-        }
-    }
-    -1
-}
-
-fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: &Context) {
+fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: &Context) {
     match context.format {
         Format::Plain => {},
         Format::Sgr => {
@@ -82,40 +72,34 @@ fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
             if prev_cell.fg_rgb.red   != cell.fg_rgb.red   ||
                prev_cell.fg_rgb.green != cell.fg_rgb.green ||
                prev_cell.fg_rgb.blue  != cell.fg_rgb.blue {
-                let index = color_to_index(state, &cell.fg_rgb);
-                if index == -1 {
-                    sgrs.push(39);
-                }
-                else if index < 8 {
-                    sgrs.push(30 + index);
+                let index = vterm.state_get_palette_color_from_rgb(&cell.fg_rgb);
+                if index < 8 {
+                    sgrs.push(30 + index as isize);
                 }
                 else if index < 16 {
-                    sgrs.push(90 + (index - 8));
+                    sgrs.push(90 + (index as isize- 8));
                 }
                 else {
                     sgrs.push(38);
                     sgrs.push(5 | (1<<31));
-                    sgrs.push(index | (1<<31));
+                    sgrs.push(index as isize | (1<<31));
                 }
             }
 
             if prev_cell.bg_rgb.red   != cell.bg_rgb.red   ||
                prev_cell.bg_rgb.green != cell.bg_rgb.green ||
                prev_cell.bg_rgb.blue  != cell.bg_rgb.blue {
-                let index = color_to_index(state, &cell.bg_rgb);
-                if index == -1 {
-                    sgrs.push(49);
-                }
-                else if index < 8 {
-                    sgrs.push(40 + index);
+                let index = vterm.state_get_palette_color_from_rgb(&cell.bg_rgb);
+                if index < 8 {
+                    sgrs.push(40 + index as isize);
                 }
                 else if index < 16 {
-                    sgrs.push(100 + (index - 8));
+                    sgrs.push(100 + (index as isize - 8));
                 }
                 else {
                     sgrs.push(48);
                     sgrs.push(5 | (1<<31));
-                    sgrs.push(index | (1<<31));
+                    sgrs.push(index as isize | (1<<31));
                 }
             }
 
@@ -160,15 +144,15 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
 
 fn dump_row(row: i16, vt: &VTerm, context: &Context) {
     let mut prev_cell: ScreenCell = Default::default();
-    let (fg_rgb, bg_rgb) = vt.state.get_default_colors();
+    let (fg_rgb, bg_rgb) = vt.state_get_default_colors();
     prev_cell.fg_rgb = fg_rgb;
     prev_cell.bg_rgb = bg_rgb;
 
     let mut pos = Pos { row: row, col: 0 };
     while pos.col < context.cols_count as i16 {
-        let cell = vt.get_cell(&pos);
+        let cell = vt.screen_get_cell(&pos);
 
-        dump_cell(&vt.state, &cell, &prev_cell, context);
+        dump_cell(&vt, &cell, &prev_cell, context);
 
         pos.col += cell.width as i16;
         prev_cell = cell;
@@ -218,7 +202,7 @@ fn main() {
 
     let rx = vt.receive_screen_events();
 
-    vt.screen.reset(true);
+    vt.screen_reset(true);
 
     let mut file = std::fs::File::open(args.arg_file).unwrap();
     let mut read_buf = [0 as u8; 1024];
@@ -237,13 +221,13 @@ fn main() {
                 context.cols_count = cols;
             },
             ScreenEvent::SbPushLine{cells} => {
-                let (fg_rgb, bg_rgb) = vt.state.get_default_colors();
+                let (fg_rgb, bg_rgb) = vt.state_get_default_colors();
                 let mut prev_cell: ScreenCell = Default::default();
                 prev_cell.fg_rgb = fg_rgb;
                 prev_cell.bg_rgb = bg_rgb;
 
                 for cell in cells {
-                    dump_cell(&vt.state, &cell, &prev_cell, &context);
+                    dump_cell(&vt, &cell, &prev_cell, &context);
                     prev_cell = cell
                 }
 
