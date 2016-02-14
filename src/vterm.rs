@@ -7,7 +7,7 @@ pub struct VTerm {
     pub screen: Screen,
     pub state: State,
     ptr: *mut ffi::VTerm,
-    screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
+    pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
 }
 
 impl VTerm {
@@ -61,11 +61,16 @@ impl VTerm {
 
         unsafe {
             let screen_ptr = ffi::vterm_obtain_screen(self.ptr);
-            let tx_ptr: *mut c_void = &mut self.screen_event_tx as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(screen_ptr, &SCREEN_CALLBACKS, tx_ptr);
+            let ptr: *mut c_void = self as *mut _ as *mut c_void;
+            ffi::vterm_screen_set_callbacks(screen_ptr, &SCREEN_CALLBACKS, ptr);
         }
 
         rx
+    }
+
+    /// Return the cell at the given position
+    pub fn get_cell(&self, pos: &Pos) -> ScreenCell {
+        self.screen.get_cell(pos, &self.state)
     }
 }
 

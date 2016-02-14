@@ -166,7 +166,7 @@ fn dump_row(row: i16, vt: &VTerm, context: &Context) {
 
     let mut pos = Pos { row: row, col: 0 };
     while pos.col < context.cols_count as i16 {
-        let cell = vt.screen.get_cell(&pos);
+        let cell = vt.get_cell(&pos);
 
         dump_cell(&vt.state, &cell, &prev_cell, context);
 

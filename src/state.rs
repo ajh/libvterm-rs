@@ -11,7 +11,7 @@ impl State {
         State { ptr: ptr }
     }
 
-    fn color_to_index(&self, target: &ffi::VTermColor) -> u16 {
+    pub fn color_to_index(&self, target: &ffi::VTermColor) -> u16 {
         for i in 0..256 {
             let color = self.get_palette_color(i);
             if color.red == target.red && color.green == target.green && color.blue == target.blue {
