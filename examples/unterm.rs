@@ -13,7 +13,7 @@ struct Context {
     format: Format,
 }
 
-fn color_to_index(state: &State, target: &Color) -> isize {
+fn color_to_index(state: &State, target: &ColorRGB) -> isize {
     for i in 0..256 {
         let color = state.get_palette_color(i);
         if color.red == target.red && color.green == target.green && color.blue == target.blue {
@@ -79,10 +79,10 @@ fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
                 sgrs.push(10);
             }
 
-            if prev_cell.fg.red   != cell.fg.red   ||
-               prev_cell.fg.green != cell.fg.green ||
-               prev_cell.fg.blue  != cell.fg.blue {
-                let index = color_to_index(state, &cell.fg);
+            if prev_cell.fg_rgb.red   != cell.fg_rgb.red   ||
+               prev_cell.fg_rgb.green != cell.fg_rgb.green ||
+               prev_cell.fg_rgb.blue  != cell.fg_rgb.blue {
+                let index = color_to_index(state, &cell.fg_rgb);
                 if index == -1 {
                     sgrs.push(39);
                 }
@@ -99,10 +99,10 @@ fn dump_cell(state: &State, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
                 }
             }
 
-            if prev_cell.bg.red   != cell.bg.red   ||
-               prev_cell.bg.green != cell.bg.green ||
-               prev_cell.bg.blue  != cell.bg.blue {
-                let index = color_to_index(state, &cell.bg);
+            if prev_cell.bg_rgb.red   != cell.bg_rgb.red   ||
+               prev_cell.bg_rgb.green != cell.bg_rgb.green ||
+               prev_cell.bg_rgb.blue  != cell.bg_rgb.blue {
+                let index = color_to_index(state, &cell.bg_rgb);
                 if index == -1 {
                     sgrs.push(49);
                 }
@@ -160,9 +160,9 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
 
 fn dump_row(row: i16, vt: &VTerm, context: &Context) {
     let mut prev_cell: ScreenCell = Default::default();
-    let (fg, bg) = vt.state.get_default_colors();
-    prev_cell.fg = fg;
-    prev_cell.bg = bg;
+    let (fg_rgb, bg_rgb) = vt.state.get_default_colors();
+    prev_cell.fg_rgb = fg_rgb;
+    prev_cell.bg_rgb = bg_rgb;
 
     let mut pos = Pos { row: row, col: 0 };
     while pos.col < context.cols_count as i16 {
@@ -237,10 +237,10 @@ fn main() {
                 context.cols_count = cols;
             },
             ScreenEvent::SbPushLine{cells} => {
-                let (fg, bg) = vt.state.get_default_colors();
+                let (fg_rgb, bg_rgb) = vt.state.get_default_colors();
                 let mut prev_cell: ScreenCell = Default::default();
-                prev_cell.fg = fg;
-                prev_cell.bg = bg;
+                prev_cell.fg_rgb = fg_rgb;
+                prev_cell.bg_rgb = bg_rgb;
 
                 for cell in cells {
                     dump_cell(&vt.state, &cell, &prev_cell, &context);

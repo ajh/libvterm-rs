@@ -5,11 +5,13 @@ use libc::{uint32_t, size_t};
 use super::*;
 
 #[derive(Debug, Default, PartialEq, Clone)]
-pub struct Color {
+pub struct ColorRGB {
     pub red: u8,
     pub green: u8,
     pub blue: u8,
 }
+
+pub type ColorPalette = u16;
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ScreenCellAttr {
@@ -34,16 +36,19 @@ pub struct ScreenCell {
     pub width: u8,
     pub attrs: ScreenCellAttr,
     /// foreground color
-    pub fg: Color,
+    pub fg_rgb: ColorRGB,
     /// background color
-    pub bg: Color,
+    pub bg_rgb: ColorRGB,
+
+    pub fg_palette: ColorPalette,
+    pub bg_palette: ColorPalette,
 }
 
 impl ScreenCell {
     // Copies data from the given pointer. Doesn't free the pointer or anything.
     pub fn from_ptr(ptr: *const ffi::VTermScreenCell, pos: Pos) -> ScreenCell {
-        let fg = unsafe { ffi::vterm_cell_get_fg(ptr) };
-        let bg = unsafe { ffi::vterm_cell_get_bg(ptr) };
+        let fg_rgb = unsafe { ffi::vterm_cell_get_fg(ptr) };
+        let bg_rgb = unsafe { ffi::vterm_cell_get_bg(ptr) };
 
         let mut buf = [0 as uint32_t; ffi::VTERM_MAX_CHARS_PER_CELL];
         let chars_count = unsafe { ffi::vterm_cell_get_chars(ptr, buf.as_mut_ptr(), ffi::VTERM_MAX_CHARS_PER_CELL as size_t) };
@@ -75,16 +80,18 @@ impl ScreenCell {
                     dwl:        int_to_bool(ffi::vterm_cell_get_dwl(ptr) as i32),
                     dhl:        ffi::vterm_cell_get_dhl(ptr) as u8,
                 },
-                fg: Color {
-                    red:    fg.red,
-                    green:  fg.green,
-                    blue:   fg.blue,
+                fg_rgb: ColorRGB {
+                    red:    fg_rgb.red,
+                    green:  fg_rgb.green,
+                    blue:   fg_rgb.blue,
                 },
-                bg: Color {
-                    red:    bg.red,
-                    green:  bg.green,
-                    blue:   bg.blue,
-                }
+                bg_rgb: ColorRGB {
+                    red:    bg_rgb.red,
+                    green:  bg_rgb.green,
+                    blue:   bg_rgb.blue,
+                },
+                fg_palette: 0,
+                bg_palette: 0,
             }
         }
     }
@@ -103,8 +110,10 @@ impl Default for ScreenCell {
             chars: vec!(),
             width: 1,
             attrs: Default::default(),
-            fg: Color { red: 230, green: 230, blue: 230 },
-            bg: Color { red: 5, green: 5, blue: 5 },
+            fg_rgb:  ColorRGB { red: 230, green: 230, blue: 230 },
+            bg_rgb:  ColorRGB { red: 5,   green: 5,   blue: 5   },
+            fg_palette: 7,
+            bg_palette: 0,
         }
     }
 }
