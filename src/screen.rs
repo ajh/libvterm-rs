@@ -70,30 +70,32 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
 }
 
 extern "C" fn set_term_prop_handler(prop: ffi::VTermProp, _: ffi::VTermValue, vterm: *mut c_void) -> c_int {
-    let event: ScreenEvent = match prop {
-        ffi::VTermProp::VTermPropAltscreen     => ScreenEvent::AltScreen     { is_true: true },
-        ffi::VTermProp::VTermPropCursorblink   => ScreenEvent::CursorBlink   { is_true: true },
-        ffi::VTermProp::VTermPropCursorshape   => ScreenEvent::CursorShape   { value: -1 },
-        ffi::VTermProp::VTermPropCursorvisible => ScreenEvent::CursorVisible { is_true: true },
-        ffi::VTermProp::VTermPropIconname      => ScreenEvent::IconName      { text: "fake icon name".to_string() },
-        ffi::VTermProp::VTermPropMouse         => ScreenEvent::Mouse         { value: -1 },
-        ffi::VTermProp::VTermPropReverse       => ScreenEvent::Reverse       { is_true: true },
-        ffi::VTermProp::VTermPropTitle         => ScreenEvent::Title         { text: "fake title".to_string() },
-    };
-
-    info!("prop event {:?}", event);
+    return 0
 
     // This crashes inside the channel somewhere. Don't know why.
-    let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
-    match vterm.screen_event_tx.as_ref() {
-        Some(tx) => {
-            match tx.send(event) {
-                Ok(_) => 1,
-                Err(_) => 0,
-            }
-        },
-        None => 0
-    }
+    //let event: ScreenEvent = match prop {
+        //ffi::VTermProp::VTermPropAltscreen     => ScreenEvent::AltScreen     { is_true: true },
+        //ffi::VTermProp::VTermPropCursorblink   => ScreenEvent::CursorBlink   { is_true: true },
+        //ffi::VTermProp::VTermPropCursorshape   => ScreenEvent::CursorShape   { value: 0 },
+        //ffi::VTermProp::VTermPropCursorvisible => ScreenEvent::CursorVisible { is_true: true },
+        //ffi::VTermProp::VTermPropIconname      => ScreenEvent::IconName      { text: "fake icon name".to_string() },
+        //ffi::VTermProp::VTermPropMouse         => ScreenEvent::Mouse         { value: 0 },
+        //ffi::VTermProp::VTermPropReverse       => ScreenEvent::Reverse       { is_true: true },
+        //ffi::VTermProp::VTermPropTitle         => ScreenEvent::Title         { text: "fake title".to_string() },
+    //};
+
+    //info!("prop event {:?}", event);
+
+    //let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
+    //match vterm.screen_event_tx.as_ref() {
+        //Some(tx) => {
+            //match tx.send(event) {
+                //Ok(_) => 1,
+                //Err(_) => 0,
+            //}
+        //},
+        //None => 0
+    //}
 }
 
 extern "C" fn bell_handler(vterm: *mut c_void) -> c_int {
@@ -206,6 +208,21 @@ impl VTerm {
 
     pub fn screen_set_damage_merge(&mut self, size: ffi::VTermDamageSize) {
         unsafe { ffi::vterm_screen_set_damage_merge(self.screen_ptr, size) };
+    }
+
+    pub fn screen_get_cells_in_rect(&self, rect: &Rect) -> Vec<ScreenCell> {
+        let mut pos: Pos = Default::default();
+        let mut cells: Vec<ScreenCell> = Vec::new(); // capacity is known here FYI
+
+        for row in rect.start_row..rect.end_row {
+            pos.row = row as i16;
+            for col in rect.start_col..rect.end_col {
+                pos.col = col as i16;
+                cells.push(self.screen_get_cell(&pos));
+            }
+        }
+
+        cells
     }
 }
 

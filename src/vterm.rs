@@ -60,9 +60,8 @@ impl VTerm {
         self.screen_event_tx = Some(tx);
 
         unsafe {
-            let screen_ptr = ffi::vterm_obtain_screen(self.ptr);
             let ptr: *mut c_void = self as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(screen_ptr, &::screen::SCREEN_CALLBACKS, ptr);
+            ffi::vterm_screen_set_callbacks(self.screen_ptr, &::screen::SCREEN_CALLBACKS, ptr);
         }
 
         rx
