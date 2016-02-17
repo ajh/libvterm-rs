@@ -69,7 +69,7 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos, old: ffi::VTermPos, is_vis
     }
 }
 
-extern "C" fn set_term_prop_handler(prop: ffi::VTermProp, _: ffi::VTermValue, vterm: *mut c_void) -> c_int {
+extern "C" fn set_term_prop_handler(_: ffi::VTermProp, _: ffi::VTermValue, _: *mut c_void) -> c_int {
     return 0
 
     // This crashes inside the channel somewhere. Don't know why.
@@ -174,14 +174,14 @@ pub static SCREEN_CALLBACKS: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbac
 impl VTerm {
     /// Reset the screen. I've observed this needs to happen before using or segfaults will occur.
     pub fn screen_reset(&mut self, is_hard: bool) {
-        unsafe { ffi::vterm_screen_reset(self.screen_ptr, super::bool_to_int(is_hard)) }
+        unsafe { ffi::vterm_screen_reset(self.screen_ptr.get_mut(), super::bool_to_int(is_hard)) }
     }
 
     /// Return the cell at the given position
     pub fn screen_get_cell(&self, pos: &Pos) -> ScreenCell {
         let ffi_pos = ffi::VTermPos { row: pos.row as c_int, col: pos.col as c_int };
         let cell_buf = unsafe { ffi::vterm_cell_new() };
-        unsafe { ffi::vterm_screen_get_cell(self.screen_ptr, ffi_pos, cell_buf) };
+        unsafe { ffi::vterm_screen_get_cell(self.screen_ptr.get(), ffi_pos, cell_buf) };
         let cell = ScreenCell::from_ptr(cell_buf, pos.clone(), &self); // shouldn't this take &cell_buf?
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
@@ -196,18 +196,18 @@ impl VTerm {
                                     start_col: rect.start_col as i32,
                                     end_col: rect.end_col as i32 };
         let text_ptr: *mut c_char = (&mut text[0..size]).as_mut_ptr();
-        unsafe { ffi::vterm_screen_get_text(self.screen_ptr, text_ptr, text.len() as size_t, rect); }
+        unsafe { ffi::vterm_screen_get_text(self.screen_ptr.get(), text_ptr, text.len() as size_t, rect); }
 
         let text: Vec<u8> = text.into_iter().map( |c| c as u8 ).collect();
         String::from_utf8_lossy(&text).into_owned()
     }
 
     pub fn screen_flush_damage(&mut self) {
-        unsafe { ffi::vterm_screen_flush_damage(self.screen_ptr) };
+        unsafe { ffi::vterm_screen_flush_damage(self.screen_ptr.get_mut()) };
     }
 
     pub fn screen_set_damage_merge(&mut self, size: ffi::VTermDamageSize) {
-        unsafe { ffi::vterm_screen_set_damage_merge(self.screen_ptr, size) };
+        unsafe { ffi::vterm_screen_set_damage_merge(self.screen_ptr.get_mut(), size) };
     }
 
     pub fn screen_get_cells_in_rect(&self, rect: &Rect) -> Vec<ScreenCell> {

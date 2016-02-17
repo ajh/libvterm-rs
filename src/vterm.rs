@@ -1,21 +1,22 @@
 use libc::{c_int, c_void, size_t};
 use std::sync::mpsc;
+use std::ptr::Unique;
 
 use super::*;
 
 pub struct VTerm {
-    pub ptr: *mut ffi::VTerm,
-    pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
-    pub screen_ptr: *mut ffi::VTermScreen,
-    pub state_ptr: *mut ffi::VTermState,
+    pub ptr:              Unique<ffi::VTerm>,
+    pub screen_event_tx:  Option<mpsc::Sender<ScreenEvent>>,
+    pub screen_ptr:       Unique<ffi::VTermScreen>,
+    pub state_ptr:        Unique<ffi::VTermState>,
 }
 
 impl VTerm {
     pub fn new(size: ScreenSize) -> VTerm {
         // TODO how to detect error?
-        let vterm_ptr = unsafe { ffi::vterm_new(size.rows as c_int, size.cols as c_int) };
-        let screen_ptr = unsafe { ffi::vterm_obtain_screen(vterm_ptr) };
-        let state_ptr = unsafe { ffi::vterm_obtain_state(vterm_ptr) };
+        let mut vterm_ptr = unsafe { Unique::new(ffi::vterm_new(size.rows as c_int, size.cols as c_int)) };
+        let screen_ptr = unsafe { Unique::new(ffi::vterm_obtain_screen(vterm_ptr.get_mut())) };
+        let state_ptr = unsafe { Unique::new(ffi::vterm_obtain_state(vterm_ptr.get_mut())) };
 
         let mut vterm = VTerm {
             ptr: vterm_ptr,
@@ -32,25 +33,25 @@ impl VTerm {
     pub fn get_size(&self) -> ScreenSize {
         let mut cols: c_int = 0;
         let mut rows: c_int = 0;
-        unsafe { ffi::vterm_get_size(self.ptr, &mut cols, &mut rows); }
+        unsafe { ffi::vterm_get_size(self.ptr.get(), &mut cols, &mut rows); }
         ScreenSize { rows: rows as u16, cols: cols as u16 }
     }
 
     pub fn set_size(&mut self, size: ScreenSize) {
-        unsafe { ffi::vterm_set_size(self.ptr, size.cols as c_int, size.rows as c_int); }
+        unsafe { ffi::vterm_set_size(self.ptr.get_mut(), size.cols as c_int, size.rows as c_int); }
     }
 
     pub fn get_utf8(&self) -> bool {
-        unsafe { super::int_to_bool(ffi::vterm_get_utf8(self.ptr)) }
+        unsafe { super::int_to_bool(ffi::vterm_get_utf8(self.ptr.get())) }
     }
 
     pub fn set_utf8(&mut self, is_utf8: bool) {
-        unsafe { ffi::vterm_set_utf8(self.ptr, super::bool_to_int(is_utf8)) }
+        unsafe { ffi::vterm_set_utf8(self.ptr.get_mut(), super::bool_to_int(is_utf8)) }
     }
 
     pub fn write(&mut self, input: &[u8]) -> u32 {
         unsafe {
-            ffi::vterm_input_write(self.ptr, input.as_ptr(), input.len() as size_t) as u32
+            ffi::vterm_input_write(self.ptr.get_mut(), input.as_ptr(), input.len() as size_t) as u32
         }
     }
 
@@ -61,7 +62,7 @@ impl VTerm {
 
         unsafe {
             let ptr: *mut c_void = self as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(self.screen_ptr, &::screen::SCREEN_CALLBACKS, ptr);
+            ffi::vterm_screen_set_callbacks(self.screen_ptr.get_mut(), &::screen::SCREEN_CALLBACKS, ptr);
         }
 
         rx
@@ -70,7 +71,7 @@ impl VTerm {
 
 impl Drop for VTerm {
     fn drop(&mut self) {
-        unsafe { ffi::vterm_free(self.ptr) }
+        unsafe { ffi::vterm_free(self.ptr.get_mut()) }
     }
 }
 

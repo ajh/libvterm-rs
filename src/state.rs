@@ -7,7 +7,7 @@ impl VTerm {
     pub fn state_get_default_colors(&self) -> (ColorRGB, ColorRGB) {
         let mut fg_rgb: ffi::VTermColor = Default::default();
         let mut bg_rgb: ffi::VTermColor = Default::default();
-        unsafe { ffi::vterm_state_get_default_colors(self.state_ptr, &mut fg_rgb, &mut bg_rgb) };
+        unsafe { ffi::vterm_state_get_default_colors(self.state_ptr.get(), &mut fg_rgb, &mut bg_rgb) };
 
         (
             ColorRGB { red: fg_rgb.red, green: fg_rgb.green, blue: fg_rgb.blue },
@@ -27,12 +27,12 @@ impl VTerm {
             blue: default_bg.blue
         };
 
-        unsafe { ffi::vterm_state_set_default_colors(self.state_ptr, &fg_rgb, &bg_rgb); };
+        unsafe { ffi::vterm_state_set_default_colors(self.state_ptr.get_mut(), &fg_rgb, &bg_rgb); };
     }
 
     pub fn state_get_rgb_color_from_palette(&self, index: u16) -> ColorRGB {
         let mut ffi_color: ffi::VTermColor = Default::default();
-        unsafe { ffi::vterm_state_get_palette_color(self.state_ptr, index as c_int, &mut ffi_color); }
+        unsafe { ffi::vterm_state_get_palette_color(self.state_ptr.get(), index as c_int, &mut ffi_color); }
         ColorRGB {
             red: ffi_color.red,
             green: ffi_color.green,
@@ -62,7 +62,7 @@ impl VTerm {
     }
 
     pub fn state_reset(&mut self, hard: bool) {
-      unsafe { ffi::vterm_state_reset(self.state_ptr, ::bool_to_int(hard)); }
+      unsafe { ffi::vterm_state_reset(self.state_ptr.get_mut(), ::bool_to_int(hard)); }
     }
 }
 
