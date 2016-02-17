@@ -200,7 +200,8 @@ fn main() {
 
     vt.set_utf8(true);
 
-    let rx = vt.receive_screen_events();
+    vt.generate_screen_events().unwrap();
+    let rx = vt.screen_event_rx.take().unwrap();
 
     vt.screen_reset(true);
 

@@ -188,6 +188,8 @@ impl VTerm {
         cell
     }
 
+    // It seems wrong to be converting the u8's to rust chars here since its lossy. Better to leave
+    // that decision to the caller.
     pub fn screen_get_text(&mut self, rect: Rect) -> String {
         let size: usize = ((rect.end_row - rect.start_row + 1) * (rect.end_col - rect.start_col + 1)) as usize;
         let mut text: Vec<c_char> = vec![0x0; size];

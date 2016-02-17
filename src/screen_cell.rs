@@ -30,7 +30,8 @@ pub struct ScreenCellAttr {
 pub struct ScreenCell {
     /// Where the cell is located
     pub pos: Pos,
-    /// The characters in the cell. I believe there are more than one to support overstrike.
+    /// The characters in the cell. I believe there are more than one to support overstrike. This
+    /// is also madness to represent these as chars. They should be u8s.
     pub chars: Vec<char>,
     /// I think this is How wide the cell is in columns.
     pub width: u8,

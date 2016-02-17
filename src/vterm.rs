@@ -5,10 +5,12 @@ use std::ptr::Unique;
 use super::*;
 
 pub struct VTerm {
-    pub ptr:              Unique<ffi::VTerm>,
-    pub screen_event_tx:  Option<mpsc::Sender<ScreenEvent>>,
-    pub screen_ptr:       Unique<ffi::VTermScreen>,
-    pub state_ptr:        Unique<ffi::VTermState>,
+    pub ptr:                     Unique<ffi::VTerm>,
+    pub screen_event_tx:         Option<mpsc::Sender<ScreenEvent>>,
+    pub screen_event_rx:         Option<mpsc::Receiver<ScreenEvent>>,
+    pub screen_ptr:              Unique<ffi::VTermScreen>,
+    pub state_ptr:               Unique<ffi::VTermState>,
+    screen_callbacks_installed:  bool,
 }
 
 impl VTerm {
@@ -19,10 +21,12 @@ impl VTerm {
         let state_ptr = unsafe { Unique::new(ffi::vterm_obtain_state(vterm_ptr.get_mut())) };
 
         let mut vterm = VTerm {
-            ptr: vterm_ptr,
-            screen_event_tx: None,
-            screen_ptr: screen_ptr,
-            state_ptr: state_ptr,
+            ptr:                         vterm_ptr,
+            screen_event_tx:             None,
+            screen_event_rx:             None,
+            screen_ptr:                  screen_ptr,
+            state_ptr:                   state_ptr,
+            screen_callbacks_installed:  false
         };
 
         vterm.screen_reset(true);
@@ -33,12 +37,12 @@ impl VTerm {
     pub fn get_size(&self) -> ScreenSize {
         let mut cols: c_int = 0;
         let mut rows: c_int = 0;
-        unsafe { ffi::vterm_get_size(self.ptr.get(), &mut cols, &mut rows); }
+        unsafe { ffi::vterm_get_size(self.ptr.get(), &mut rows, &mut cols); }
         ScreenSize { rows: rows as u16, cols: cols as u16 }
     }
 
     pub fn set_size(&mut self, size: ScreenSize) {
-        unsafe { ffi::vterm_set_size(self.ptr.get_mut(), size.cols as c_int, size.rows as c_int); }
+        unsafe { ffi::vterm_set_size(self.ptr.get_mut(), size.rows as c_int, size.cols as c_int); }
     }
 
     pub fn get_utf8(&self) -> bool {
@@ -55,17 +59,24 @@ impl VTerm {
         }
     }
 
-    /// Return a channel Receiver that will be sent ScreenEvents.
-    pub fn receive_screen_events(&mut self) -> mpsc::Receiver<ScreenEvent> {
-        let (tx, rx) = mpsc::channel();
-        self.screen_event_tx = Some(tx);
-
-        unsafe {
-            let ptr: *mut c_void = self as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(self.screen_ptr.get_mut(), &::screen::SCREEN_CALLBACKS, ptr);
+    /// calling this method will setup the vterm to generate ScreenEvent messages to a channel. The
+    /// returned result indicates whether the channel was already created. The receiver end of the
+    /// channel can be had by accessing the screen_events_rx field.
+    pub fn generate_screen_events(&mut self) -> Result<(), ()> {
+        if self.screen_callbacks_installed {
+            return Err(());
         }
 
-        rx
+        let (tx, rx) = mpsc::channel();
+        self.screen_event_tx = Some(tx);
+        self.screen_event_rx = Some(rx);
+
+        unsafe {
+            let self_ptr: *mut c_void = self as *mut _ as *mut c_void;
+            ffi::vterm_screen_set_callbacks(self.screen_ptr.get_mut(), &::screen::SCREEN_CALLBACKS, self_ptr);
+        }
+
+        Ok(())
     }
 }
 
@@ -84,17 +95,17 @@ mod tests {
 
     #[test]
     fn vterm_can_get_size() {
-        let vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
+        let vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 3 });
         let size = vterm.get_size();
-        assert_eq!((2, 2), (size.rows, size.cols));
+        assert_eq!((2, 3), (size.rows, size.cols));
     }
 
     #[test]
     fn vterm_can_set_size() {
-        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
-        vterm.set_size(::ScreenSize { cols: 1, rows: 1 });
+        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 3 });
+        vterm.set_size(::ScreenSize { rows: 1, cols: 2});
         let size = vterm.get_size();
-        assert_eq!((1, 1), (size.rows, size.cols));
+        assert_eq!((1, 2), (size.rows, size.cols));
     }
 
     #[test]
