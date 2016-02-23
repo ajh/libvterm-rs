@@ -89,7 +89,6 @@ pub enum ScreenEvent {
     },
 }
 
-
 pub fn int_to_bool(val: c_int) -> bool {
     match val {
         0 => false,
@@ -97,7 +96,7 @@ pub fn int_to_bool(val: c_int) -> bool {
     }
 }
 
-fn bool_to_int(flag: bool) -> c_int {
+pub fn bool_to_int(flag: bool) -> c_int {
     match flag {
         true => -1,
         false => 0,

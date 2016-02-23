@@ -6,10 +6,10 @@ use vterm_sys::*;
 
 #[test]
 fn screen_can_get_text() {
-    let mut vterm: VTerm = VTerm::new(ScreenSize { rows: 2, cols: 2 });
+    let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
     vterm.write(b"hi");
 
-    let text = vterm.screen_get_text(Rect {
+    let text = vterm.screen_get_text(&Rect {
         start_row: 0,
         end_row: 2,
         start_col: 0,

@@ -22,7 +22,7 @@ impl VTerm {
         })
     }
 
-    pub fn state_set_default_colors(&mut self, default_fg: ColorRGB, default_bg: ColorRGB) {
+    pub fn state_set_default_colors(&mut self, default_fg: &ColorRGB, default_bg: &ColorRGB) {
         let fg_rgb = ffi::VTermColor {
             red: default_fg.red,
             green: default_fg.green,
@@ -84,15 +84,18 @@ impl VTerm {
 }
 
 mod tests {
+    #![allow(unused_imports)]
+    use super::super::*;
+
     #[test]
     fn state_can_get_and_set_default_colors() {
-        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
-        vterm.state_set_default_colors(::ColorRGB {
+        let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
+        vterm.state_set_default_colors(&ColorRGB {
                                            red: 200,
                                            green: 201,
                                            blue: 202,
                                        },
-                                       ::ColorRGB {
+                                       &ColorRGB {
                                            red: 0,
                                            green: 1,
                                            blue: 2,

@@ -221,7 +221,7 @@ impl VTerm {
 
     // It seems wrong to be converting the u8's to rust chars here since its lossy. Better to leave
     // that decision to the caller.
-    pub fn screen_get_text(&mut self, rect: Rect) -> String {
+    pub fn screen_get_text(&mut self, rect: &Rect) -> String {
         let size: usize = ((rect.end_row - rect.start_row + 1) *
                            (rect.end_col - rect.start_col + 1)) as usize;
         let mut text: Vec<c_char> = vec![0x0; size];
@@ -244,6 +244,7 @@ impl VTerm {
         unsafe { ffi::vterm_screen_flush_damage(self.screen_ptr.get_mut()) };
     }
 
+    // TODO: there should be a rust VTermDamageSize type for consistency
     pub fn screen_set_damage_merge(&mut self, size: ffi::VTermDamageSize) {
         unsafe { ffi::vterm_screen_set_damage_merge(self.screen_ptr.get_mut(), size) };
     }
@@ -265,9 +266,12 @@ impl VTerm {
 }
 
 mod tests {
+    #![allow(unused_imports)]
+    use super::super::*;
+
     #[test]
     fn screen_can_reset() {
-        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
+        let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
         vterm.screen_reset(true);
     }
 }

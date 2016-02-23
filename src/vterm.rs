@@ -14,7 +14,7 @@ pub struct VTerm {
 }
 
 impl VTerm {
-    pub fn new(size: ScreenSize) -> VTerm {
+    pub fn new(size: &ScreenSize) -> VTerm {
         // TODO how to detect error?
         let mut vterm_ptr = unsafe {
             Unique::new(ffi::vterm_new(size.rows as c_int, size.cols as c_int))
@@ -48,7 +48,7 @@ impl VTerm {
         }
     }
 
-    pub fn set_size(&mut self, size: ScreenSize) {
+    pub fn set_size(&mut self, size: &ScreenSize) {
         unsafe {
             ffi::vterm_set_size(self.ptr.get_mut(), size.rows as c_int, size.cols as c_int);
         }
@@ -98,30 +98,33 @@ impl Drop for VTerm {
 }
 
 mod tests {
+    #![allow(unused_imports)]
+    use super::super::*;
+
     #[test]
     fn vterm_can_create_and_destroy() {
-        let vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
+        let vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
         drop(vterm);
     }
 
     #[test]
     fn vterm_can_get_size() {
-        let vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 3 });
+        let vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 3 });
         let size = vterm.get_size();
         assert_eq!((2, 3), (size.rows, size.cols));
     }
 
     #[test]
     fn vterm_can_set_size() {
-        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 3 });
-        vterm.set_size(::ScreenSize { rows: 1, cols: 2 });
+        let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 3 });
+        vterm.set_size(&ScreenSize { rows: 1, cols: 2 });
         let size = vterm.get_size();
         assert_eq!((1, 2), (size.rows, size.cols));
     }
 
     #[test]
     fn vterm_can_get_and_set_utf8() {
-        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
+        let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
         vterm.set_utf8(true);
         assert_eq!(true, vterm.get_utf8());
 
@@ -131,7 +134,7 @@ mod tests {
 
     #[test]
     fn vterm_can_write() {
-        let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 2 });
+        let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
         let input: &[u8] = "abcd".as_bytes();
         assert_eq!(4, vterm.write(input));
     }

@@ -211,7 +211,7 @@ fn main() {
         },
     };
 
-    let mut vt = VTerm::new(ScreenSize {
+    let mut vt = VTerm::new(&ScreenSize {
         rows: context.rows_count,
         cols: context.cols_count,
     });
