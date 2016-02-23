@@ -4,7 +4,7 @@
 extern crate log;
 extern crate libc;
 
-use libc::{c_int};
+use libc::c_int;
 
 pub mod ffi;
 
@@ -40,21 +40,53 @@ pub struct Rect {
 
 #[derive(Debug)]
 pub enum ScreenEvent {
-    AltScreen     { is_true: bool },
+    AltScreen {
+        is_true: bool,
+    },
     Bell,
-    CursorBlink   { is_true: bool },
-    CursorShape   { value: isize },
-    CursorVisible { is_true: bool },
-    Damage        { rect: Rect },
-    IconName      { text: String},
-    Mouse         { value: isize },
-    MoveCursor    { new: Pos,                  old: Pos,       is_visible: bool },
-    MoveRect      { dest: Rect,                src: Rect },
-    Resize        { rows: u16,               cols: u16 },
-    Reverse       { is_true: bool },
-    SbPopLine     { cells: Vec<ScreenCell> },
-    SbPushLine    { cells: Vec<ScreenCell> },
-    Title         { text: String},
+    CursorBlink {
+        is_true: bool,
+    },
+    CursorShape {
+        value: isize,
+    },
+    CursorVisible {
+        is_true: bool,
+    },
+    Damage {
+        rect: Rect,
+    },
+    IconName {
+        text: String,
+    },
+    Mouse {
+        value: isize,
+    },
+    MoveCursor {
+        new: Pos,
+        old: Pos,
+        is_visible: bool,
+    },
+    MoveRect {
+        dest: Rect,
+        src: Rect,
+    },
+    Resize {
+        rows: u16,
+        cols: u16,
+    },
+    Reverse {
+        is_true: bool,
+    },
+    SbPopLine {
+        cells: Vec<ScreenCell>,
+    },
+    SbPushLine {
+        cells: Vec<ScreenCell>,
+    },
+    Title {
+        text: String,
+    },
 }
 
 

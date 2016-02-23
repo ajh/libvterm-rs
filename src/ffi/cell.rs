@@ -7,16 +7,19 @@ pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
 #[repr(C)]
 #[derive(PartialEq, Debug, Clone, Default)]
 pub struct VTermColor {
-    pub red:   uint8_t,
+    pub red: uint8_t,
     pub green: uint8_t,
-    pub blue:  uint8_t,
+    pub blue: uint8_t,
 }
 
-extern {
+extern "C" {
     // These are my rust ffi bitfield workarounds
     pub fn vterm_cell_new() -> *mut VTermScreenCell;
     pub fn vterm_cell_free(cell: *mut VTermScreenCell);
-    pub fn vterm_cell_get_chars(cell: *const VTermScreenCell, chars: *mut uint32_t, len: size_t) -> c_int;
+    pub fn vterm_cell_get_chars(cell: *const VTermScreenCell,
+                                chars: *mut uint32_t,
+                                len: size_t)
+                                -> c_int;
     pub fn vterm_cell_set_chars(cell: *mut VTermScreenCell, chars: *const uint32_t, len: size_t);
     pub fn vterm_cell_get_width(cell: *const VTermScreenCell) -> c_char;
     pub fn vterm_cell_set_width(cell: *mut VTermScreenCell, width: c_char);
@@ -42,7 +45,9 @@ extern {
     pub fn vterm_cell_set_fg(cell: *mut VTermScreenCell, color: VTermColor);
     pub fn vterm_cell_get_bg(cell: *const VTermScreenCell) -> VTermColor;
     pub fn vterm_cell_set_bg(cell: *mut VTermScreenCell, color: VTermColor);
-    pub fn vterm_cell_pointer_arithmetic(cell: *const VTermScreenCell, amount: c_int) -> *const VTermScreenCell;
+    pub fn vterm_cell_pointer_arithmetic(cell: *const VTermScreenCell,
+                                         amount: c_int)
+                                         -> *const VTermScreenCell;
 }
 
 mod tests {
@@ -274,10 +279,18 @@ mod tests {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
-            let color = VTermColor { red: 0, green: 255, blue: 0 };
+            let color = VTermColor {
+                red: 0,
+                green: 255,
+                blue: 0,
+            };
             vterm_cell_set_fg(cell_ptr, color.clone());
             assert_eq!(color, vterm_cell_get_fg(cell_ptr));
-            let color = VTermColor { red: 255, green: 255, blue: 0 };
+            let color = VTermColor {
+                red: 255,
+                green: 255,
+                blue: 0,
+            };
             vterm_cell_set_fg(cell_ptr, color.clone());
             assert_eq!(color, vterm_cell_get_fg(cell_ptr));
 
@@ -290,10 +303,18 @@ mod tests {
         unsafe {
             let cell_ptr: *mut VTermScreenCell = vterm_cell_new();
 
-            let color = VTermColor { red: 0, green: 255, blue: 0 };
+            let color = VTermColor {
+                red: 0,
+                green: 255,
+                blue: 0,
+            };
             vterm_cell_set_bg(cell_ptr, color.clone());
             assert_eq!(color, vterm_cell_get_bg(cell_ptr));
-            let color = VTermColor { red: 255, green: 255, blue: 0 };
+            let color = VTermColor {
+                red: 255,
+                green: 255,
+                blue: 0,
+            };
             vterm_cell_set_bg(cell_ptr, color.clone());
             assert_eq!(color, vterm_cell_get_bg(cell_ptr));
 

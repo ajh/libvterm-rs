@@ -5,7 +5,10 @@ extern crate vterm_sys;
 use vterm_sys::*;
 use std::io::prelude::*;
 
-enum Format { Plain, Sgr }
+enum Format {
+    Plain,
+    Sgr,
+}
 
 struct Context {
     cols_count: u16,
@@ -15,9 +18,9 @@ struct Context {
 
 fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: &Context) {
     match context.format {
-        Format::Plain => {},
+        Format::Plain => {}
         Format::Sgr => {
-            let mut sgrs: Vec<isize> = vec!();
+            let mut sgrs: Vec<isize> = vec![];
 
             if !prev_cell.attrs.bold && cell.attrs.bold {
                 sgrs.push(1);
@@ -69,51 +72,45 @@ fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
                 sgrs.push(10);
             }
 
-            if prev_cell.fg_rgb.red   != cell.fg_rgb.red   ||
+            if prev_cell.fg_rgb.red != cell.fg_rgb.red ||
                prev_cell.fg_rgb.green != cell.fg_rgb.green ||
-               prev_cell.fg_rgb.blue  != cell.fg_rgb.blue {
+               prev_cell.fg_rgb.blue != cell.fg_rgb.blue {
                 let index = vterm.state_get_palette_color_from_rgb(&cell.fg_rgb);
                 if index < 8 {
                     sgrs.push(30 + index as isize);
-                }
-                else if index < 16 {
-                    sgrs.push(90 + (index as isize- 8));
-                }
-                else {
+                } else if index < 16 {
+                    sgrs.push(90 + (index as isize - 8));
+                } else {
                     sgrs.push(38);
-                    sgrs.push(5 | (1<<31));
-                    sgrs.push(index as isize | (1<<31));
+                    sgrs.push(5 | (1 << 31));
+                    sgrs.push(index as isize | (1 << 31));
                 }
             }
 
-            if prev_cell.bg_rgb.red   != cell.bg_rgb.red   ||
+            if prev_cell.bg_rgb.red != cell.bg_rgb.red ||
                prev_cell.bg_rgb.green != cell.bg_rgb.green ||
-               prev_cell.bg_rgb.blue  != cell.bg_rgb.blue {
+               prev_cell.bg_rgb.blue != cell.bg_rgb.blue {
                 let index = vterm.state_get_palette_color_from_rgb(&cell.bg_rgb);
                 if index < 8 {
                     sgrs.push(40 + index as isize);
-                }
-                else if index < 16 {
+                } else if index < 16 {
                     sgrs.push(100 + (index as isize - 8));
-                }
-                else {
+                } else {
                     sgrs.push(48);
-                    sgrs.push(5 | (1<<31));
-                    sgrs.push(index as isize | (1<<31));
+                    sgrs.push(5 | (1 << 31));
+                    sgrs.push(index as isize | (1 << 31));
                 }
             }
 
             if sgrs.len() != 0 {
                 print!("\x1b[");
                 for (i, val) in sgrs.iter().enumerate() {
-                    let bare_val = val & !(1<<31);
+                    let bare_val = val & !(1 << 31);
                     if i == 0 {
                         print!("{}", bare_val);
-                    }
-                    else if val & (1<<31) != 0 {
+                    } else if val & (1 << 31) != 0 {
                         print!(":{}", bare_val);
-                    }
-                    else {
+                    } else {
                         print!(";{}", bare_val);
                     }
                 }
@@ -122,17 +119,19 @@ fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
         }
     }
 
-    std::io::stdout().write_all(&cell.chars_as_utf8_bytes())
-                     .ok()
-                     .expect("failed to write");
+    std::io::stdout()
+        .write_all(&cell.chars_as_utf8_bytes())
+        .ok()
+        .expect("failed to write");
 }
 
 fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
     match context.format {
-        Format::Plain => {},
+        Format::Plain => {}
         Format::Sgr => {
-            if prev_cell.attrs.bold || prev_cell.attrs.underline != 0|| prev_cell.attrs.italic ||
-               prev_cell.attrs.blink || prev_cell.attrs.reverse || prev_cell.attrs.strike ||
+            if prev_cell.attrs.bold || prev_cell.attrs.underline != 0 ||
+               prev_cell.attrs.italic || prev_cell.attrs.blink ||
+               prev_cell.attrs.reverse || prev_cell.attrs.strike ||
                prev_cell.attrs.font != 0 {
                 print!("\x1b[m");
             }
@@ -175,28 +174,47 @@ Options:
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-    flag_c:    u16,
-    flag_l:    u16,
-    flag_f:    String,
-    arg_file:  String,
+    flag_c: u16,
+    flag_l: u16,
+    flag_f: String,
+    arg_file: String,
 }
 
 fn main() {
     let mut args: Args = docopt::Docopt::new(USAGE)
-        .and_then(|d| d.decode())
-        .unwrap_or_else(|e| e.exit());
+                             .and_then(|d| d.decode())
+                             .unwrap_or_else(|e| e.exit());
 
-    args.flag_l = if args.flag_l       != 0 { args.flag_l } else { 25 };
-    args.flag_c = if args.flag_c       != 0 { args.flag_c } else { 80 };
-    args.flag_f = if args.flag_f.len() != 0 { args.flag_f } else { "sgr".to_string() };
-
-    let mut context = Context {
-        rows_count:  args.flag_l,
-        cols_count:  args.flag_c,
-        format:      if args.flag_f == "sgr" { Format::Sgr } else { Format::Plain },
+    args.flag_l = if args.flag_l != 0 {
+        args.flag_l
+    } else {
+        25
+    };
+    args.flag_c = if args.flag_c != 0 {
+        args.flag_c
+    } else {
+        80
+    };
+    args.flag_f = if args.flag_f.len() != 0 {
+        args.flag_f
+    } else {
+        "sgr".to_string()
     };
 
-    let mut vt = VTerm::new(ScreenSize { rows: context.rows_count, cols: context.cols_count });
+    let mut context = Context {
+        rows_count: args.flag_l,
+        cols_count: args.flag_c,
+        format: if args.flag_f == "sgr" {
+            Format::Sgr
+        } else {
+            Format::Plain
+        },
+    };
+
+    let mut vt = VTerm::new(ScreenSize {
+        rows: context.rows_count,
+        cols: context.cols_count,
+    });
 
     vt.set_utf8(true);
 
@@ -209,18 +227,20 @@ fn main() {
     let mut read_buf = [0 as u8; 1024];
     loop {
         match file.read(&mut read_buf) {
-            Ok(0)   => break,
-            Ok(num) => { vt.write(&read_buf[0..num]); },
-            Err(_)  => panic!("error reading from file")
+            Ok(0) => break,
+            Ok(num) => {
+                vt.write(&read_buf[0..num]);
+            }
+            Err(_) => panic!("error reading from file"),
         }
     }
 
     while let Ok(event) = rx.try_recv() {
         match event {
-            ScreenEvent::Resize{rows, cols} =>  {
+            ScreenEvent::Resize{rows, cols} => {
                 context.rows_count = rows;
                 context.cols_count = cols;
-            },
+            }
             ScreenEvent::SbPushLine{cells} => {
                 let (fg_rgb, bg_rgb) = vt.state_get_default_colors();
                 let mut prev_cell: ScreenCell = Default::default();
@@ -233,8 +253,8 @@ fn main() {
                 }
 
                 dump_eol(&prev_cell, &context);
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 

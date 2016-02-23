@@ -5,28 +5,30 @@ use std::ptr::Unique;
 use super::*;
 
 pub struct VTerm {
-    pub ptr:                     Unique<ffi::VTerm>,
-    pub screen_event_tx:         Option<mpsc::Sender<ScreenEvent>>,
-    pub screen_event_rx:         Option<mpsc::Receiver<ScreenEvent>>,
-    pub screen_ptr:              Unique<ffi::VTermScreen>,
-    pub state_ptr:               Unique<ffi::VTermState>,
-    screen_callbacks_installed:  bool,
+    pub ptr: Unique<ffi::VTerm>,
+    pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
+    pub screen_event_rx: Option<mpsc::Receiver<ScreenEvent>>,
+    pub screen_ptr: Unique<ffi::VTermScreen>,
+    pub state_ptr: Unique<ffi::VTermState>,
+    screen_callbacks_installed: bool,
 }
 
 impl VTerm {
     pub fn new(size: ScreenSize) -> VTerm {
         // TODO how to detect error?
-        let mut vterm_ptr = unsafe { Unique::new(ffi::vterm_new(size.rows as c_int, size.cols as c_int)) };
+        let mut vterm_ptr = unsafe {
+            Unique::new(ffi::vterm_new(size.rows as c_int, size.cols as c_int))
+        };
         let screen_ptr = unsafe { Unique::new(ffi::vterm_obtain_screen(vterm_ptr.get_mut())) };
         let state_ptr = unsafe { Unique::new(ffi::vterm_obtain_state(vterm_ptr.get_mut())) };
 
         let mut vterm = VTerm {
-            ptr:                         vterm_ptr,
-            screen_event_tx:             None,
-            screen_event_rx:             None,
-            screen_ptr:                  screen_ptr,
-            state_ptr:                   state_ptr,
-            screen_callbacks_installed:  false
+            ptr: vterm_ptr,
+            screen_event_tx: None,
+            screen_event_rx: None,
+            screen_ptr: screen_ptr,
+            state_ptr: state_ptr,
+            screen_callbacks_installed: false,
         };
 
         vterm.screen_reset(true);
@@ -37,12 +39,19 @@ impl VTerm {
     pub fn get_size(&self) -> ScreenSize {
         let mut cols: c_int = 0;
         let mut rows: c_int = 0;
-        unsafe { ffi::vterm_get_size(self.ptr.get(), &mut rows, &mut cols); }
-        ScreenSize { rows: rows as u16, cols: cols as u16 }
+        unsafe {
+            ffi::vterm_get_size(self.ptr.get(), &mut rows, &mut cols);
+        }
+        ScreenSize {
+            rows: rows as u16,
+            cols: cols as u16,
+        }
     }
 
     pub fn set_size(&mut self, size: ScreenSize) {
-        unsafe { ffi::vterm_set_size(self.ptr.get_mut(), size.rows as c_int, size.cols as c_int); }
+        unsafe {
+            ffi::vterm_set_size(self.ptr.get_mut(), size.rows as c_int, size.cols as c_int);
+        }
     }
 
     pub fn get_utf8(&self) -> bool {
@@ -73,7 +82,9 @@ impl VTerm {
 
         unsafe {
             let self_ptr: *mut c_void = self as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(self.screen_ptr.get_mut(), &::screen::SCREEN_CALLBACKS, self_ptr);
+            ffi::vterm_screen_set_callbacks(self.screen_ptr.get_mut(),
+                                            &::screen::SCREEN_CALLBACKS,
+                                            self_ptr);
         }
 
         Ok(())
@@ -103,7 +114,7 @@ mod tests {
     #[test]
     fn vterm_can_set_size() {
         let mut vterm: ::VTerm = ::VTerm::new(::ScreenSize { rows: 2, cols: 3 });
-        vterm.set_size(::ScreenSize { rows: 1, cols: 2});
+        vterm.set_size(::ScreenSize { rows: 1, cols: 2 });
         let size = vterm.get_size();
         assert_eq!((1, 2), (size.rows, size.cols));
     }
