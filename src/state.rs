@@ -39,7 +39,7 @@ impl VTerm {
         };
     }
 
-    pub fn state_get_rgb_color_from_palette(&self, index: u16) -> ColorRGB {
+    pub fn state_get_rgb_color_from_palette(&self, index: usize) -> ColorRGB {
         let mut ffi_color: ffi::VTermColor = Default::default();
         unsafe {
             ffi::vterm_state_get_palette_color(self.state_ptr.get(),
@@ -53,24 +53,22 @@ impl VTerm {
         }
     }
 
-    // TODO: use this c method instead I just found in pen.c
-    // void vterm_state_get_palette_color(const VTermState *state, int index, VTermColor *col)
-    pub fn state_get_palette_color_from_rgb(&self, target: &ColorRGB) -> u16 {
+    pub fn state_get_palette_color_from_rgb(&self, target: &ColorRGB) -> usize {
         for i in 0..256 {
             let color = self.state_get_rgb_color_from_palette(i);
             if color.red == target.red && color.green == target.green && color.blue == target.blue {
-                return i as u16;
+                return i as usize;
             }
         }
         0
     }
 
     /// move this to ffi classes since it deals with the ffi color type
-    pub fn state_get_palette_color_from_c_rgb(&self, target: &ffi::VTermColor) -> u16 {
+    pub fn state_get_palette_color_from_c_rgb(&self, target: &ffi::VTermColor) -> usize {
         for i in 0..256 {
             let color = self.state_get_rgb_color_from_palette(i);
             if color.red == target.red && color.green == target.green && color.blue == target.blue {
-                return i as u16;
+                return i as usize;
             }
         }
         0

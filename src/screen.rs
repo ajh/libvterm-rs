@@ -7,10 +7,10 @@ extern "C" fn damage_handler(rect: ffi::VTermRect, vterm: *mut c_void) -> c_int 
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             let rust_rect = Rect {
-                start_row: rect.start_row as u16,
-                end_row: rect.end_row as u16,
-                start_col: rect.start_col as u16,
-                end_col: rect.end_col as u16,
+                start_row: rect.start_row as usize,
+                end_row: rect.end_row as usize,
+                start_col: rect.start_col as usize,
+                end_col: rect.end_col as usize,
             };
 
             match tx.send(ScreenEvent::Damage { rect: rust_rect }) {
@@ -30,17 +30,17 @@ extern "C" fn move_rect_handler(dest: ffi::VTermRect,
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             let rust_dest = Rect {
-                start_row: dest.start_row as u16,
-                end_row: dest.end_row as u16,
-                start_col: dest.start_col as u16,
-                end_col: dest.end_col as u16,
+                start_row: dest.start_row as usize,
+                end_row: dest.end_row as usize,
+                start_col: dest.start_col as usize,
+                end_col: dest.end_col as usize,
             };
 
             let rust_src = Rect {
-                start_row: src.start_row as u16,
-                end_row: src.end_row as u16,
-                start_col: src.start_col as u16,
-                end_col: src.end_col as u16,
+                start_row: src.start_row as usize,
+                end_row: src.end_row as usize,
+                start_col: src.start_col as usize,
+                end_col: src.end_col as usize,
             };
 
             match tx.send(ScreenEvent::MoveRect {
@@ -64,12 +64,12 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos,
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             let rust_new = Pos {
-                row: new.row as i16,
-                col: new.col as i16,
+                row: new.row as usize,
+                col: new.col as usize,
             };
             let rust_old = Pos {
-                row: old.row as i16,
-                col: old.col as i16,
+                row: old.row as usize,
+                col: old.col as usize,
             };
             let event = ScreenEvent::MoveCursor {
                 new: rust_new,
@@ -134,8 +134,8 @@ extern "C" fn resize_handler(rows: c_int, cols: c_int, vterm: *mut c_void) -> c_
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             match tx.send(ScreenEvent::Resize {
-                rows: rows as u16,
-                cols: cols as u16,
+                rows: rows as usize,
+                cols: cols as usize,
             }) {
                 Ok(_) => 1,
                 Err(_) => 0,
@@ -152,9 +152,9 @@ extern "C" fn sb_pushline_handler(cols: c_int,
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             let mut cells = vec![];
-            for i in 0..(cols as isize) {
+            for i in 0..(cols as usize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1 }, &vterm));
+                cells.push(ScreenCell::from_ptr(ptr, Pos { row: 0, col: 0 }, &vterm));
             }
 
             match tx.send(ScreenEvent::SbPushLine { cells: cells }) {
@@ -174,9 +174,9 @@ extern "C" fn sb_popline_handler(cols: c_int,
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             let mut cells = vec![];
-            for i in 0..(cols as isize) {
+            for i in 0..(cols as usize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr, Pos { row: -1, col: -1 }, &vterm));
+                cells.push(ScreenCell::from_ptr(ptr, Pos { row: 0, col: 0 }, &vterm));
             }
 
             match tx.send(ScreenEvent::SbPopLine { cells: cells }) {
@@ -254,9 +254,9 @@ impl VTerm {
         let mut cells: Vec<ScreenCell> = Vec::new(); // capacity is known here FYI
 
         for row in rect.start_row..rect.end_row {
-            pos.row = row as i16;
+            pos.row = row as usize;
             for col in rect.start_col..rect.end_col {
-                pos.col = col as i16;
+                pos.col = col as usize;
                 cells.push(self.screen_get_cell(&pos));
             }
         }

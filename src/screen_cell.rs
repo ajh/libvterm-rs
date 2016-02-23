@@ -11,7 +11,7 @@ pub struct ColorRGB {
     pub blue: u8,
 }
 
-pub type ColorPalette = u16;
+pub type ColorPalette = usize;
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct ScreenCellAttr {

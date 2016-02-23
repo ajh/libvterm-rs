@@ -19,23 +19,22 @@ pub use state::*;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct ScreenSize {
-    pub rows: u16,
-    pub cols: u16,
+    pub rows: usize,
+    pub cols: usize,
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Pos {
-    /// negative numbers represent scroll buffer positions
-    pub row: i16,
-    pub col: i16,
+    pub row: usize,
+    pub col: usize,
 }
 
 #[derive(Debug, Default, PartialEq)]
 pub struct Rect {
-    pub start_row: u16,
-    pub end_row: u16,
-    pub start_col: u16,
-    pub end_col: u16,
+    pub start_row: usize,
+    pub end_row: usize,
+    pub start_col: usize,
+    pub end_col: usize,
 }
 
 #[derive(Debug)]
@@ -48,7 +47,7 @@ pub enum ScreenEvent {
         is_true: bool,
     },
     CursorShape {
-        value: isize,
+        value: usize,
     },
     CursorVisible {
         is_true: bool,
@@ -60,7 +59,7 @@ pub enum ScreenEvent {
         text: String,
     },
     Mouse {
-        value: isize,
+        value: usize,
     },
     MoveCursor {
         new: Pos,
@@ -72,8 +71,8 @@ pub enum ScreenEvent {
         src: Rect,
     },
     Resize {
-        rows: u16,
-        cols: u16,
+        rows: usize,
+        cols: usize,
     },
     Reverse {
         is_true: bool,

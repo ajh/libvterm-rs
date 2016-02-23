@@ -44,8 +44,8 @@ impl VTerm {
             ffi::vterm_get_size(self.ptr.get(), &mut rows, &mut cols);
         }
         ScreenSize {
-            rows: rows as u16,
-            cols: cols as u16,
+            rows: rows as usize,
+            cols: cols as usize,
         }
     }
 

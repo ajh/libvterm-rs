@@ -11,8 +11,8 @@ enum Format {
 }
 
 struct Context {
-    cols_count: u16,
-    rows_count: u16,
+    cols_count: usize,
+    rows_count: usize,
     format: Format,
 }
 
@@ -20,7 +20,7 @@ fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
     match context.format {
         Format::Plain => {}
         Format::Sgr => {
-            let mut sgrs: Vec<isize> = vec![];
+            let mut sgrs: Vec<usize> = vec![];
 
             if !prev_cell.attrs.bold && cell.attrs.bold {
                 sgrs.push(1);
@@ -66,7 +66,7 @@ fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
             }
 
             if prev_cell.attrs.font == 0 && cell.attrs.font != 0 {
-                sgrs.push(10 + cell.attrs.font as isize);
+                sgrs.push(10 + cell.attrs.font as usize);
             }
             if prev_cell.attrs.font != 0 && cell.attrs.font == 0 {
                 sgrs.push(10);
@@ -77,13 +77,13 @@ fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
                prev_cell.fg_rgb.blue != cell.fg_rgb.blue {
                 let index = vterm.state_get_palette_color_from_rgb(&cell.fg_rgb);
                 if index < 8 {
-                    sgrs.push(30 + index as isize);
+                    sgrs.push(30 + index as usize);
                 } else if index < 16 {
-                    sgrs.push(90 + (index as isize - 8));
+                    sgrs.push(90 + (index as usize - 8));
                 } else {
                     sgrs.push(38);
                     sgrs.push(5 | (1 << 31));
-                    sgrs.push(index as isize | (1 << 31));
+                    sgrs.push(index as usize | (1 << 31));
                 }
             }
 
@@ -92,13 +92,13 @@ fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
                prev_cell.bg_rgb.blue != cell.bg_rgb.blue {
                 let index = vterm.state_get_palette_color_from_rgb(&cell.bg_rgb);
                 if index < 8 {
-                    sgrs.push(40 + index as isize);
+                    sgrs.push(40 + index as usize);
                 } else if index < 16 {
-                    sgrs.push(100 + (index as isize - 8));
+                    sgrs.push(100 + (index as usize - 8));
                 } else {
                     sgrs.push(48);
                     sgrs.push(5 | (1 << 31));
-                    sgrs.push(index as isize | (1 << 31));
+                    sgrs.push(index as usize | (1 << 31));
                 }
             }
 
@@ -141,19 +141,19 @@ fn dump_eol(prev_cell: &ScreenCell, context: &Context) {
     print!("\n");
 }
 
-fn dump_row(row: i16, vt: &VTerm, context: &Context) {
+fn dump_row(row: usize, vt: &VTerm, context: &Context) {
     let mut prev_cell: ScreenCell = Default::default();
     let (fg_rgb, bg_rgb) = vt.state_get_default_colors();
     prev_cell.fg_rgb = fg_rgb;
     prev_cell.bg_rgb = bg_rgb;
 
     let mut pos = Pos { row: row, col: 0 };
-    while pos.col < context.cols_count as i16 {
+    while pos.col < context.cols_count as usize {
         let cell = vt.screen_get_cell(&pos);
 
         dump_cell(&vt, &cell, &prev_cell, context);
 
-        pos.col += cell.width as i16;
+        pos.col += cell.width as usize;
         prev_cell = cell;
     }
 
@@ -174,8 +174,8 @@ Options:
 
 #[derive(Debug, RustcDecodable)]
 struct Args {
-    flag_c: u16,
-    flag_l: u16,
+    flag_c: usize,
+    flag_l: usize,
     flag_f: String,
     arg_file: String,
 }
@@ -259,6 +259,6 @@ fn main() {
     }
 
     for row in 0..context.rows_count {
-        dump_row(row as i16, &vt, &context);
+        dump_row(row as usize, &vt, &context);
     }
 }
