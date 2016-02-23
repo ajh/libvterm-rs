@@ -29,7 +29,7 @@ pub struct Pos {
     pub col: usize,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Rect {
     pub start_row: usize,
     pub end_row: usize,
