@@ -9,3 +9,10 @@
 * [ ] upgrade libvterm?
 * [ ] rethink representing cell data as char vs Vec<u8> or [u8] or whatever.
 * [ ] add methods to ffi datatypes to convert from that and rust
+* [ ] use geometry library from crates.io
+
+# geometry libraries
+
+* servo has one: https://github.com/servo/euclid
+* this look okay: https://crates.io/crates/geom
+* here's a list on crates.io: https://crates.io/keywords/geometry?sort=downloads
