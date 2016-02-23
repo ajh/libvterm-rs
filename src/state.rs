@@ -40,6 +40,8 @@ impl VTerm {
         }
     }
 
+    // TODO: use this c method instead I just found in pen.c
+    // void vterm_state_get_palette_color(const VTermState *state, int index, VTermColor *col)
     pub fn state_get_palette_color_from_rgb(&self, target: &ColorRGB) -> u16 {
         for i in 0..256 {
             let color = self.state_get_rgb_color_from_palette(i);
