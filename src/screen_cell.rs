@@ -28,8 +28,6 @@ pub struct ScreenCellAttr {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ScreenCell {
-    /// Where the cell is located
-    pub pos: Pos,
     /// The characters in the cell. I believe there are more than one to support overstrike. This
     /// is also madness to represent these as chars. They should be u8s.
     pub chars: Vec<char>,
@@ -47,7 +45,7 @@ pub struct ScreenCell {
 
 impl ScreenCell {
     // Copies data from the given pointer. Doesn't free the pointer or anything.
-    pub fn from_ptr(ptr: *const ffi::VTermScreenCell, pos: Pos, vterm: &VTerm) -> ScreenCell {
+    pub fn from_ptr(ptr: *const ffi::VTermScreenCell, vterm: &VTerm) -> ScreenCell {
         let fg_rgb = unsafe { ffi::vterm_cell_get_fg(ptr) };
         let bg_rgb = unsafe { ffi::vterm_cell_get_bg(ptr) };
 
@@ -71,7 +69,6 @@ impl ScreenCell {
 
         unsafe {
             ScreenCell {
-                pos: pos,
                 chars: chars,
                 width: ffi::vterm_cell_get_width(ptr) as u8,
                 attrs: ScreenCellAttr {
@@ -113,7 +110,6 @@ impl ScreenCell {
 impl Default for ScreenCell {
     fn default() -> ScreenCell {
         ScreenCell {
-            pos: Default::default(),
             chars: vec![],
             width: 1,
             attrs: Default::default(),

@@ -154,7 +154,7 @@ extern "C" fn sb_pushline_handler(cols: c_int,
             let mut cells = vec![];
             for i in 0..(cols as usize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr, Pos { row: 0, col: 0 }, &vterm));
+                cells.push(ScreenCell::from_ptr(ptr, &vterm));
             }
 
             match tx.send(ScreenEvent::SbPushLine { cells: cells }) {
@@ -176,7 +176,7 @@ extern "C" fn sb_popline_handler(cols: c_int,
             let mut cells = vec![];
             for i in 0..(cols as usize) {
                 let ptr = unsafe { ffi::vterm_cell_pointer_arithmetic(cells_ptr, i as c_int) };
-                cells.push(ScreenCell::from_ptr(ptr, Pos { row: 0, col: 0 }, &vterm));
+                cells.push(ScreenCell::from_ptr(ptr, &vterm));
             }
 
             match tx.send(ScreenEvent::SbPopLine { cells: cells }) {
@@ -213,7 +213,7 @@ impl VTerm {
         };
         let cell_buf = unsafe { ffi::vterm_cell_new() };
         unsafe { ffi::vterm_screen_get_cell(self.screen_ptr.get(), ffi_pos, cell_buf) };
-        let cell = ScreenCell::from_ptr(cell_buf, pos.clone(), &self); // shouldn't this take &cell_buf?
+        let cell = ScreenCell::from_ptr(cell_buf, &self); // shouldn't this take &cell_buf?
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
         cell
