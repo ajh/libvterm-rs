@@ -3,11 +3,12 @@ extern crate regex;
 
 use regex::Regex;
 use vterm_sys::*;
+use std::io::prelude::*;
 
 #[test]
 fn screen_can_get_text() {
     let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
-    vterm.write(b"hi");
+    vterm.write(b"hi").unwrap();
 
     let text = vterm.screen_get_text(&Rect {
         start_row: 0,

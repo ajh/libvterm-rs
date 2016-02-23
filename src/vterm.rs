@@ -1,6 +1,7 @@
 use libc::{c_int, c_void, size_t};
 use std::sync::mpsc;
 use std::ptr::Unique;
+use std::io::prelude::*;
 
 use super::*;
 
@@ -62,12 +63,6 @@ impl VTerm {
         unsafe { ffi::vterm_set_utf8(self.ptr.get_mut(), super::bool_to_int(is_utf8)) }
     }
 
-    pub fn write(&mut self, input: &[u8]) -> u32 {
-        unsafe {
-            ffi::vterm_input_write(self.ptr.get_mut(), input.as_ptr(), input.len() as size_t) as u32
-        }
-    }
-
     /// calling this method will setup the vterm to generate ScreenEvent messages to a channel. The
     /// returned result indicates whether the channel was already created. The receiver end of the
     /// channel can be had by accessing the screen_events_rx field.
@@ -91,6 +86,20 @@ impl VTerm {
     }
 }
 
+impl Write for VTerm {
+    fn write(&mut self, buf: &[u8]) -> ::std::io::Result<usize> {
+        let size = unsafe {
+            ffi::vterm_input_write(self.ptr.get_mut(), buf.as_ptr(), buf.len() as size_t) as usize
+        };
+        Ok(size)
+    }
+
+    fn flush(&mut self) -> ::std::io::Result<()> {
+        self.screen_flush_damage();
+        Ok(())
+    }
+}
+
 impl Drop for VTerm {
     fn drop(&mut self) {
         unsafe { ffi::vterm_free(self.ptr.get_mut()) }
@@ -100,6 +109,7 @@ impl Drop for VTerm {
 mod tests {
     #![allow(unused_imports)]
     use super::super::*;
+    use std::io::prelude::*;
 
     #[test]
     fn vterm_can_create_and_destroy() {
@@ -136,6 +146,8 @@ mod tests {
     fn vterm_can_write() {
         let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
         let input: &[u8] = "abcd".as_bytes();
-        assert_eq!(4, vterm.write(input));
+        let result = vterm.write(input);
+        assert!(result.is_ok());
+        assert_eq!(4, result.unwrap());
     }
 }

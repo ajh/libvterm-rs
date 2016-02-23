@@ -229,7 +229,7 @@ fn main() {
         match file.read(&mut read_buf) {
             Ok(0) => break,
             Ok(num) => {
-                vt.write(&read_buf[0..num]);
+                vt.write(&read_buf[0..num]).unwrap();
             }
             Err(_) => panic!("error reading from file"),
         }
