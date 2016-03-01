@@ -7,7 +7,7 @@
 * [x] remove positions on screen cells
 * [ ] try out the bitflags crate or whatever instead of my c shim code
 * [ ] upgrade libvterm?
-* [ ] rethink representing cell data as char vs Vec<u8> or [u8] or whatever.
+* [x] rethink representing cell data as char vs Vec<u8> or [u8] or whatever.
 * [ ] add methods to ffi datatypes to convert from that and rust
 * [ ] use geometry library from crates.io
 

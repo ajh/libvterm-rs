@@ -120,7 +120,7 @@ fn dump_cell(vterm: &VTerm, cell: &ScreenCell, prev_cell: &ScreenCell, context: 
     }
 
     std::io::stdout()
-        .write_all(&cell.chars_as_utf8_bytes())
+        .write_all(&cell.chars)
         .ok()
         .expect("failed to write");
 }

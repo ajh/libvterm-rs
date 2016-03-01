@@ -219,9 +219,20 @@ impl VTerm {
         cell
     }
 
-    // It seems wrong to be converting the u8's to rust chars here since its lossy. Better to leave
-    // that decision to the caller.
-    pub fn screen_get_text(&mut self, rect: &Rect) -> String {
+    // Returns the text within the rect as a String. Invalid utf8 sequences are replaces with or panics if invalid utf8 bytes are found
+    pub fn screen_get_text_lossy(&mut self, rect: &Rect) -> String {
+        let bytes = self.get_text_as_bytes(rect);
+        String::from_utf8_lossy(&bytes).into_owned()
+    }
+
+    // Returns the text within the rect as a String or panics if invalid utf8 bytes are found
+    pub fn screen_get_text(&mut self, rect: &Rect) -> Result<String, ::std::string::FromUtf8Error> {
+        let bytes = self.get_text_as_bytes(rect);
+        let v = try! { String::from_utf8(bytes) };
+        Ok(v)
+    }
+
+    fn get_text_as_bytes(&mut self, rect: &Rect) -> Vec<u8> {
         let size: usize = ((rect.end_row - rect.start_row + 1) *
                            (rect.end_col - rect.start_col + 1)) as usize;
         let mut text: Vec<c_char> = vec![0x0; size];
@@ -236,8 +247,7 @@ impl VTerm {
             ffi::vterm_screen_get_text(self.screen_ptr.get(), text_ptr, text.len() as size_t, rect);
         }
 
-        let text: Vec<u8> = text.into_iter().map(|c| c as u8).collect();
-        String::from_utf8_lossy(&text).into_owned()
+        text.into_iter().map(|c| c as u8).collect()
     }
 
     pub fn screen_flush_damage(&mut self) {

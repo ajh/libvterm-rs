@@ -1,4 +1,3 @@
-use std::char;
 use std::vec::Vec;
 use libc::{uint32_t, size_t};
 
@@ -28,18 +27,17 @@ pub struct ScreenCellAttr {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ScreenCell {
-    /// The characters in the cell. I believe there are more than one to support overstrike. This
-    /// is also madness to represent these as chars. They should be u8s.
-    pub chars: Vec<char>,
-    /// I think this is How wide the cell is in columns.
+    /// The bytes for the glyph in the cell
+    pub chars: Vec<u8>,
     pub width: u8,
     pub attrs: ScreenCellAttr,
-    /// foreground color
+    /// foreground color in rgb
     pub fg_rgb: ColorRGB,
-    /// background color
+    /// background color in rgb
     pub bg_rgb: ColorRGB,
-
+    /// foreground color as a palette index
     pub fg_palette: ColorPalette,
+    /// background color as a palette index rgb
     pub bg_palette: ColorPalette,
 }
 
@@ -55,17 +53,9 @@ impl ScreenCell {
                                       buf.as_mut_ptr(),
                                       ffi::VTERM_MAX_CHARS_PER_CELL as size_t)
         };
-
-        let mut chars: Vec<char> = Vec::with_capacity(ffi::VTERM_MAX_CHARS_PER_CELL);
-
-        for i in 0..(chars_count as usize) {
-            let ch = match char::from_u32(buf[i]) {
-                Some(ch) => ch,
-                None => '\u{2764}',
-            };
-
-            chars.push(ch);
-        }
+        let buf: [u8; ffi::VTERM_MAX_CHARS_PER_CELL * 4] = unsafe { ::std::mem::transmute(buf) };
+        let mut chars: Vec<u8> = vec![];
+        chars.extend_from_slice(&buf[0..chars_count as usize * 4]);
 
         unsafe {
             ScreenCell {
@@ -96,14 +86,6 @@ impl ScreenCell {
                 bg_palette: vterm.state_get_palette_color_from_c_rgb(&bg_rgb),
             }
         }
-    }
-
-    pub fn chars_as_utf8_bytes(&self) -> Vec<u8> {
-        let mut output = String::new();
-        for ch in &self.chars {
-            output.push(*ch)
-        }
-        output.into_bytes()
     }
 }
 
