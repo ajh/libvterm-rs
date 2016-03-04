@@ -51,7 +51,9 @@ impl VTerm {
 
     pub fn set_size(&mut self, size: &Size) {
         unsafe {
-            ffi::vterm_set_size(self.ptr.get_mut(), size.height as c_int, size.width as c_int);
+            ffi::vterm_set_size(self.ptr.get_mut(),
+                                size.height as c_int,
+                                size.width as c_int);
         }
     }
 
@@ -113,28 +115,43 @@ mod tests {
 
     #[test]
     fn vterm_can_create_and_destroy() {
-        let vterm: VTerm = VTerm::new(&Size { height: 2, width: 2 });
+        let vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 2,
+        });
         drop(vterm);
     }
 
     #[test]
     fn vterm_can_get_size() {
-        let vterm: VTerm = VTerm::new(&Size { height: 2, width: 3 });
+        let vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 3,
+        });
         let size = vterm.get_size();
         assert_eq!((2, 3), (size.height, size.width));
     }
 
     #[test]
     fn vterm_can_set_size() {
-        let mut vterm: VTerm = VTerm::new(&Size { height: 2, width: 3 });
-        vterm.set_size(&Size { height: 1, width: 2 });
+        let mut vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 3,
+        });
+        vterm.set_size(&Size {
+            height: 1,
+            width: 2,
+        });
         let size = vterm.get_size();
         assert_eq!((1, 2), (size.height, size.width));
     }
 
     #[test]
     fn vterm_can_get_and_set_utf8() {
-        let mut vterm: VTerm = VTerm::new(&Size { height: 2, width: 2 });
+        let mut vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 2,
+        });
         vterm.set_utf8(true);
         assert_eq!(true, vterm.get_utf8());
 
@@ -144,7 +161,10 @@ mod tests {
 
     #[test]
     fn vterm_can_write() {
-        let mut vterm: VTerm = VTerm::new(&Size { height: 2, width: 2 });
+        let mut vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 2,
+        });
         let input: &[u8] = "abcd".as_bytes();
         let result = vterm.write(input);
         assert!(result.is_ok());

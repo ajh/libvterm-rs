@@ -179,14 +179,19 @@ impl VTerm {
     /// Return the cell at the given position
     pub fn screen_get_cell(&self, pos: &Pos) -> ScreenCell {
         let cell_buf = unsafe { ffi::vterm_cell_new() };
-        unsafe { ffi::vterm_screen_get_cell(self.screen_ptr.get(), ffi::VTermPos::from_pos(&pos), cell_buf) };
+        unsafe {
+            ffi::vterm_screen_get_cell(self.screen_ptr.get(),
+                                       ffi::VTermPos::from_pos(&pos),
+                                       cell_buf)
+        };
         let cell = ScreenCell::from_ptr(cell_buf, &self); // shouldn't this take &cell_buf?
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
         cell
     }
 
-    // Returns the text within the rect as a String. Invalid utf8 sequences are replaces with or panics if invalid utf8 bytes are found
+    // Returns the text within the rect as a String. Invalid utf8 sequences are replaces with or
+    // panics if invalid utf8 bytes are found
     pub fn screen_get_text_lossy(&mut self, rect: &Rect) -> String {
         let bytes = self.get_text_as_bytes(rect);
         String::from_utf8_lossy(&bytes).into_owned()
@@ -204,7 +209,10 @@ impl VTerm {
         let mut text: Vec<c_char> = vec![0x0; size];
         let text_ptr: *mut c_char = (&mut text[0..size]).as_mut_ptr();
         unsafe {
-            ffi::vterm_screen_get_text(self.screen_ptr.get(), text_ptr, text.len() as size_t, ffi::VTermRect::from_rect(&rect));
+            ffi::vterm_screen_get_text(self.screen_ptr.get(),
+                                       text_ptr,
+                                       text.len() as size_t,
+                                       ffi::VTermRect::from_rect(&rect));
         }
 
         text.into_iter().map(|c| c as u8).collect()
@@ -241,7 +249,10 @@ mod tests {
 
     #[test]
     fn screen_can_reset() {
-        let mut vterm: VTerm = VTerm::new(&Size { height: 2, width: 2 });
+        let mut vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 2,
+        });
         vterm.screen_reset(true);
     }
 }

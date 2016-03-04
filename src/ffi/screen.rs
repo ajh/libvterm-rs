@@ -26,11 +26,17 @@ pub struct VTermPos {
 
 impl VTermPos {
     pub fn from_pos(pos: &::Pos) -> VTermPos {
-        VTermPos { col: pos.x as i32, row: pos.y as i32}
+        VTermPos {
+            col: pos.x as i32,
+            row: pos.y as i32,
+        }
     }
 
     pub fn as_pos(&self) -> ::Pos {
-        ::Pos { x: self.col as usize, y: self.row as usize }
+        ::Pos {
+            x: self.col as usize,
+            y: self.row as usize,
+        }
     }
 }
 
@@ -63,7 +69,8 @@ impl VTermRect {
             size: ::Size {
                 width: (self.end_col - self.start_col) as usize,
                 height: (self.end_row - self.start_row) as usize,
-        }}
+            },
+        }
     }
 }
 

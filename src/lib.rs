@@ -28,14 +28,22 @@ pub trait RectAssist {
     fn bottom(&self) -> usize;
     fn right(&self) -> usize;
 
-    // TODO: an iterator over Pos in the Rect would be handy
+// TODO: an iterator over Pos in the Rect would be handy
 }
 
 impl RectAssist for Rect {
-    fn top(&self) -> usize { self.origin.y }
-    fn left(&self) -> usize { self.origin.x }
-    fn bottom(&self) -> usize { self.origin.y + self.size.height }
-    fn right(&self) -> usize { self.origin.x + self.size.width }
+    fn top(&self) -> usize {
+        self.origin.y
+    }
+    fn left(&self) -> usize {
+        self.origin.x
+    }
+    fn bottom(&self) -> usize {
+        self.origin.y + self.size.height
+    }
+    fn right(&self) -> usize {
+        self.origin.x + self.size.width
+    }
 }
 
 
