@@ -13,51 +13,12 @@ mod vterm;
 pub mod screen;
 mod screen_cell;
 mod state;
+mod geom;
 
 pub use vterm::*;
 pub use screen_cell::*;
 pub use state::*;
-
-pub type Size = euclid::Size2D<usize>;
-pub type Pos = euclid::Point2D<usize>;
-pub type Rect = euclid::Rect<usize>;
-
-pub trait RectAssist {
-    fn top(&self) -> usize;
-    fn left(&self) -> usize;
-    fn bottom(&self) -> usize;
-    fn right(&self) -> usize;
-
-    fn positions<'a>(&'a self) -> RectPositions<'a>;
-}
-
-impl RectAssist for Rect {
-    fn top(&self) -> usize {
-        self.origin.y
-    }
-    fn left(&self) -> usize {
-        self.origin.x
-    }
-    fn bottom(&self) -> usize {
-        self.origin.y + self.size.height
-    }
-    fn right(&self) -> usize {
-        self.origin.x + self.size.width
-    }
-
-    fn positions<'a>(&'a self) -> RectPositions<'a> {
-        RectPositions { rect: self }
-    }
-}
-
-// TODO:
-//
-// * implement Iterator trait with tests
-// * move geometry stuff to its own geom.rs file
-//
-pub struct RectPositions<'a> {
-    pub rect: &'a Rect
-}
+pub use geom::*;
 
 #[derive(Debug)]
 pub enum ScreenEvent {
