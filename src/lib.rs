@@ -28,7 +28,7 @@ pub trait RectAssist {
     fn bottom(&self) -> usize;
     fn right(&self) -> usize;
 
-// TODO: an iterator over Pos in the Rect would be handy
+    fn positions<'a>(&'a self) -> RectPositions<'a>;
 }
 
 impl RectAssist for Rect {
@@ -44,8 +44,20 @@ impl RectAssist for Rect {
     fn right(&self) -> usize {
         self.origin.x + self.size.width
     }
+
+    fn positions<'a>(&'a self) -> RectPositions<'a> {
+        RectPositions { rect: self }
+    }
 }
 
+// TODO:
+//
+// * implement Iterator trait with tests
+// * move geometry stuff to its own geom.rs file
+//
+pub struct RectPositions<'a> {
+    pub rect: &'a Rect
+}
 
 #[derive(Debug)]
 pub enum ScreenEvent {

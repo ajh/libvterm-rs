@@ -9,7 +9,7 @@
 * [ ] upgrade libvterm?
 * [x] rethink representing cell data as char vs Vec<u8> or [u8] or whatever.
 * [ ] add methods to ffi datatypes to convert from that and rust
-* [ ] use geometry library from crates.io
+* [x] use geometry library from crates.io
 
 # geometry libraries
 
