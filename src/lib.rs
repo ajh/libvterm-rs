@@ -3,6 +3,7 @@
 #[macro_use]
 extern crate log;
 extern crate libc;
+extern crate euclid;
 
 use libc::c_int;
 
@@ -17,25 +18,26 @@ pub use vterm::*;
 pub use screen_cell::*;
 pub use state::*;
 
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct ScreenSize {
-    pub rows: usize,
-    pub cols: usize,
+pub type Size = euclid::Size2D<usize>;
+pub type Pos = euclid::Point2D<usize>;
+pub type Rect = euclid::Rect<usize>;
+
+pub trait RectAssist {
+    fn top(&self) -> usize;
+    fn left(&self) -> usize;
+    fn bottom(&self) -> usize;
+    fn right(&self) -> usize;
+
+    // TODO: an iterator over Pos in the Rect would be handy
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct Pos {
-    pub row: usize,
-    pub col: usize,
+impl RectAssist for Rect {
+    fn top(&self) -> usize { self.origin.y }
+    fn left(&self) -> usize { self.origin.x }
+    fn bottom(&self) -> usize { self.origin.y + self.size.height }
+    fn right(&self) -> usize { self.origin.x + self.size.width }
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
-pub struct Rect {
-    pub start_row: usize,
-    pub end_row: usize,
-    pub start_col: usize,
-    pub end_col: usize,
-}
 
 #[derive(Debug)]
 pub enum ScreenEvent {
@@ -71,8 +73,8 @@ pub enum ScreenEvent {
         src: Rect,
     },
     Resize {
-        rows: usize,
-        cols: usize,
+        height: usize,
+        width: usize,
     },
     Reverse {
         is_true: bool,

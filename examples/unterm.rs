@@ -147,13 +147,13 @@ fn dump_row(row: usize, vt: &VTerm, context: &Context) {
     prev_cell.fg_rgb = fg_rgb;
     prev_cell.bg_rgb = bg_rgb;
 
-    let mut pos = Pos { row: row, col: 0 };
-    while pos.col < context.cols_count as usize {
+    let mut pos = Pos { x: row, y: 0 };
+    while pos.x < context.cols_count as usize {
         let cell = vt.screen_get_cell(&pos);
 
         dump_cell(&vt, &cell, &prev_cell, context);
 
-        pos.col += cell.width as usize;
+        pos.x += cell.width as usize;
         prev_cell = cell;
     }
 
@@ -211,9 +211,9 @@ fn main() {
         },
     };
 
-    let mut vt = VTerm::new(&ScreenSize {
-        rows: context.rows_count,
-        cols: context.cols_count,
+    let mut vt = VTerm::new(&Size {
+        height: context.rows_count,
+        width: context.cols_count,
     });
 
     vt.set_utf8(true);
@@ -237,9 +237,9 @@ fn main() {
 
     while let Ok(event) = rx.try_recv() {
         match event {
-            ScreenEvent::Resize{rows, cols} => {
-                context.rows_count = rows;
-                context.cols_count = cols;
+            ScreenEvent::Resize{height, width} => {
+                context.rows_count = height;
+                context.cols_count = width;
             }
             ScreenEvent::SbPushLine{cells} => {
                 let (fg_rgb, bg_rgb) = vt.state_get_default_colors();

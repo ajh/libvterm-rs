@@ -6,14 +6,7 @@ extern "C" fn damage_handler(rect: ffi::VTermRect, vterm: *mut c_void) -> c_int 
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
-            let rust_rect = Rect {
-                start_row: rect.start_row as usize,
-                end_row: rect.end_row as usize,
-                start_col: rect.start_col as usize,
-                end_col: rect.end_col as usize,
-            };
-
-            match tx.send(ScreenEvent::Damage { rect: rust_rect }) {
+            match tx.send(ScreenEvent::Damage { rect: rect.as_rect() }) {
                 Ok(_) => 1,
                 Err(_) => 0,
             }
@@ -29,23 +22,9 @@ extern "C" fn move_rect_handler(dest: ffi::VTermRect,
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
-            let rust_dest = Rect {
-                start_row: dest.start_row as usize,
-                end_row: dest.end_row as usize,
-                start_col: dest.start_col as usize,
-                end_col: dest.end_col as usize,
-            };
-
-            let rust_src = Rect {
-                start_row: src.start_row as usize,
-                end_row: src.end_row as usize,
-                start_col: src.start_col as usize,
-                end_col: src.end_col as usize,
-            };
-
             match tx.send(ScreenEvent::MoveRect {
-                dest: rust_dest,
-                src: rust_src,
+                dest: dest.as_rect(),
+                src: src.as_rect(),
             }) {
                 Ok(_) => 1,
                 Err(_) => 0,
@@ -63,17 +42,9 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos,
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
-            let rust_new = Pos {
-                row: new.row as usize,
-                col: new.col as usize,
-            };
-            let rust_old = Pos {
-                row: old.row as usize,
-                col: old.col as usize,
-            };
             let event = ScreenEvent::MoveCursor {
-                new: rust_new,
-                old: rust_old,
+                new: new.as_pos(),
+                old: old.as_pos(),
                 is_visible: super::int_to_bool(is_visible),
             };
             match tx.send(event) {
@@ -134,8 +105,8 @@ extern "C" fn resize_handler(rows: c_int, cols: c_int, vterm: *mut c_void) -> c_
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             match tx.send(ScreenEvent::Resize {
-                rows: rows as usize,
-                cols: cols as usize,
+                height: rows as usize,
+                width: cols as usize,
             }) {
                 Ok(_) => 1,
                 Err(_) => 0,
@@ -207,12 +178,8 @@ impl VTerm {
 
     /// Return the cell at the given position
     pub fn screen_get_cell(&self, pos: &Pos) -> ScreenCell {
-        let ffi_pos = ffi::VTermPos {
-            row: pos.row as c_int,
-            col: pos.col as c_int,
-        };
         let cell_buf = unsafe { ffi::vterm_cell_new() };
-        unsafe { ffi::vterm_screen_get_cell(self.screen_ptr.get(), ffi_pos, cell_buf) };
+        unsafe { ffi::vterm_screen_get_cell(self.screen_ptr.get(), ffi::VTermPos::from_pos(&pos), cell_buf) };
         let cell = ScreenCell::from_ptr(cell_buf, &self); // shouldn't this take &cell_buf?
         unsafe { ffi::vterm_cell_free(cell_buf) };
 
@@ -233,18 +200,11 @@ impl VTerm {
     }
 
     fn get_text_as_bytes(&mut self, rect: &Rect) -> Vec<u8> {
-        let size: usize = ((rect.end_row - rect.start_row + 1) *
-                           (rect.end_col - rect.start_col + 1)) as usize;
+        let size: usize = rect.size.width * rect.size.height;
         let mut text: Vec<c_char> = vec![0x0; size];
-        let rect = ffi::VTermRect {
-            start_row: rect.start_row as i32,
-            end_row: rect.end_row as i32,
-            start_col: rect.start_col as i32,
-            end_col: rect.end_col as i32,
-        };
         let text_ptr: *mut c_char = (&mut text[0..size]).as_mut_ptr();
         unsafe {
-            ffi::vterm_screen_get_text(self.screen_ptr.get(), text_ptr, text.len() as size_t, rect);
+            ffi::vterm_screen_get_text(self.screen_ptr.get(), text_ptr, text.len() as size_t, ffi::VTermRect::from_rect(&rect));
         }
 
         text.into_iter().map(|c| c as u8).collect()
@@ -260,13 +220,13 @@ impl VTerm {
     }
 
     pub fn screen_get_cells_in_rect(&self, rect: &Rect) -> Vec<ScreenCell> {
-        let mut pos: Pos = Default::default();
+        let mut pos = Pos { x: 0, y: 0 };
         let mut cells: Vec<ScreenCell> = Vec::new(); // capacity is known here FYI
 
-        for row in rect.start_row..rect.end_row {
-            pos.row = row as usize;
-            for col in rect.start_col..rect.end_col {
-                pos.col = col as usize;
+        for y in rect.top()..rect.bottom() {
+            pos.y = y as usize;
+            for x in rect.left()..rect.right() {
+                pos.x = x as usize;
                 cells.push(self.screen_get_cell(&pos));
             }
         }
@@ -281,7 +241,7 @@ mod tests {
 
     #[test]
     fn screen_can_reset() {
-        let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
+        let mut vterm: VTerm = VTerm::new(&Size { height: 2, width: 2 });
         vterm.screen_reset(true);
     }
 }

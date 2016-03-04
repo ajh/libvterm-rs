@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn state_can_get_and_set_default_colors() {
-        let mut vterm: VTerm = VTerm::new(&ScreenSize { rows: 2, cols: 2 });
+        let mut vterm: VTerm = VTerm::new(&Size { height: 2, width: 2 });
         vterm.state_set_default_colors(&ColorRGB {
                                            red: 200,
                                            green: 201,
