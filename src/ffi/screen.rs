@@ -64,7 +64,7 @@ impl VTermRect {
         ::Rect {
             origin: ::Pos {
                 x: self.start_col as usize,
-                y: self.end_col as usize,
+                y: self.start_row as usize,
             },
             size: ::Size {
                 width: (self.end_col - self.start_col) as usize,

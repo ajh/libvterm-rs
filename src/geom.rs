@@ -16,6 +16,7 @@ pub trait RectAssist {
 }
 
 impl RectAssist for Rect {
+    /// TODO: remove these because I think these already exist as min_x, max_x etc
     fn top(&self) -> usize {
         self.origin.y
     }
@@ -65,7 +66,6 @@ impl<'a> Iterator for RectPositions<'a> {
     // return type is 'Option<T>', 'None' is returned when the 'Iterator' is
     // over, otherwise the next value is returned wrapped in 'Some'
     fn next(&mut self) -> Option<Pos> {
-        println!("{:?}", self);
         if self.rect.contains(&self.pos) {
             let output = self.pos.clone();
             self.advance();
