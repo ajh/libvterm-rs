@@ -2,6 +2,9 @@ use libc::{c_int, c_uint, uint32_t, size_t, c_char, uint8_t};
 
 pub enum VTermScreenCell {}
 
+/// There should be rust methods here to pull stuff out of the cell, also a into_screen_cell method
+/// to cast to ScreenCell
+
 pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
 
 #[repr(C)]

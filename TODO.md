@@ -1,5 +1,6 @@
 # TODO
 
+* [ ] benchmark and performance improvements
 * [x] take references to things when its more idiomatic
 * [x] implement Write trait
 * [ ] use libvterm palette api instead of what I rolled on my own

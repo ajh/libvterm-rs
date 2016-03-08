@@ -228,15 +228,10 @@ impl VTerm {
     }
 
     pub fn screen_get_cells_in_rect(&self, rect: &Rect) -> Vec<ScreenCell> {
-        let mut pos = Pos { x: 0, y: 0 };
         let mut cells: Vec<ScreenCell> = Vec::new(); // capacity is known here FYI
 
-        for y in rect.top()..rect.bottom() {
-            pos.y = y as usize;
-            for x in rect.left()..rect.right() {
-                pos.x = x as usize;
-                cells.push(self.screen_get_cell(&pos));
-            }
+        for pos in rect.positions() {
+            cells.push(self.screen_get_cell(&pos));
         }
 
         cells
