@@ -1,4 +1,4 @@
-use libc::{c_int, c_void, size_t};
+use libc::{c_int, size_t};
 use std::sync::mpsc;
 use std::ptr::Unique;
 use std::io::prelude::*;
@@ -11,7 +11,7 @@ pub struct VTerm {
     pub screen_event_rx: Option<mpsc::Receiver<ScreenEvent>>,
     pub screen_ptr: Unique<ffi::VTermScreen>,
     pub state_ptr: Unique<ffi::VTermState>,
-    screen_callbacks_installed: bool,
+    pub screen_callbacks_installed: bool,
 }
 
 impl VTerm {
@@ -63,28 +63,6 @@ impl VTerm {
 
     pub fn set_utf8(&mut self, is_utf8: bool) {
         unsafe { ffi::vterm_set_utf8(self.ptr.get_mut(), super::bool_to_int(is_utf8)) }
-    }
-
-    /// calling this method will setup the vterm to generate ScreenEvent messages to a channel. The
-    /// returned result indicates whether the channel was already created. The receiver end of the
-    /// channel can be had by accessing the screen_events_rx field.
-    pub fn generate_screen_events(&mut self) -> Result<(), ()> {
-        if self.screen_callbacks_installed {
-            return Err(());
-        }
-
-        let (tx, rx) = mpsc::channel();
-        self.screen_event_tx = Some(tx);
-        self.screen_event_rx = Some(rx);
-
-        unsafe {
-            let self_ptr: *mut c_void = self as *mut _ as *mut c_void;
-            ffi::vterm_screen_set_callbacks(self.screen_ptr.get_mut(),
-                                            &::screen::SCREEN_CALLBACKS,
-                                            self_ptr);
-        }
-
-        Ok(())
     }
 }
 

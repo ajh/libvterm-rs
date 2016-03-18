@@ -10,7 +10,8 @@ use libc::c_int;
 pub mod ffi;
 
 mod vterm;
-pub mod screen;
+mod screen;
+mod screen_callbacks;
 mod screen_cell;
 mod state;
 mod geom;
