@@ -8,6 +8,11 @@ pub enum StateEvent {
         glyph_info: GlyphInfo,
         pos: Pos,
     },
+    MoveCursor {
+        new: Pos,
+        old: Pos,
+        is_visible: bool,
+    },
     Bell,
 }
 

@@ -22,8 +22,24 @@ extern "C" fn put_glyph(info: *mut ffi::VTermGlyphInfo, pos: ffi::VTermPos, vter
 }
 //int (*movecursor)(VTermPos pos, VTermPos oldpos, int visible, void *user);
 extern "C" fn move_cursor(new: ffi::VTermPos, old: ffi::VTermPos, visible: c_int, vterm: *mut c_void) -> c_int {
-    0
+    let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
+    match vterm.state_event_tx.as_ref() {
+        Some(tx) => {
+            let event = StateEvent::MoveCursor {
+                new: new.as_pos(),
+                old: old.as_pos(),
+                is_visible: int_to_bool(visible),
+            };
+
+            match tx.send(event) {
+                Ok(_) => 1,
+                Err(_) => 0,
+            }
+        }
+        None => 0,
+    }
 }
+
 //int (*scrollrect)(VTermRect rect, int downward, int rightward, void *user);
 extern "C" fn scroll_rect(rect: ffi::VTermRect, downward: c_int, rightward: c_int, vterm: *mut c_void) -> c_int {
     0
@@ -81,7 +97,7 @@ mod tests {
     use std::io::prelude::*;
 
     #[test]
-    fn state_can_generate_putglyph_events() {
+    fn state_can_generate_put_glyph_events() {
         let mut vterm: VTerm = VTerm::new(&Size {
             height: 2,
             width: 2,
@@ -100,6 +116,36 @@ mod tests {
                     assert_eq!(glyph_info.chars[0], b'a');
                     assert_eq!(pos.x, 0);
                     assert_eq!(pos.y, 0);
+
+                    break
+                },
+                _ => {}
+            }
+        }
+
+        assert!(found_it);
+    }
+
+    #[test]
+    fn state_can_generate_move_cursor_events() {
+        let mut vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 2,
+        });
+        vterm.generate_state_events().unwrap();
+        vterm.write(b"\x1b[1;2H");
+
+        let rx = vterm.state_event_rx.take().unwrap();
+
+        let mut found_it = false;
+        while let Ok(e) = rx.try_recv() {
+            match e {
+                StateEvent::MoveCursor{new, old, is_visible} => {
+                    found_it = true;
+
+                    assert_eq!(new, Pos { x: 1, y: 0 });
+                    assert_eq!(old, Pos { x: 0, y: 0 });
+                    assert_eq!(is_visible, true);
 
                     break
                 },
