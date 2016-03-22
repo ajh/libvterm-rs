@@ -9,17 +9,20 @@ use libc::c_int;
 
 pub mod ffi;
 
-mod vterm;
+mod geom;
 mod screen;
 mod screen_callbacks;
 mod screen_cell;
 mod state;
-mod geom;
+mod state_callbacks;
+mod vterm;
+mod glyph_info;
 
 pub use vterm::*;
 pub use screen_cell::*;
 pub use state::*;
 pub use geom::*;
+pub use glyph_info::*;
 
 #[derive(Debug)]
 pub enum ScreenEvent {

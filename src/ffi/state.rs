@@ -2,7 +2,6 @@ use libc::{c_int, c_void};
 use super::*;
 
 pub enum VTermState {}
-pub enum VTermGlyphInfo {} // need to flesh this out
 pub enum VTermLineInfo {}  // need to flesh this out
 
 #[repr(C)]
@@ -25,11 +24,11 @@ pub struct VTermStateCallbacks {
     pub scroll_rect: extern "C" fn(VTermRect, c_int, c_int, *mut c_void) -> (c_int),
     pub move_rect: extern "C" fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
     pub erase: extern "C" fn(VTermRect, c_int, *mut c_void) -> (c_int),
-    pub initpen: extern "C" fn(*mut c_void) -> (c_int),
-    pub setpenattr: extern "C" fn(VTermAttr, VTermValue, *mut c_void) -> (c_int),
-    pub settermprop: extern "C" fn(VTermProp, VTermValue, *mut c_void) -> (c_int),
+    pub init_pen: extern "C" fn(*mut c_void) -> (c_int),
+    pub set_pen_attr: extern "C" fn(VTermAttr, *mut VTermValue, *mut c_void) -> (c_int),
+    pub set_term_prop: extern "C" fn(VTermProp, *mut VTermValue, *mut c_void) -> (c_int),
     pub bell: extern "C" fn(*mut c_void) -> (c_int),
-    pub resize: extern "C" fn(c_int, c_int, VTermPos, *mut c_void) -> (c_int),
+    pub resize: extern "C" fn(c_int, c_int, *mut VTermPos, *mut c_void) -> (c_int),
     pub set_line_info: extern "C" fn(c_int,
                                      *const VTermLineInfo,
                                      *const VTermLineInfo,

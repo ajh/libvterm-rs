@@ -1,6 +1,15 @@
-use libc::c_int;
+use libc::{c_int, c_void, size_t, c_char};
+use std::sync::mpsc;
 
 use super::*;
+
+pub enum StateEvent {
+    PutGlyph {
+        glyph_info: GlyphInfo,
+        pos: Pos,
+    },
+    Bell,
+}
 
 impl VTerm {
     pub fn state_get_default_colors(&self) -> (ColorRGB, ColorRGB) {
@@ -79,11 +88,32 @@ impl VTerm {
             ffi::vterm_state_reset(self.state_ptr.get_mut(), ::bool_to_int(hard));
         }
     }
+
+    pub fn generate_state_events(&mut self) -> Result<(), ()> {
+        if self.state_callbacks_installed {
+            return Err(());
+        }
+        self.state_callbacks_installed = true;
+
+        let (tx, rx) = mpsc::channel();
+        self.state_event_tx = Some(tx);
+        self.state_event_rx = Some(rx);
+
+        unsafe {
+            let self_ptr: *mut c_void = self as *mut _ as *mut c_void;
+            ffi::vterm_state_set_callbacks(self.state_ptr.get_mut(),
+                                            &::state_callbacks::STATE_CALLBACKS,
+                                            self_ptr);
+        }
+
+        Ok(())
+    }
 }
 
 mod tests {
     #![allow(unused_imports)]
     use super::super::*;
+    use std::io::prelude::*;
 
     #[test]
     fn state_can_get_and_set_default_colors() {

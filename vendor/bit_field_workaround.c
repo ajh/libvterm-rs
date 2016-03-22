@@ -3,27 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Work around rust ffi compatibility issues with c bit fields
-//
-// typedef struct {
-// #define VTERM_MAX_CHARS_PER_CELL 6
-//   uint32_t chars[VTERM_MAX_CHARS_PER_CELL];
-//   char     width;
-//   struct {
-//     unsigned int bold      : 1;
-//     unsigned int underline : 2;
-//     unsigned int italic    : 1;
-//     unsigned int blink     : 1;
-//     unsigned int reverse   : 1;
-//     unsigned int strike    : 1;
-//     unsigned int font      : 4; /* 0 to 9 */
-//     unsigned int dwl       : 1; /* On a DECDWL or DECDHL line */
-//     unsigned int dhl       : 2; /* On a DECDHL line (1=top 2=bottom) */
-//   } attrs;
-//   VTermColor fg, bg;
-// } VTermScreenCell;
-//
-// Can I use this instead? https://crates.io/crates/bitflags
+// This file contains c code to workaround rust ffi compatibility issues with c
+// bit fields.
+
+// ------------
+// Screen cell stuff
+// ------------
 
 VTermScreenCell *vterm_cell_new()
 {
@@ -182,4 +167,36 @@ void vterm_cell_set_bg(VTermScreenCell *cell, VTermColor color)
 const VTermScreenCell *vterm_cell_pointer_arithmetic(VTermScreenCell *const cell, int amount)
 {
   return cell + amount;
+}
+
+// ------------
+// Glyph Info stuff
+// ------------
+
+int vterm_glyph_info_get_chars(const VTermGlyphInfo *glyph_info, uint32_t *chars, size_t len) {
+  if (len < VTERM_MAX_CHARS_PER_CELL) {
+    return -1;
+  }
+
+  int i;
+  for(i = 0; i < VTERM_MAX_CHARS_PER_CELL && glyph_info->chars[i]; i++) {
+    chars[i] = glyph_info->chars[i];
+  }
+  return i;
+}
+
+int vterm_glyph_info_width(const VTermGlyphInfo *glyph_info) {
+  return glyph_info->width;
+}
+
+unsigned int vterm_glyph_info_protected_cell(const VTermGlyphInfo *glyph_info) {
+  return glyph_info->protected_cell;
+}
+
+int vterm_glyph_info_dwl(const VTermGlyphInfo *glyph_info) {
+  return glyph_info->dwl;
+}
+
+int vterm_glyph_info_dhl(const VTermGlyphInfo *glyph_info) {
+  return glyph_info->dhl;
 }

@@ -7,11 +7,16 @@ use super::*;
 
 pub struct VTerm {
     pub ptr: Unique<ffi::VTerm>,
-    pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
-    pub screen_event_rx: Option<mpsc::Receiver<ScreenEvent>>,
-    pub screen_ptr: Unique<ffi::VTermScreen>,
-    pub state_ptr: Unique<ffi::VTermState>,
+
     pub screen_callbacks_installed: bool,
+    pub screen_event_rx: Option<mpsc::Receiver<ScreenEvent>>,
+    pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
+    pub screen_ptr: Unique<ffi::VTermScreen>,
+
+    pub state_callbacks_installed: bool,
+    pub state_event_rx: Option<mpsc::Receiver<StateEvent>>,
+    pub state_event_tx: Option<mpsc::Sender<StateEvent>>,
+    pub state_ptr: Unique<ffi::VTermState>,
 }
 
 impl VTerm {
@@ -25,11 +30,15 @@ impl VTerm {
 
         let mut vterm = VTerm {
             ptr: vterm_ptr,
-            screen_event_tx: None,
-            screen_event_rx: None,
-            screen_ptr: screen_ptr,
-            state_ptr: state_ptr,
             screen_callbacks_installed: false,
+            screen_event_rx: None,
+            screen_event_tx: None,
+            screen_ptr: screen_ptr,
+
+            state_callbacks_installed: false,
+            state_event_rx: None,
+            state_event_tx: None,
+            state_ptr: state_ptr,
         };
 
         vterm.screen_reset(true);
