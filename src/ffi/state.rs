@@ -19,21 +19,38 @@ pub enum VTermAttr {
 
 #[repr(C)]
 pub struct VTermStateCallbacks {
-    pub put_glyph: extern "C" fn(*mut VTermGlyphInfo, VTermPos, *mut c_void) -> (c_int),
-    pub move_cursor: extern "C" fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int),
-    pub scroll_rect: extern "C" fn(VTermRect, c_int, c_int, *mut c_void) -> (c_int),
-    pub move_rect: extern "C" fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
-    pub erase: extern "C" fn(VTermRect, c_int, *mut c_void) -> (c_int),
-    pub init_pen: extern "C" fn(*mut c_void) -> (c_int),
-    pub set_pen_attr: extern "C" fn(VTermAttr, *mut VTermValue, *mut c_void) -> (c_int),
-    pub set_term_prop: extern "C" fn(VTermProp, *mut VTermValue, *mut c_void) -> (c_int),
-    pub bell: extern "C" fn(*mut c_void) -> (c_int),
-    pub resize: extern "C" fn(c_int, c_int, *mut VTermPos, *mut c_void) -> (c_int),
-    pub set_line_info: extern "C" fn(c_int,
-                                     *const VTermLineInfo,
-                                     *const VTermLineInfo,
-                                     *mut c_void)
-                                     -> (c_int),
+    pub put_glyph: Option<extern "C" fn(*mut VTermGlyphInfo, VTermPos, *mut c_void) -> (c_int)>,
+    pub move_cursor: Option<extern "C" fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int)>,
+    pub scroll_rect: Option<extern "C" fn(VTermRect, c_int, c_int, *mut c_void) -> (c_int)>,
+    pub move_rect: Option<extern "C" fn(VTermRect, VTermRect, *mut c_void) -> (c_int)>,
+    pub erase: Option<extern "C" fn(VTermRect, c_int, *mut c_void) -> (c_int)>,
+    pub init_pen: Option<extern "C" fn(*mut c_void) -> (c_int)>,
+    pub set_pen_attr: Option<extern "C" fn(VTermAttr, *mut VTermValue, *mut c_void) -> (c_int)>,
+    pub set_term_prop: Option<extern "C" fn(VTermProp, *mut VTermValue, *mut c_void) -> (c_int)>,
+    pub bell: Option<extern "C" fn(*mut c_void) -> (c_int)>,
+    pub resize: Option<extern "C" fn(c_int, c_int, *mut VTermPos, *mut c_void) -> (c_int)>,
+    pub set_line_info: Option<extern "C" fn(c_int,
+                                            *const VTermLineInfo,
+                                            *const VTermLineInfo,
+                                            *mut c_void)
+                                            -> (c_int)>,
+}
+impl Default for VTermStateCallbacks {
+    fn default() -> VTermStateCallbacks {
+        VTermStateCallbacks {
+            put_glyph: None,
+            move_cursor: None,
+            scroll_rect: None,
+            move_rect: None,
+            erase: None,
+            init_pen: None,
+            set_pen_attr: None,
+            set_term_prop: None,
+            bell: None,
+            resize: None,
+            set_line_info: None,
+        }
+    }
 }
 
 extern "C" {

@@ -13,7 +13,7 @@ pub struct VTerm {
     pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
     pub screen_ptr: Unique<ffi::VTermScreen>,
 
-    pub state_callbacks_installed: bool,
+    pub state_callbacks: Option<ffi::VTermStateCallbacks>,
     pub state_event_rx: Option<mpsc::Receiver<StateEvent>>,
     pub state_event_tx: Option<mpsc::Sender<StateEvent>>,
     pub state_ptr: Unique<ffi::VTermState>,
@@ -35,7 +35,7 @@ impl VTerm {
             screen_event_tx: None,
             screen_ptr: screen_ptr,
 
-            state_callbacks_installed: false,
+            state_callbacks: None,
             state_event_rx: None,
             state_event_tx: None,
             state_ptr: state_ptr,

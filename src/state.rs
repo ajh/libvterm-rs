@@ -35,6 +35,54 @@ pub enum StateEvent {
     SetLineInfo,
 }
 
+pub struct StateCallbacksConfig {
+    pub put_glyph: bool,
+    pub move_cursor: bool,
+    pub scroll_rect: bool,
+    pub move_rect: bool,
+    pub erase: bool,
+    pub init_pen: bool,
+    pub set_pen_attr: bool,
+    pub set_term_prop: bool,
+    pub bell: bool,
+    pub resize: bool,
+    pub set_line_info: bool,
+}
+
+impl StateCallbacksConfig {
+    pub fn all() -> StateCallbacksConfig {
+        StateCallbacksConfig {
+            put_glyph: true,
+            move_cursor: true,
+            scroll_rect: true,
+            move_rect: true,
+            erase: true,
+            init_pen: true,
+            set_pen_attr: true,
+            set_term_prop: true,
+            bell: true,
+            resize: true,
+            set_line_info: true,
+        }
+    }
+
+    pub fn none() -> StateCallbacksConfig {
+        StateCallbacksConfig {
+            put_glyph: false,
+            move_cursor: false,
+            scroll_rect: false,
+            move_rect: false,
+            erase: false,
+            init_pen: false,
+            set_pen_attr: false,
+            set_term_prop: false,
+            bell: false,
+            resize: false,
+            set_line_info: false,
+        }
+    }
+}
+
 impl VTerm {
     pub fn state_get_default_colors(&self) -> (ColorRGB, ColorRGB) {
         let mut fg_rgb: ffi::VTermColor = Default::default();
@@ -113,24 +161,36 @@ impl VTerm {
         }
     }
 
-    pub fn generate_state_events(&mut self) -> Result<(), ()> {
-        if self.state_callbacks_installed {
-            return Err(());
-        }
-        self.state_callbacks_installed = true;
+    pub fn state_receive_events(&mut self, config: &StateCallbacksConfig) {
+        let mut callbacks: ffi::VTermStateCallbacks = Default::default();
 
-        let (tx, rx) = mpsc::channel();
-        self.state_event_tx = Some(tx);
-        self.state_event_rx = Some(rx);
+        // Note: Some of these seem to be required or libvterm will segfault
+        callbacks.put_glyph = if config.put_glyph { Some(::state_callbacks::put_glyph) } else { None };
+        callbacks.move_cursor = if config.move_cursor { Some(::state_callbacks::move_cursor) } else { None };
+        callbacks.scroll_rect = if config.scroll_rect { Some(::state_callbacks::scroll_rect) } else { None };
+        callbacks.move_rect = if config.move_rect { Some(::state_callbacks::move_rect) } else { None };
+        callbacks.erase = if config.erase { Some(::state_callbacks::erase) } else { None };
+        callbacks.init_pen = if config.init_pen { Some(::state_callbacks::init_pen) } else { None };
+        callbacks.set_pen_attr = if config.set_pen_attr { Some(::state_callbacks::set_pen_attr) } else { None };
+        callbacks.set_term_prop = if config.set_term_prop { Some(::state_callbacks::set_term_prop) } else { None };
+        callbacks.bell = if config.bell { Some(::state_callbacks::bell) } else { None };
+        callbacks.resize = if config.resize { Some(::state_callbacks::resize) } else { None };
+        callbacks.set_line_info = if config.set_line_info { Some(::state_callbacks::set_line_info) } else { None };
+
+        self.state_callbacks = Some(callbacks);
+
+        if self.state_event_tx.is_none() {
+            let (tx, rx) = mpsc::channel();
+            self.state_event_tx = Some(tx);
+            self.state_event_rx = Some(rx);
+        }
 
         unsafe {
             let self_ptr: *mut c_void = self as *mut _ as *mut c_void;
             ffi::vterm_state_set_callbacks(self.state_ptr.get_mut(),
-                                            &::state_callbacks::STATE_CALLBACKS,
+                                            self.state_callbacks.as_ref().unwrap(),
                                             self_ptr);
         }
-
-        Ok(())
     }
 }
 

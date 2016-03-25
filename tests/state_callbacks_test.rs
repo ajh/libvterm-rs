@@ -15,7 +15,7 @@ fn state_can_generate_put_glyph_events() {
         height: 2,
         width: 2,
     });
-    vterm.generate_state_events().unwrap();
+    vterm.state_receive_events(&StateCallbacksConfig::all());
     vterm.write(b"a");
 
     let rx = vterm.state_event_rx.take().unwrap();
@@ -122,7 +122,7 @@ fn state_can_generate_move_cursor_events() {
         height: 2,
         width: 2,
     });
-    vterm.generate_state_events().unwrap();
+    vterm.state_receive_events(&StateCallbacksConfig::all());
 
     let terminfo = term::terminfo::TermInfo::from_name("xterm").unwrap();
     vterm.write(&CapBuilder::new(&terminfo)
@@ -159,7 +159,7 @@ fn state_can_generate_scroll_rect_events() {
         height: 2,
         width: 2,
     });
-    vterm.generate_state_events().unwrap();
+    vterm.state_receive_events(&StateCallbacksConfig::all());
     let terminfo = term::terminfo::TermInfo::from_name("xterm").unwrap();
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("ri")
@@ -175,6 +175,55 @@ fn state_can_generate_scroll_rect_events() {
                 found_it = true;
 
                 assert_eq!(rect, Rect::new(Pos::new(0, 0), Size::new(2, 2)));
+                assert_eq!(downward, -1);
+                assert_eq!(rightward, 0);
+
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    assert!(found_it);
+}
+
+#[test]
+fn state_can_generate_scroll_rect_events_for_part_of_screen() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 5,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+    let terminfo = term::terminfo::TermInfo::from_name("xterm").unwrap();
+
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("csr")
+                     .number_param(3)
+                     .number_param(5)
+                     .build()
+                     .unwrap());
+
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("cup")
+                     .number_param(3)
+                     .number_param(0)
+                     .build()
+                     .unwrap());
+
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("ri")
+                     .build()
+                     .unwrap());
+
+    let rx = vterm.state_event_rx.take().unwrap();
+
+    let mut found_it = false;
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::ScrollRect{rect, downward, rightward} => {
+                found_it = true;
+
+                assert_eq!(rect, Rect::new(Pos::new(0, 3), Size::new(2, 2)));
                 assert_eq!(downward, -1);
                 assert_eq!(rightward, 0);
 
