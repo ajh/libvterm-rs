@@ -1,5 +1,11 @@
-extern crate vterm_sys;
+extern crate libc;
 extern crate regex;
+extern crate term;
+extern crate vterm_sys;
+
+mod rs;
+mod support;
+//mod ffi;
 
 use regex::Regex;
 use vterm_sys::*;

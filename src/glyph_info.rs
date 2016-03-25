@@ -1,5 +1,5 @@
 use std::vec::Vec;
-use libc::{c_int, c_uint, size_t, uint32_t};
+use libc::{size_t, uint32_t};
 
 use super::*;
 

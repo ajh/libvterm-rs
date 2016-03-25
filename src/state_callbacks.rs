@@ -1,3 +1,5 @@
+#![allow(unused_variables)]
+
 use libc::{c_int, c_void};
 use std::sync::mpsc::Sender;
 

@@ -1,5 +1,4 @@
 use libc::{c_int, c_uint, size_t, uint32_t};
-use super::*;
 
 pub enum VTermGlyphInfo {}
 

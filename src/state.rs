@@ -1,4 +1,4 @@
-use libc::{c_int, c_void, size_t, c_char};
+use libc::{c_int, c_void};
 use std::sync::mpsc;
 
 use super::*;
