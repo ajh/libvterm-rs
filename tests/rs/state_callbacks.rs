@@ -2,6 +2,7 @@ use std::io::prelude::*;
 use vterm_sys::*;
 use term::terminfo::TermInfo;
 use ::support::CapBuilder;
+use std::sync::mpsc::Receiver;
 
 #[test]
 fn state_can_generate_put_glyph_events() {
@@ -13,24 +14,13 @@ fn state_can_generate_put_glyph_events() {
     vterm.write(b"a").unwrap();
 
     let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_put_glyph_event(&rx);
 
-    let mut found_it = false;
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::PutGlyph{glyph_info, pos} => {
-                found_it = true;
-
-                assert_eq!(glyph_info.chars[0], b'a');
-                assert_eq!(pos.x, 0);
-                assert_eq!(pos.y, 0);
-
-                break;
-            }
-            _ => {}
-        }
-    }
-
-    assert!(found_it);
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.glyph_info.chars[0], b'a');
+    assert_eq!(event.pos.x, 0);
+    assert_eq!(event.pos.y, 0);
 }
 
 #[test]
@@ -50,24 +40,13 @@ fn state_can_generate_move_cursor_events() {
                      .unwrap()).unwrap();
 
     let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_move_cursor_event(&rx);
 
-    let mut found_it = false;
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::MoveCursor{new, old, is_visible} => {
-                found_it = true;
-
-                assert_eq!(new, Pos { x: 1, y: 0 });
-                assert_eq!(old, Pos { x: 0, y: 0 });
-                assert_eq!(is_visible, true);
-
-                break;
-            }
-            _ => {}
-        }
-    }
-
-    assert!(found_it);
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.new, Pos { x: 1, y: 0 });
+    assert_eq!(event.old, Pos { x: 0, y: 0 });
+    assert_eq!(event.is_visible, true);
 }
 
 #[test]
@@ -84,24 +63,13 @@ fn state_can_generate_scroll_rect_events() {
                      .unwrap()).unwrap();
 
     let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_scroll_rect_event(&rx);
 
-    let mut found_it = false;
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::ScrollRect{rect, downward, rightward} => {
-                found_it = true;
-
-                assert_eq!(rect, Rect::new(Pos::new(0, 0), Size::new(2, 2)));
-                assert_eq!(downward, -1);
-                assert_eq!(rightward, 0);
-
-                break;
-            }
-            _ => {}
-        }
-    }
-
-    assert!(found_it);
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.rect, Rect::new(Pos::new(0, 0), Size::new(2, 2)));
+    assert_eq!(event.downward, -1);
+    assert_eq!(event.rightward, 0);
 }
 
 #[test]
@@ -133,22 +101,44 @@ fn state_can_generate_scroll_rect_events_for_part_of_screen() {
                      .unwrap()).unwrap();
 
     let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_scroll_rect_event(&rx);
 
-    let mut found_it = false;
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.rect, Rect::new(Pos::new(0, 3), Size::new(2, 2)));
+    assert_eq!(event.downward, -1);
+    assert_eq!(event.rightward, 0);
+}
+
+fn try_recv_put_glyph_event(rx: &Receiver<StateEvent>) -> Option<PutGlyphEvent> {
     while let Ok(e) = rx.try_recv() {
         match e {
-            StateEvent::ScrollRect{rect, downward, rightward} => {
-                found_it = true;
-
-                assert_eq!(rect, Rect::new(Pos::new(0, 3), Size::new(2, 2)));
-                assert_eq!(downward, -1);
-                assert_eq!(rightward, 0);
-
-                break;
-            }
+            StateEvent::PutGlyph(v) => return Some(v),
             _ => {}
         }
     }
 
-    assert!(found_it);
+    None
+}
+
+fn try_recv_move_cursor_event(rx: &Receiver<StateEvent>) -> Option<MoveCursorEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::MoveCursor(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_scroll_rect_event(rx: &Receiver<StateEvent>) -> Option<ScrollRectEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::ScrollRect(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
 }

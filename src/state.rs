@@ -3,30 +3,40 @@ use std::sync::mpsc;
 
 use super::*;
 
+pub struct PutGlyphEvent {
+    pub glyph_info: GlyphInfo,
+    pub pos: Pos,
+}
+
+pub struct MoveCursorEvent {
+    pub new: Pos,
+    pub old: Pos,
+    pub is_visible: bool,
+}
+
+pub struct ScrollRectEvent {
+    pub rect: Rect,
+    pub downward: isize,
+    pub rightward: isize,
+}
+
+pub struct MoveRectEvent {
+    pub dest: Rect,
+    pub src: Rect,
+}
+
+pub struct EraseEvent {
+    pub rect: Rect,
+    /// ?
+    pub selective: isize,
+}
+
 pub enum StateEvent {
-    PutGlyph {
-        glyph_info: GlyphInfo,
-        pos: Pos,
-    },
-    MoveCursor {
-        new: Pos,
-        old: Pos,
-        is_visible: bool,
-    },
-    ScrollRect {
-        rect: Rect,
-        downward: isize,
-        rightward: isize,
-    },
-    MoveRect {
-        dest: Rect,
-        src: Rect,
-    },
-    Erase {
-        rect: Rect,
-        /// ?
-        selective: isize,
-    },
+    PutGlyph(PutGlyphEvent),
+    MoveCursor(MoveCursorEvent),
+    ScrollRect(ScrollRectEvent),
+    MoveRect(MoveRectEvent),
+    Erase(EraseEvent),
     InitPen,
     /// Need to flesh this out still
     SetTermProp,

@@ -11,10 +11,10 @@ pub extern "C" fn put_glyph(info: *mut ffi::VTermGlyphInfo,
                         vterm: *mut c_void)
                         -> c_int {
     with_sender(vterm, |tx| {
-        let event = StateEvent::PutGlyph {
+        let event = StateEvent::PutGlyph(PutGlyphEvent {
             glyph_info: ::GlyphInfo::from_ptr(info),
             pos: pos.as_pos(),
-        };
+        });
 
         match tx.send(event) {
             Ok(_) => 1,
@@ -30,11 +30,11 @@ pub extern "C" fn move_cursor(new: ffi::VTermPos,
                           vterm: *mut c_void)
                           -> c_int {
     with_sender(vterm, |tx| {
-        let event = StateEvent::MoveCursor {
+        let event = StateEvent::MoveCursor(MoveCursorEvent {
             new: new.as_pos(),
             old: old.as_pos(),
             is_visible: int_to_bool(visible),
-        };
+        });
 
         match tx.send(event) {
             Ok(_) => 1,
@@ -50,11 +50,11 @@ pub extern "C" fn scroll_rect(rect: ffi::VTermRect,
                           vterm: *mut c_void)
                           -> c_int {
     with_sender(vterm, |tx| {
-        let event = StateEvent::ScrollRect {
+        let event = StateEvent::ScrollRect(ScrollRectEvent {
             rect: rect.as_rect(),
             downward: downward as isize,
             rightward: rightward as isize,
-        };
+        });
 
         match tx.send(event) {
             Ok(_) => 1,
