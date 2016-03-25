@@ -237,17 +237,17 @@ fn main() {
 
     while let Ok(event) = rx.try_recv() {
         match event {
-            ScreenEvent::Resize{height, width} => {
-                context.rows_count = height;
-                context.cols_count = width;
+            ScreenEvent::Resize(v) => {
+                context.rows_count = v.height;
+                context.cols_count = v.width;
             }
-            ScreenEvent::SbPushLine{cells} => {
+            ScreenEvent::SbPushLine(v) => {
                 let (fg_rgb, bg_rgb) = vt.state_get_default_colors();
                 let mut prev_cell: ScreenCell = Default::default();
                 prev_cell.fg_rgb = fg_rgb;
                 prev_cell.bg_rgb = bg_rgb;
 
-                for cell in cells {
+                for cell in v.cells {
                     dump_cell(&vt, &cell, &prev_cell, &context);
                     prev_cell = cell
                 }

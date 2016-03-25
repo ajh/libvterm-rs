@@ -3,34 +3,6 @@ use std::sync::mpsc;
 
 use super::*;
 
-pub struct PutGlyphEvent {
-    pub glyph_info: GlyphInfo,
-    pub pos: Pos,
-}
-
-pub struct MoveCursorEvent {
-    pub new: Pos,
-    pub old: Pos,
-    pub is_visible: bool,
-}
-
-pub struct ScrollRectEvent {
-    pub rect: Rect,
-    pub downward: isize,
-    pub rightward: isize,
-}
-
-pub struct MoveRectEvent {
-    pub dest: Rect,
-    pub src: Rect,
-}
-
-pub struct EraseEvent {
-    pub rect: Rect,
-    /// ?
-    pub selective: isize,
-}
-
 pub enum StateEvent {
     PutGlyph(PutGlyphEvent),
     MoveCursor(MoveCursorEvent),

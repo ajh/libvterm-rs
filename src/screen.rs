@@ -3,6 +3,25 @@ use std::sync::mpsc;
 
 use super::*;
 
+#[derive(Debug)]
+pub enum ScreenEvent {
+    AltScreen(AltScreenEvent),
+    Bell,
+    CursorBlink(CursorBlinkEvent),
+    CursorShape(CursorShapeEvent),
+    CursorVisible(CursorVisibleEvent),
+    Damage(DamageEvent),
+    IconName(IconNameEvent),
+    Mouse(MouseEvent),
+    MoveCursor(MoveCursorEvent),
+    MoveRect(MoveRectEvent),
+    Resize(ResizeEvent),
+    Reverse(ReverseEvent),
+    SbPopLine(SbPopLineEvent),
+    SbPushLine(SbPushLineEvent),
+    Title(TitleEvent),
+}
+
 pub struct ScreenCallbacksConfig {
     pub damage: bool,
     pub move_rect: bool,
@@ -40,6 +59,13 @@ impl ScreenCallbacksConfig {
             sb_popline: false,
         }
     }
+}
+
+pub enum DamageSize {
+    Cell, // every cell
+    Row, // entire rows
+    Screen, // entire screen
+    Scroll, // entire screen + scrollrect
 }
 
 impl VTerm {
@@ -94,9 +120,14 @@ impl VTerm {
         unsafe { ffi::vterm_screen_flush_damage(self.screen_ptr.get_mut()) };
     }
 
-    // TODO: there should be a rust VTermDamageSize type for consistency
-    pub fn screen_set_damage_merge(&mut self, size: ffi::VTermDamageSize) {
-        unsafe { ffi::vterm_screen_set_damage_merge(self.screen_ptr.get_mut(), size) };
+    pub fn screen_set_damage_merge(&mut self, size: DamageSize) {
+        let ffi_size = match size {
+            DamageSize::Cell => ffi::VTermDamageSize::VTermDamageCell,
+            DamageSize::Row => ffi::VTermDamageSize::VTermDamageRow,
+            DamageSize::Screen => ffi::VTermDamageSize::VTermDamageScreen,
+            DamageSize::Scroll => ffi::VTermDamageSize::VTermDamageScroll,
+        };
+        unsafe { ffi::vterm_screen_set_damage_merge(self.screen_ptr.get_mut(), ffi_size) };
     }
 
     pub fn screen_get_cells_in_rect(&self, rect: &Rect) -> Vec<ScreenCell> {
@@ -115,14 +146,46 @@ impl VTerm {
     pub fn screen_receive_events(&mut self, config: &ScreenCallbacksConfig) {
         let mut callbacks: ffi::VTermScreenCallbacks = Default::default();
 
-        callbacks.damage = if config.damage { Some(::screen_callbacks::damage) } else { None };
-        callbacks.move_rect = if config.move_rect { Some(::screen_callbacks::move_rect) } else { None };
-        callbacks.move_cursor = if config.move_cursor { Some(::screen_callbacks::move_cursor) } else { None };
-        callbacks.set_term_prop = if config.set_term_prop { Some(::screen_callbacks::set_term_prop) } else { None };
-        callbacks.bell = if config.bell { Some(::screen_callbacks::bell) } else { None };
-        callbacks.resize = if config.resize { Some(::screen_callbacks::resize) } else { None };
-        callbacks.sb_pushline = if config.sb_pushline { Some(::screen_callbacks::sb_pushline) } else { None };
-        callbacks.sb_popline = if config.sb_popline { Some(::screen_callbacks::sb_popline) } else { None };
+        callbacks.damage = if config.damage {
+            Some(::screen_callbacks::damage)
+        } else {
+            None
+        };
+        callbacks.move_rect = if config.move_rect {
+            Some(::screen_callbacks::move_rect)
+        } else {
+            None
+        };
+        callbacks.move_cursor = if config.move_cursor {
+            Some(::screen_callbacks::move_cursor)
+        } else {
+            None
+        };
+        callbacks.set_term_prop = if config.set_term_prop {
+            Some(::screen_callbacks::set_term_prop)
+        } else {
+            None
+        };
+        callbacks.bell = if config.bell {
+            Some(::screen_callbacks::bell)
+        } else {
+            None
+        };
+        callbacks.resize = if config.resize {
+            Some(::screen_callbacks::resize)
+        } else {
+            None
+        };
+        callbacks.sb_pushline = if config.sb_pushline {
+            Some(::screen_callbacks::sb_pushline)
+        } else {
+            None
+        };
+        callbacks.sb_popline = if config.sb_popline {
+            Some(::screen_callbacks::sb_popline)
+        } else {
+            None
+        };
 
         self.screen_callbacks = Some(callbacks);
 

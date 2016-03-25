@@ -15,6 +15,7 @@ pub enum VTermProp {
     VTermPropCursorshape, // number
     VTermPropMouse, // number
 }
+
 pub enum VTermValue {}
 
 #[repr(C)]
