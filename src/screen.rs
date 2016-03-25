@@ -3,6 +3,45 @@ use std::sync::mpsc;
 
 use super::*;
 
+pub struct ScreenCallbacksConfig {
+    pub damage: bool,
+    pub move_rect: bool,
+    pub move_cursor: bool,
+    pub set_term_prop: bool,
+    pub bell: bool,
+    pub resize: bool,
+    pub sb_pushline: bool,
+    pub sb_popline: bool,
+}
+
+impl ScreenCallbacksConfig {
+    pub fn all() -> ScreenCallbacksConfig {
+        ScreenCallbacksConfig {
+            damage: true,
+            move_rect: true,
+            move_cursor: true,
+            set_term_prop: true,
+            bell: true,
+            resize: true,
+            sb_pushline: true,
+            sb_popline: true,
+        }
+    }
+
+    pub fn none() -> ScreenCallbacksConfig {
+        ScreenCallbacksConfig {
+            damage: false,
+            move_rect: false,
+            move_cursor: false,
+            set_term_prop: false,
+            bell: false,
+            resize: false,
+            sb_pushline: false,
+            sb_popline: false,
+        }
+    }
+}
+
 impl VTerm {
     /// Reset the screen. I've observed this needs to happen before using or segfaults will occur.
     pub fn screen_reset(&mut self, is_hard: bool) {
@@ -73,24 +112,32 @@ impl VTerm {
     /// calling this method will setup the vterm to generate ScreenEvent messages to a channel. The
     /// returned result indicates whether the channel was already created. The receiver end of the
     /// channel can be had by accessing the screen_events_rx field.
-    pub fn generate_screen_events(&mut self) -> Result<(), ()> {
-        if self.screen_callbacks_installed {
-            return Err(());
-        }
-        self.screen_callbacks_installed = true;
+    pub fn screen_receive_events(&mut self, config: &ScreenCallbacksConfig) {
+        let mut callbacks: ffi::VTermScreenCallbacks = Default::default();
 
-        let (tx, rx) = mpsc::channel();
-        self.screen_event_tx = Some(tx);
-        self.screen_event_rx = Some(rx);
+        callbacks.damage = if config.damage { Some(::screen_callbacks::damage) } else { None };
+        callbacks.move_rect = if config.move_rect { Some(::screen_callbacks::move_rect) } else { None };
+        callbacks.move_cursor = if config.move_cursor { Some(::screen_callbacks::move_cursor) } else { None };
+        callbacks.set_term_prop = if config.set_term_prop { Some(::screen_callbacks::set_term_prop) } else { None };
+        callbacks.bell = if config.bell { Some(::screen_callbacks::bell) } else { None };
+        callbacks.resize = if config.resize { Some(::screen_callbacks::resize) } else { None };
+        callbacks.sb_pushline = if config.sb_pushline { Some(::screen_callbacks::sb_pushline) } else { None };
+        callbacks.sb_popline = if config.sb_popline { Some(::screen_callbacks::sb_popline) } else { None };
+
+        self.screen_callbacks = Some(callbacks);
+
+        if self.screen_event_tx.is_none() {
+            let (tx, rx) = mpsc::channel();
+            self.screen_event_tx = Some(tx);
+            self.screen_event_rx = Some(rx);
+        }
 
         unsafe {
             let self_ptr: *mut c_void = self as *mut _ as *mut c_void;
             ffi::vterm_screen_set_callbacks(self.screen_ptr.get_mut(),
-                                            &::screen_callbacks::SCREEN_CALLBACKS,
+                                            self.screen_callbacks.as_ref().unwrap(),
                                             self_ptr);
         }
-
-        Ok(())
     }
 }
 

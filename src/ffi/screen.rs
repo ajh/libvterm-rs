@@ -86,14 +86,29 @@ pub enum VTermAttrMask {}
 
 #[repr(C)]
 pub struct VTermScreenCallbacks {
-    pub damage: extern "C" fn(VTermRect, *mut c_void) -> (c_int),
-    pub move_rect: extern "C" fn(VTermRect, VTermRect, *mut c_void) -> (c_int),
-    pub move_cursor: extern "C" fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int),
-    pub set_term_prop: extern "C" fn(VTermProp, VTermValue, *mut c_void) -> (c_int),
-    pub bell: extern "C" fn(*mut c_void) -> (c_int),
-    pub resize: extern "C" fn(c_int, c_int, *mut c_void) -> c_int,
-    pub sb_pushline: extern "C" fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
-    pub sb_popline: extern "C" fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int,
+    pub damage: Option<extern "C" fn(VTermRect, *mut c_void) -> (c_int)>,
+    pub move_rect: Option<extern "C" fn(VTermRect, VTermRect, *mut c_void) -> (c_int)>,
+    pub move_cursor: Option<extern "C" fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int)>,
+    pub set_term_prop: Option<extern "C" fn(VTermProp, VTermValue, *mut c_void) -> (c_int)>,
+    pub bell: Option<extern "C" fn(*mut c_void) -> (c_int)>,
+    pub resize: Option<extern "C" fn(c_int, c_int, *mut c_void) -> c_int>,
+    pub sb_pushline: Option<extern "C" fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int>,
+    pub sb_popline: Option<extern "C" fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int>,
+}
+
+impl Default for VTermScreenCallbacks {
+    fn default() -> VTermScreenCallbacks {
+        VTermScreenCallbacks {
+            damage: None,
+            move_rect: None,
+            move_cursor: None,
+            set_term_prop: None,
+            bell: None,
+            resize: None,
+            sb_pushline: None,
+            sb_popline: None,
+        }
+    }
 }
 
 extern "C" {
@@ -237,14 +252,14 @@ mod tests {
             vterm_screen_reset(screen_ptr, 1);
 
             let callbacks = VTermScreenCallbacks {
-                damage: damage_handler,
-                move_rect: move_rect_handler,
-                move_cursor: move_cursor_handler,
-                set_term_prop: set_term_prop_handler,
-                bell: bell_handler,
-                resize: resize_handler,
-                sb_pushline: sb_pushline_handler,
-                sb_popline: sb_popline_handler,
+                damage: Some(damage_handler),
+                move_rect: Some(move_rect_handler),
+                move_cursor: Some(move_cursor_handler),
+                set_term_prop: Some(set_term_prop_handler),
+                bell: Some(bell_handler),
+                resize: Some(resize_handler),
+                sb_pushline: Some(sb_pushline_handler),
+                sb_popline: Some(sb_popline_handler),
             };
 
             let mut strings: Vec<String> = vec![];

@@ -18,11 +18,12 @@ mod state_callbacks;
 mod vterm;
 mod glyph_info;
 
-pub use vterm::*;
-pub use screen_cell::*;
-pub use state::*;
 pub use geom::*;
 pub use glyph_info::*;
+pub use screen::*;
+pub use screen_cell::*;
+pub use state::*;
+pub use vterm::*;
 
 #[derive(Debug)]
 pub enum ScreenEvent {

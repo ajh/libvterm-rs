@@ -8,7 +8,7 @@ use super::*;
 pub struct VTerm {
     pub ptr: Unique<ffi::VTerm>,
 
-    pub screen_callbacks_installed: bool,
+    pub screen_callbacks: Option<ffi::VTermScreenCallbacks>,
     pub screen_event_rx: Option<mpsc::Receiver<ScreenEvent>>,
     pub screen_event_tx: Option<mpsc::Sender<ScreenEvent>>,
     pub screen_ptr: Unique<ffi::VTermScreen>,
@@ -30,7 +30,7 @@ impl VTerm {
 
         let mut vterm = VTerm {
             ptr: vterm_ptr,
-            screen_callbacks_installed: false,
+            screen_callbacks: None,
             screen_event_rx: None,
             screen_event_tx: None,
             screen_ptr: screen_ptr,

@@ -14,7 +14,7 @@ fn bench_get_screen_damage_event(b: &mut Bencher) {
         height: 24,
         width: 80,
     });
-    vterm.generate_screen_events().unwrap();
+    vterm.screen_receive_events(&ScreenCallbacksConfig::all());
     vterm.screen_set_damage_merge(ffi::VTermDamageSize::VTermDamageRow);
     let rx = vterm.screen_event_rx.take().unwrap();
 

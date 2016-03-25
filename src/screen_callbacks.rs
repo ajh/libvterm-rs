@@ -2,7 +2,7 @@ use libc::{c_int, c_void};
 
 use super::*;
 
-extern "C" fn damage_handler(rect: ffi::VTermRect, vterm: *mut c_void) -> c_int {
+pub extern "C" fn damage(rect: ffi::VTermRect, vterm: *mut c_void) -> c_int {
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
@@ -15,7 +15,7 @@ extern "C" fn damage_handler(rect: ffi::VTermRect, vterm: *mut c_void) -> c_int 
     }
 }
 
-extern "C" fn move_rect_handler(dest: ffi::VTermRect,
+pub extern "C" fn move_rect(dest: ffi::VTermRect,
                                 src: ffi::VTermRect,
                                 vterm: *mut c_void)
                                 -> c_int {
@@ -34,7 +34,7 @@ extern "C" fn move_rect_handler(dest: ffi::VTermRect,
     }
 }
 
-extern "C" fn move_cursor_handler(new: ffi::VTermPos,
+pub extern "C" fn move_cursor(new: ffi::VTermPos,
                                   old: ffi::VTermPos,
                                   is_visible: c_int,
                                   vterm: *mut c_void)
@@ -56,7 +56,7 @@ extern "C" fn move_cursor_handler(new: ffi::VTermPos,
     }
 }
 
-extern "C" fn set_term_prop_handler(_: ffi::VTermProp,
+pub extern "C" fn set_term_prop(_: ffi::VTermProp,
                                     _: ffi::VTermValue,
                                     _: *mut c_void)
                                     -> c_int {
@@ -88,7 +88,7 @@ extern "C" fn set_term_prop_handler(_: ffi::VTermProp,
     // }
 }
 
-extern "C" fn bell_handler(vterm: *mut c_void) -> c_int {
+pub extern "C" fn bell(vterm: *mut c_void) -> c_int {
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
@@ -100,7 +100,7 @@ extern "C" fn bell_handler(vterm: *mut c_void) -> c_int {
         None => 0,
     }
 }
-extern "C" fn resize_handler(rows: c_int, cols: c_int, vterm: *mut c_void) -> c_int {
+pub extern "C" fn resize(rows: c_int, cols: c_int, vterm: *mut c_void) -> c_int {
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
@@ -115,7 +115,7 @@ extern "C" fn resize_handler(rows: c_int, cols: c_int, vterm: *mut c_void) -> c_
         None => 0,
     }
 }
-extern "C" fn sb_pushline_handler(cols: c_int,
+pub extern "C" fn sb_pushline(cols: c_int,
                                   cells_ptr: *const ffi::VTermScreenCell,
                                   vterm: *mut c_void)
                                   -> c_int {
@@ -137,7 +137,7 @@ extern "C" fn sb_pushline_handler(cols: c_int,
     }
 }
 
-extern "C" fn sb_popline_handler(cols: c_int,
+pub extern "C" fn sb_popline(cols: c_int,
                                  cells_ptr: *const ffi::VTermScreenCell,
                                  vterm: *mut c_void)
                                  -> c_int {
@@ -158,14 +158,3 @@ extern "C" fn sb_popline_handler(cols: c_int,
         None => 0,
     }
 }
-
-pub static SCREEN_CALLBACKS: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbacks {
-    damage: damage_handler,
-    move_rect: move_rect_handler,
-    move_cursor: move_cursor_handler,
-    set_term_prop: set_term_prop_handler,
-    bell: bell_handler,
-    resize: resize_handler,
-    sb_pushline: sb_pushline_handler,
-    sb_popline: sb_popline_handler,
-};

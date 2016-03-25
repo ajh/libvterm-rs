@@ -218,7 +218,7 @@ fn main() {
 
     vt.set_utf8(true);
 
-    vt.generate_screen_events().unwrap();
+    vt.screen_receive_events(&ScreenCallbacksConfig::all());
     let rx = vt.screen_event_rx.take().unwrap();
 
     vt.screen_reset(true);
