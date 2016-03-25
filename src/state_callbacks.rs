@@ -3,17 +3,6 @@ use std::sync::mpsc::Sender;
 
 use super::*;
 
-/// Call the given closure with the vterms sender, if it exists.
-fn with_sender<F>(vterm: *mut c_void, closure: F) -> c_int
-    where F: Fn(&Sender<StateEvent>) -> c_int
-{
-    let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
-    match vterm.state_event_tx.as_ref() {
-        Some(tx) => closure(tx),
-        None => 0,
-    }
-}
-
 // int (*putglyph)(VTermGlyphInfo *info, VTermPos pos, void *user);
 extern "C" fn put_glyph(info: *mut ffi::VTermGlyphInfo,
                         pos: ffi::VTermPos,
@@ -38,18 +27,18 @@ extern "C" fn move_cursor(new: ffi::VTermPos,
                           visible: c_int,
                           vterm: *mut c_void)
                           -> c_int {
-      with_sender(vterm, |tx| {
-          let event = StateEvent::MoveCursor {
-              new: new.as_pos(),
-              old: old.as_pos(),
-              is_visible: int_to_bool(visible),
-          };
+    with_sender(vterm, |tx| {
+        let event = StateEvent::MoveCursor {
+            new: new.as_pos(),
+            old: old.as_pos(),
+            is_visible: int_to_bool(visible),
+        };
 
-          match tx.send(event) {
-              Ok(_) => 1,
-              Err(_) => 0,
-          }
-      })
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
 
 // int (*scrollrect)(VTermRect rect, int downward, int rightward, void *user);
@@ -58,8 +47,20 @@ extern "C" fn scroll_rect(rect: ffi::VTermRect,
                           rightward: c_int,
                           vterm: *mut c_void)
                           -> c_int {
-    0
+    with_sender(vterm, |tx| {
+        let event = StateEvent::ScrollRect {
+            rect: rect.as_rect(),
+            downward: downward as isize,
+            rightward: rightward as isize,
+        };
+
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
+
 // int (*moverect)(VTermRect dest, VTermRect src, void *user);
 extern "C" fn move_rect(dest: ffi::VTermRect, src: ffi::VTermRect, vterm: *mut c_void) -> c_int {
     0
@@ -121,6 +122,18 @@ pub static STATE_CALLBACKS: ffi::VTermStateCallbacks = ffi::VTermStateCallbacks 
     set_line_info: set_line_info,
 };
 
+/// Call the given closure with the vterms sender, if it exists.
+fn with_sender<F>(vterm: *mut c_void, closure: F) -> c_int
+    where F: Fn(&Sender<StateEvent>) -> c_int
+{
+    let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
+    match vterm.state_event_tx.as_ref() {
+        Some(tx) => closure(tx),
+        None => 0,
+    }
+}
+
+
 mod tests {
     #![allow(unused_imports)]
     use super::super::*;
@@ -176,6 +189,36 @@ mod tests {
                     assert_eq!(new, Pos { x: 1, y: 0 });
                     assert_eq!(old, Pos { x: 0, y: 0 });
                     assert_eq!(is_visible, true);
+
+                    break;
+                }
+                _ => {}
+            }
+        }
+
+        assert!(found_it);
+    }
+
+    #[test]
+    fn state_can_generate_scroll_rect_events() {
+        let mut vterm: VTerm = VTerm::new(&Size {
+            height: 2,
+            width: 2,
+        });
+        vterm.generate_state_events().unwrap();
+        vterm.write(b"\x1bM");
+
+        let rx = vterm.state_event_rx.take().unwrap();
+
+        let mut found_it = false;
+        while let Ok(e) = rx.try_recv() {
+            match e {
+                StateEvent::ScrollRect{rect, downward, rightward} => {
+                    found_it = true;
+
+                    assert_eq!(rect, Rect::new(Pos::new(0, 0), Size::new(2, 2)));
+                    assert_eq!(downward, -1);
+                    assert_eq!(rightward, 0);
 
                     break;
                 }

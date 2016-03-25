@@ -13,7 +13,26 @@ pub enum StateEvent {
         old: Pos,
         is_visible: bool,
     },
+    ScrollRect {
+        rect: Rect,
+        downward: isize,
+        rightward: isize,
+    },
+    MoveRect {
+        dest: Rect,
+        src: Rect,
+    },
+    Erase {
+        rect: Rect,
+        /// ?
+        selective: isize,
+    },
+    InitPen,
+    /// Need to flesh this out still
+    SetTermProp,
     Bell,
+    Resize,
+    SetLineInfo,
 }
 
 impl VTerm {

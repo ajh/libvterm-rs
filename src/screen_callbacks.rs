@@ -169,4 +169,3 @@ pub static SCREEN_CALLBACKS: ffi::VTermScreenCallbacks = ffi::VTermScreenCallbac
     sb_pushline: sb_pushline_handler,
     sb_popline: sb_popline_handler,
 };
-
