@@ -4,6 +4,7 @@ use super::*;
 
 pub enum VTermScreen {}
 
+#[derive(Debug)]
 #[repr(C)]
 pub enum VTermProp {
     VTermPropCursorvisible = 1, // bool
@@ -90,7 +91,7 @@ pub struct VTermScreenCallbacks {
     pub damage: Option<extern "C" fn(VTermRect, *mut c_void) -> (c_int)>,
     pub move_rect: Option<extern "C" fn(VTermRect, VTermRect, *mut c_void) -> (c_int)>,
     pub move_cursor: Option<extern "C" fn(VTermPos, VTermPos, c_int, *mut c_void) -> (c_int)>,
-    pub set_term_prop: Option<extern "C" fn(VTermProp, VTermValue, *mut c_void) -> (c_int)>,
+    pub set_term_prop: Option<extern "C" fn(VTermProp, *mut VTermValue, *mut c_void) -> (c_int)>,
     pub bell: Option<extern "C" fn(*mut c_void) -> (c_int)>,
     pub resize: Option<extern "C" fn(c_int, c_int, *mut c_void) -> c_int>,
     pub sb_pushline: Option<extern "C" fn(c_int, *const VTermScreenCell, *mut c_void) -> c_int>,
@@ -156,6 +157,10 @@ extern "C" {
                                  -> c_int;
 
     pub fn vterm_screen_is_eol(screen: *const VTermScreen, pos: VTermPos) -> c_int;
+    pub fn vterm_value_get_boolean(value: *const VTermValue) -> c_int;
+    pub fn vterm_value_get_number(value: *const VTermValue) -> c_int;
+    pub fn vterm_value_get_string(value: *const VTermValue) -> *const c_char;
+    pub fn vterm_value_get_color(value: *const VTermValue) -> VTermColor;
 }
 
 mod tests {
@@ -214,7 +219,7 @@ mod tests {
         1
     }
     extern "C" fn set_term_prop_handler(_: VTermProp,
-                                        _: VTermValue,
+                                        _: *mut VTermValue,
                                         strings: *mut c_void)
                                         -> c_int {
         handler_helper("set_term_prop".to_string(), strings);

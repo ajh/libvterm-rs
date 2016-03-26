@@ -48,7 +48,7 @@ char vterm_cell_get_width(const VTermScreenCell *cell)
   return cell->width;
 };
 
-char vterm_cell_set_width(VTermScreenCell *cell, char width)
+void vterm_cell_set_width(VTermScreenCell *cell, char width)
 {
   cell->width = width;
 };
@@ -199,4 +199,20 @@ int vterm_glyph_info_dwl(const VTermGlyphInfo *glyph_info) {
 
 int vterm_glyph_info_dhl(const VTermGlyphInfo *glyph_info) {
   return glyph_info->dhl;
+}
+
+int vterm_value_get_boolean(const VTermValue *value) {
+  return value->boolean;
+}
+
+int vterm_value_get_number(const VTermValue *value) {
+  return value->number;
+}
+
+char * vterm_value_get_string(const VTermValue *value) {
+  return value->string;
+}
+
+VTermColor vterm_value_get_color(const VTermValue *value) {
+  return value->color;
 }

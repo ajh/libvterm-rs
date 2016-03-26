@@ -87,8 +87,42 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                             val: *mut ffi::VTermValue,
                             vterm: *mut c_void)
                             -> c_int {
-    0
+    println!("prop is {:?}", prop);
+    with_sender(vterm, |tx| {
+        let event: StateEvent = match prop {
+            ffi::VTermProp::VTermPropAltscreen => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)) };
+                StateEvent::AltScreen(AltScreenEvent { is_true: val })
+            }
+
+            // This is wrong: FIXME
+            _ => { StateEvent::Bell },
+            //ffi::VTermProp::VTermPropCursorblink => {
+                //StateEvent::CursorBlink(CursorBlinkEvent { is_true: true })
+            //}
+            //ffi::VTermProp::VTermPropCursorshape => {
+                //StateEvent::CursorShape(CursorShapeEvent { value: 0 })
+            //}
+            //ffi::VTermProp::VTermPropCursorvisible => {
+                //StateEvent::CursorVisible(CursorVisibleEvent { is_true: true })
+            //}
+            //ffi::VTermProp::VTermPropIconname => {
+                //StateEvent::IconName(IconNameEvent { text: "fake icon name".to_string() })
+            //}
+            //ffi::VTermProp::VTermPropMouse => StateEvent::Mouse(MouseEvent { value: 0 }),
+            //ffi::VTermProp::VTermPropReverse => StateEvent::Reverse(ReverseEvent { is_true: true }),
+            //ffi::VTermProp::VTermPropTitle => {
+                //StateEvent::Title(TitleEvent { text: "fake title".to_string() })
+            //}
+        };
+
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
+
 // int (*bell)(void *user);
 pub extern "C" fn bell(vterm: *mut c_void) -> c_int {
     0

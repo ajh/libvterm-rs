@@ -110,6 +110,46 @@ fn state_can_generate_scroll_rect_events_for_part_of_screen() {
     assert_eq!(event.rightward, 0);
 }
 
+//fn state_can_generate_move_rect_events()
+//fn state_can_generate_erase_events()
+//fn state_can_generate_init_pen_events()
+//fn state_can_generate_set_pen_attr_events()
+
+#[test]
+fn state_can_generate_alt_screen_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    let terminfo = TermInfo::from_name("xterm").unwrap();
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("smcup")
+                     .build()
+                     .unwrap()).unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<AltScreenEvent> = try_recv_alt_screen_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, true);
+
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("rmcup")
+                     .build()
+                     .unwrap()).unwrap();
+    vterm.flush().unwrap();
+
+    let event: Option<AltScreenEvent> = try_recv_alt_screen_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, false);
+}
+
 fn try_recv_put_glyph_event(rx: &Receiver<StateEvent>) -> Option<PutGlyphEvent> {
     while let Ok(e) = rx.try_recv() {
         match e {
@@ -136,6 +176,17 @@ fn try_recv_scroll_rect_event(rx: &Receiver<StateEvent>) -> Option<ScrollRectEve
     while let Ok(e) = rx.try_recv() {
         match e {
             StateEvent::ScrollRect(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_alt_screen_event(rx: &Receiver<StateEvent>) -> Option<AltScreenEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::AltScreen(v) => return Some(v),
             _ => {}
         }
     }

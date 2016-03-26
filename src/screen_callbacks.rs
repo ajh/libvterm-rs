@@ -56,11 +56,7 @@ pub extern "C" fn move_cursor(new: ffi::VTermPos,
     }
 }
 
-pub extern "C" fn set_term_prop(prop: ffi::VTermProp, value: ffi::VTermValue, vterm: *mut c_void) -> c_int {
-    // I'm going to need a c shim to get a rust value out of the value union. And i think I'll need
-    // to have the rust ffi::VTermValue type be the same size as the c union or the vterm pointer
-    // may be pointing to the wrong memory?
-
+pub extern "C" fn set_term_prop(prop: ffi::VTermProp, value: *mut ffi::VTermValue, vterm: *mut c_void) -> c_int {
     let event: ScreenEvent = match prop {
         ffi::VTermProp::VTermPropAltscreen => {
             ScreenEvent::AltScreen(AltScreenEvent { is_true: true })
@@ -83,8 +79,6 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp, value: ffi::VTermValue, vt
             ScreenEvent::Title(TitleEvent { text: "fake title".to_string() })
         }
     };
-
-    info!("prop event {:?}", event);
 
     let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.screen_event_tx.as_ref() {
