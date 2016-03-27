@@ -116,6 +116,110 @@ fn state_can_generate_scroll_rect_events_for_part_of_screen() {
 //fn state_can_generate_set_pen_attr_events()
 
 #[test]
+fn state_can_generate_cursor_visible_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    let terminfo = TermInfo::from_name("xterm").unwrap();
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("civis")
+                     .build()
+                     .unwrap()).unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<CursorVisibleEvent> = try_recv_cursor_visible_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, false);
+
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("cnorm")
+                     .build()
+                     .unwrap()).unwrap();
+    vterm.flush().unwrap();
+
+    let event: Option<CursorVisibleEvent> = try_recv_cursor_visible_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, true);
+}
+
+#[test]
+fn state_can_generate_cursor_blink_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    let terminfo = TermInfo::from_name("xterm").unwrap();
+
+    // super secret DECSCUSR sequence. See http://vt100.net/docs/vt510-rm/DECSCUSR
+    vterm.write(b"\x1b[1 q").unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<CursorBlinkEvent> = try_recv_cursor_blink_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, true);
+
+    vterm.write(b"\x1b[2 q").unwrap();
+    vterm.flush().unwrap();
+
+    let event: Option<CursorBlinkEvent> = try_recv_cursor_blink_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, false);
+}
+
+#[test]
+fn state_can_generate_cursor_shape_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    let terminfo = TermInfo::from_name("xterm").unwrap();
+
+    // super secret DECSCUSR sequence. See http://vt100.net/docs/vt510-rm/DECSCUSR
+    vterm.write(b"\x1b[4 q").unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<CursorShapeEvent> = try_recv_cursor_shape_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    // TODO: this should be an enum value, not an integer
+    assert_eq!(event.value, 2);
+
+    vterm.write(b"\x1b[0 q").unwrap();
+    vterm.flush().unwrap();
+
+    let event: Option<CursorShapeEvent> = try_recv_cursor_shape_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.value, 1);
+}
+
+//fn state_can_generate_title_events()
+//fn state_can_generate_iconname_events()
+//fn state_can_generate_reverse_events()
+//fn state_can_generate_cursorshape_events()
+//fn state_can_generate_mouse_events()
+
+#[test]
 fn state_can_generate_alt_screen_events() {
     let mut vterm: VTerm = VTerm::new(&Size {
         height: 2,
@@ -187,6 +291,39 @@ fn try_recv_alt_screen_event(rx: &Receiver<StateEvent>) -> Option<AltScreenEvent
     while let Ok(e) = rx.try_recv() {
         match e {
             StateEvent::AltScreen(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_cursor_visible_event(rx: &Receiver<StateEvent>) -> Option<CursorVisibleEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::CursorVisible(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_cursor_blink_event(rx: &Receiver<StateEvent>) -> Option<CursorBlinkEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::CursorBlink(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_cursor_shape_event(rx: &Receiver<StateEvent>) -> Option<CursorShapeEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::CursorShape(v) => return Some(v),
             _ => {}
         }
     }

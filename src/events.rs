@@ -2,6 +2,7 @@ use {ScreenCell, GlyphInfo, Rect, Pos};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct AltScreenEvent {
+    /// this is a dumb name. Maybe `is_on` or just `value`?
     pub is_true: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
@@ -10,7 +11,7 @@ pub struct CursorBlinkEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct CursorShapeEvent {
-    pub value: usize,
+    pub value: i32,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct CursorVisibleEvent {
@@ -26,7 +27,7 @@ pub struct IconNameEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct MouseEvent {
-    pub value: usize,
+    pub value: i32,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct MoveCursorEvent {

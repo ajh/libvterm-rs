@@ -90,30 +90,42 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
     println!("prop is {:?}", prop);
     with_sender(vterm, |tx| {
         let event: StateEvent = match prop {
+            ffi::VTermProp::VTermPropCursorvisible => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)) };
+                StateEvent::CursorVisible(CursorVisibleEvent { is_true: val })
+            }
+
             ffi::VTermProp::VTermPropAltscreen => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)) };
                 StateEvent::AltScreen(AltScreenEvent { is_true: val })
             }
 
-            // This is wrong: FIXME
-            _ => { StateEvent::Bell },
-            //ffi::VTermProp::VTermPropCursorblink => {
-                //StateEvent::CursorBlink(CursorBlinkEvent { is_true: true })
-            //}
-            //ffi::VTermProp::VTermPropCursorshape => {
-                //StateEvent::CursorShape(CursorShapeEvent { value: 0 })
-            //}
-            //ffi::VTermProp::VTermPropCursorvisible => {
-                //StateEvent::CursorVisible(CursorVisibleEvent { is_true: true })
-            //}
+            ffi::VTermProp::VTermPropCursorblink => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)) };
+                StateEvent::CursorBlink(CursorBlinkEvent { is_true: val })
+            }
+
+            ffi::VTermProp::VTermPropCursorshape => {
+                let val = unsafe { ffi::vterm_value_get_number(val) };
+                StateEvent::CursorShape(CursorShapeEvent { value: val })
+            }
+
             //ffi::VTermProp::VTermPropIconname => {
                 //StateEvent::IconName(IconNameEvent { text: "fake icon name".to_string() })
             //}
-            //ffi::VTermProp::VTermPropMouse => StateEvent::Mouse(MouseEvent { value: 0 }),
+
+            ffi::VTermProp::VTermPropMouse => {
+                let val = unsafe { ffi::vterm_value_get_number(val) };
+                StateEvent::Mouse(MouseEvent { value: val })
+            },
+
             //ffi::VTermProp::VTermPropReverse => StateEvent::Reverse(ReverseEvent { is_true: true }),
             //ffi::VTermProp::VTermPropTitle => {
                 //StateEvent::Title(TitleEvent { text: "fake title".to_string() })
             //}
+
+            // This is wrong: FIXME
+            _ => { StateEvent::Bell },
         };
 
         match tx.send(event) {
