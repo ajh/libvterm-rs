@@ -9,7 +9,7 @@ pub enum StateEvent {
     ScrollRect(ScrollRectEvent),
     MoveRect(MoveRectEvent),
     Erase(EraseEvent),
-    InitPen,
+    InitPen(InitPenEvent),
     CursorVisible(CursorVisibleEvent),
     CursorBlink(CursorBlinkEvent),
     AltScreen(AltScreenEvent),
@@ -18,7 +18,7 @@ pub enum StateEvent {
     Reverse(ReverseEvent),
     CursorShape(CursorShapeEvent),
     Mouse(MouseEvent),
-    Bell,
+    Bell(BellEvent),
     Resize(ResizeEvent),
     SetLineInfo,
 }

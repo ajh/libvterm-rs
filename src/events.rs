@@ -78,7 +78,10 @@ pub struct EraseEvent {
     /// true when DECSED used, false if ED used
     pub is_selective: bool,
 }
-
+#[derive(PartialEq, Debug, Clone)]
+pub struct InitPenEvent;
+#[derive(PartialEq, Debug, Clone)]
+pub struct BellEvent;
 #[derive(PartialEq, Debug, Clone)]
 pub enum CursorShape {
   Block = 1,

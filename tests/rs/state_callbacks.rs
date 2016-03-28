@@ -197,7 +197,21 @@ fn state_can_generate_erase_events() {
     assert_eq!(event.is_selective, true);
 }
 
-//fn state_can_generate_init_pen_events()
+#[test]
+fn state_can_generate_init_pen_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_init_pen_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+}
+
 //fn state_can_generate_set_pen_attr_events()
 
 #[test]
@@ -436,6 +450,25 @@ fn state_can_generate_alt_screen_events() {
     assert_eq!(event.is_true, false);
 }
 
+#[test]
+fn state_can_generate_bell_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    // BEL - for some reason term crate doesn't know about it?
+    vterm.write(b"\x07");
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_bell_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+}
+
 // TODO: Figure out some way to DRY this up please!
 
 fn try_recv_put_glyph_event(rx: &Receiver<StateEvent>) -> Option<PutGlyphEvent> {
@@ -486,6 +519,17 @@ fn try_recv_erase_event(rx: &Receiver<StateEvent>) -> Option<EraseEvent> {
     while let Ok(e) = rx.try_recv() {
         match e {
             StateEvent::Erase(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_init_pen_event(rx: &Receiver<StateEvent>) -> Option<InitPenEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::InitPen(v) => return Some(v),
             _ => {}
         }
     }
@@ -574,6 +618,17 @@ fn try_recv_mouse_event(rx: &Receiver<StateEvent>) -> Option<MouseEvent> {
     while let Ok(e) = rx.try_recv() {
         match e {
             StateEvent::Mouse(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_bell_event(rx: &Receiver<StateEvent>) -> Option<BellEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::Bell(v) => return Some(v),
             _ => {}
         }
     }

@@ -96,8 +96,15 @@ pub extern "C" fn erase(rect: ffi::VTermRect, selective: c_int, vterm: *mut c_vo
 
 // int (*initpen)(void *user);
 pub extern "C" fn init_pen(vterm: *mut c_void) -> c_int {
-    0
+    with_sender(vterm, |tx| {
+        let event = StateEvent::InitPen(InitPenEvent);
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
+
 // int (*setpenattr)(VTermAttr attr, VTermValue *val, void *user);
 pub extern "C" fn set_pen_attr(attr: ffi::VTermAttr,
                            val: *mut ffi::VTermValue,
@@ -162,8 +169,15 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
 
 // int (*bell)(void *user);
 pub extern "C" fn bell(vterm: *mut c_void) -> c_int {
-    0
+    with_sender(vterm, |tx| {
+        let event = StateEvent::Bell(BellEvent);
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
+
 // int (*resize)(int rows, int cols, VTermPos *delta, void *user);
 pub extern "C" fn resize(rows: c_int,
                      cols: c_int,
