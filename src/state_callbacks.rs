@@ -112,6 +112,7 @@ pub extern "C" fn set_pen_attr(attr: ffi::VTermAttr,
                            -> c_int {
     0
 }
+
 // int (*settermprop)(VTermProp prop, VTermValue *val, void *user);
 pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                             val: *mut ffi::VTermValue,

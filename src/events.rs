@@ -1,4 +1,4 @@
-use {ScreenCell, GlyphInfo, Rect, Pos};
+use {ScreenCell, GlyphInfo, Rect, Pos, ColorRGB};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct AltScreenEvent {
@@ -82,6 +82,42 @@ pub struct EraseEvent {
 pub struct InitPenEvent;
 #[derive(PartialEq, Debug, Clone)]
 pub struct BellEvent;
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenBoldEvent {
+    pub is_true: bool
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenUnderlineEvent {
+    pub value: i32
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenItalicEvent {
+    pub is_true: bool
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenBlinkEvent {
+    pub is_true: bool
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenReverseEvent {
+    pub is_true: bool
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenStrikeEvent {
+    pub is_true: bool
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenFontEvent {
+    pub value: i32
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenForegroundEvent {
+    pub color: ColorRGB
+}
+#[derive(PartialEq, Debug, Clone)]
+pub struct PenBackgroundEvent {
+    pub value: ColorRGB
+}
 #[derive(PartialEq, Debug, Clone)]
 pub enum CursorShape {
   Block = 1,
