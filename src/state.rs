@@ -27,6 +27,7 @@ pub struct StateCallbacksConfig {
     pub put_glyph: bool,
     pub move_cursor: bool,
     pub scroll_rect: bool,
+    /// Seems move_rect only gets called if scroll_rect is `false`
     pub move_rect: bool,
     pub erase: bool,
     pub init_pen: bool,
