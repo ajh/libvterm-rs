@@ -111,23 +111,25 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                 StateEvent::CursorShape(CursorShapeEvent { value: val })
             }
 
-            //ffi::VTermProp::VTermPropIconname => {
-                //StateEvent::IconName(IconNameEvent { text: "fake icon name".to_string() })
-            //}
+            ffi::VTermProp::VTermPropIconname => {
+                let val: String = unsafe { CStr::from_ptr(ffi::vterm_value_get_string(val)).to_string_lossy().into_owned() };
+                StateEvent::IconName(IconNameEvent { text: val })
+            }
 
             ffi::VTermProp::VTermPropMouse => {
                 let val = unsafe { ffi::vterm_value_get_number(val) };
                 StateEvent::Mouse(MouseEvent { value: val })
             },
 
-            //ffi::VTermProp::VTermPropReverse => StateEvent::Reverse(ReverseEvent { is_true: true }),
+            ffi::VTermProp::VTermPropReverse => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
+                StateEvent::Reverse(ReverseEvent { is_true: val })
+            },
+
             ffi::VTermProp::VTermPropTitle => {
                 let val: String = unsafe { CStr::from_ptr(ffi::vterm_value_get_string(val)).to_string_lossy().into_owned() };
                 StateEvent::Title(TitleEvent { text: val })
             }
-
-            // This is wrong: FIXME
-            _ => { StateEvent::Bell },
         };
 
         match tx.send(event) {

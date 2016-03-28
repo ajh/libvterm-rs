@@ -158,9 +158,7 @@ fn state_can_generate_cursor_blink_events() {
     });
     vterm.state_receive_events(&StateCallbacksConfig::all());
 
-    let terminfo = TermInfo::from_name("xterm").unwrap();
-
-    // super secret DECSCUSR sequence. See http://vt100.net/docs/vt510-rm/DECSCUSR
+    // DECSCUSR
     vterm.write(b"\x1b[1 q").unwrap();
     vterm.flush().unwrap();
 
@@ -189,9 +187,7 @@ fn state_can_generate_cursor_shape_events() {
     });
     vterm.state_receive_events(&StateCallbacksConfig::all());
 
-    let terminfo = TermInfo::from_name("xterm").unwrap();
-
-    // super secret DECSCUSR sequence. See http://vt100.net/docs/vt510-rm/DECSCUSR
+    // DECSCUSR sequence
     vterm.write(b"\x1b[4 q").unwrap();
     vterm.flush().unwrap();
 
@@ -221,8 +217,6 @@ fn state_can_generate_title_events() {
     });
     vterm.state_receive_events(&StateCallbacksConfig::all());
 
-    let terminfo = TermInfo::from_name("xterm").unwrap();
-
     // DECSWT
     vterm.write(b"\x1b]2;foo\x1b\\").unwrap();
     vterm.flush().unwrap();
@@ -232,7 +226,6 @@ fn state_can_generate_title_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    // TODO: this should be an enum value, not an integer
     assert_eq!(event.text, "foo");
 
     vterm.write(b"\x1b]2;bar\x1b\\").unwrap();
@@ -245,10 +238,85 @@ fn state_can_generate_title_events() {
     assert_eq!(event.text, "bar");
 }
 
-//fn state_can_generate_iconname_events()
-//fn state_can_generate_reverse_events()
-//fn state_can_generate_cursorshape_events()
-//fn state_can_generate_mouse_events()
+#[test]
+fn state_can_generate_iconname_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    // DECSWT
+    vterm.write(b"\x1b]1;foo\x1b\\").unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<IconNameEvent> = try_recv_icon_name_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.text, "foo");
+
+    vterm.write(b"\x1b]1;bar\x1b\\").unwrap();
+    vterm.flush().unwrap();
+
+    let event: Option<IconNameEvent> = try_recv_icon_name_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.text, "bar");
+}
+
+#[test]
+fn state_can_generate_reverse_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    // DECSCNM
+    vterm.write(b"\x1b[?5h").unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<ReverseEvent> = try_recv_reverse_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, true);
+
+    vterm.write(b"\x1b[?5l").unwrap();
+    vterm.flush().unwrap();
+
+    let event: Option<ReverseEvent> = try_recv_reverse_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.is_true, false);
+}
+
+#[test]
+fn state_can_generate_mouse_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    // DECSET x10 mouse support
+    vterm.write(b"\x1b[?1003h").unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<MouseEvent> = try_recv_mouse_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+
+    // TODO: this should be an enum value, not an integer
+    assert_eq!(event.value, 3);
+}
 
 #[test]
 fn state_can_generate_alt_screen_events() {
@@ -284,6 +352,8 @@ fn state_can_generate_alt_screen_events() {
     let event = event.unwrap();
     assert_eq!(event.is_true, false);
 }
+
+// TODO: Figure out some way to DRY this up please!
 
 fn try_recv_put_glyph_event(rx: &Receiver<StateEvent>) -> Option<PutGlyphEvent> {
     while let Ok(e) = rx.try_recv() {
@@ -366,6 +436,39 @@ fn try_recv_title_event(rx: &Receiver<StateEvent>) -> Option<TitleEvent> {
     while let Ok(e) = rx.try_recv() {
         match e {
             StateEvent::Title(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_icon_name_event(rx: &Receiver<StateEvent>) -> Option<IconNameEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::IconName(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_reverse_event(rx: &Receiver<StateEvent>) -> Option<ReverseEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::Reverse(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_mouse_event(rx: &Receiver<StateEvent>) -> Option<MouseEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::Mouse(v) => return Some(v),
             _ => {}
         }
     }
