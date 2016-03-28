@@ -11,7 +11,7 @@ fn main() {
     for file in glob(vendor_path.join("libvterm/src/*.c").to_str().unwrap()).unwrap() {
         config.file(file.unwrap());
     }
-    config.file(vendor_path.join("bit_field_workaround.c").to_str().unwrap());
+    config.file(vendor_path.join("rusty_shims.c").to_str().unwrap());
     config.include(vendor_path.join("libvterm/include").to_str().unwrap());
     config.include(vendor_path.join("libvterm/src").to_str().unwrap());
     config.compile("libvterm.a");

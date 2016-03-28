@@ -224,7 +224,7 @@ fn state_can_generate_title_events() {
     let terminfo = TermInfo::from_name("xterm").unwrap();
 
     // DECSWT
-    vterm.write(b"\x1b]2;1;foo\x1b\\").unwrap();
+    vterm.write(b"\x1b]2;foo\x1b\\").unwrap();
     vterm.flush().unwrap();
 
     let rx = vterm.state_event_rx.take().unwrap();
@@ -235,17 +235,16 @@ fn state_can_generate_title_events() {
     // TODO: this should be an enum value, not an integer
     assert_eq!(event.text, "foo");
 
-    vterm.write(b"\x1b[0 q").unwrap();
+    vterm.write(b"\x1b]2;bar\x1b\\").unwrap();
     vterm.flush().unwrap();
 
     let event: Option<TitleEvent> = try_recv_title_event(&rx);
 
     assert!(event.is_some());
     let event = event.unwrap();
-    //assert_eq!(event.value, 1);
+    assert_eq!(event.text, "bar");
 }
 
-//fn state_can_generate_title_events()
 //fn state_can_generate_iconname_events()
 //fn state_can_generate_reverse_events()
 //fn state_can_generate_cursorshape_events()

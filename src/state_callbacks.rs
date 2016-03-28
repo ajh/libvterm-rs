@@ -2,7 +2,7 @@
 
 use libc::{c_int, c_void};
 use std::sync::mpsc::Sender;
-use std::ffi::CString;
+use std::ffi::CStr;
 
 use super::*;
 
@@ -92,17 +92,17 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
     with_sender(vterm, |tx| {
         let event: StateEvent = match prop {
             ffi::VTermProp::VTermPropCursorvisible => {
-                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)) };
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
                 StateEvent::CursorVisible(CursorVisibleEvent { is_true: val })
             }
 
             ffi::VTermProp::VTermPropAltscreen => {
-                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)) };
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
                 StateEvent::AltScreen(AltScreenEvent { is_true: val })
             }
 
             ffi::VTermProp::VTermPropCursorblink => {
-                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)) };
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
                 StateEvent::CursorBlink(CursorBlinkEvent { is_true: val })
             }
 
@@ -122,7 +122,7 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
 
             //ffi::VTermProp::VTermPropReverse => StateEvent::Reverse(ReverseEvent { is_true: true }),
             ffi::VTermProp::VTermPropTitle => {
-                let val = unsafe { CString::from_raw(ffi::vterm_value_get_string(val)).into_string().unwrap() };
+                let val: String = unsafe { CStr::from_ptr(ffi::vterm_value_get_string(val)).to_string_lossy().into_owned() };
                 StateEvent::Title(TitleEvent { text: val })
             }
 

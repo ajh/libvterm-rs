@@ -201,9 +201,7 @@ int vterm_glyph_info_dhl(const VTermGlyphInfo *glyph_info) {
   return glyph_info->dhl;
 }
 
-// I think I want to change these to be into methods, that copy the
-// asked for value out of the enum, then free the enum, then return
-// the value. To avoid memory leaks.
+// NOTE: these gets are returning data that are on the stack
 int vterm_value_get_boolean(const VTermValue *value) {
   return value->boolean;
 }
@@ -213,6 +211,7 @@ int vterm_value_get_number(const VTermValue *value) {
 }
 
 char * vterm_value_get_string(const VTermValue *value) {
+  // NOTE: the string is on the stack too
   return value->string;
 }
 
