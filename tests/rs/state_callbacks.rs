@@ -213,6 +213,38 @@ fn state_can_generate_cursor_shape_events() {
     assert_eq!(event.value, 1);
 }
 
+#[test]
+fn state_can_generate_title_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    let terminfo = TermInfo::from_name("xterm").unwrap();
+
+    // DECSWT
+    vterm.write(b"\x1b]2;1;foo\x1b\\").unwrap();
+    vterm.flush().unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event: Option<TitleEvent> = try_recv_title_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    // TODO: this should be an enum value, not an integer
+    assert_eq!(event.text, "foo");
+
+    vterm.write(b"\x1b[0 q").unwrap();
+    vterm.flush().unwrap();
+
+    let event: Option<TitleEvent> = try_recv_title_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    //assert_eq!(event.value, 1);
+}
+
 //fn state_can_generate_title_events()
 //fn state_can_generate_iconname_events()
 //fn state_can_generate_reverse_events()
@@ -324,6 +356,17 @@ fn try_recv_cursor_shape_event(rx: &Receiver<StateEvent>) -> Option<CursorShapeE
     while let Ok(e) = rx.try_recv() {
         match e {
             StateEvent::CursorShape(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_title_event(rx: &Receiver<StateEvent>) -> Option<TitleEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::Title(v) => return Some(v),
             _ => {}
         }
     }

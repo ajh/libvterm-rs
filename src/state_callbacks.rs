@@ -2,6 +2,7 @@
 
 use libc::{c_int, c_void};
 use std::sync::mpsc::Sender;
+use std::ffi::CString;
 
 use super::*;
 
@@ -120,9 +121,10 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
             },
 
             //ffi::VTermProp::VTermPropReverse => StateEvent::Reverse(ReverseEvent { is_true: true }),
-            //ffi::VTermProp::VTermPropTitle => {
-                //StateEvent::Title(TitleEvent { text: "fake title".to_string() })
-            //}
+            ffi::VTermProp::VTermPropTitle => {
+                let val = unsafe { CString::from_raw(ffi::vterm_value_get_string(val)).into_string().unwrap() };
+                StateEvent::Title(TitleEvent { text: val })
+            }
 
             // This is wrong: FIXME
             _ => { StateEvent::Bell },
