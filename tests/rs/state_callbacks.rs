@@ -469,169 +469,36 @@ fn state_can_generate_bell_events() {
     let event = event.unwrap();
 }
 
-// TODO: Figure out some way to DRY this up please!
+// Builds a function that returns a Some of the first event of the given type found on the channel
+// or None.
+macro_rules! dry {
+    ($n:ident, $t:ty, $p:path) => {
+        fn $n(rx: &Receiver<StateEvent>) -> Option<$t> {
+            while let Ok(e) = rx.try_recv() {
+                match e {
+                    $p(v) => return Some(v),
+                    _ => {}
+                }
+            }
 
-fn try_recv_put_glyph_event(rx: &Receiver<StateEvent>) -> Option<PutGlyphEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::PutGlyph(v) => return Some(v),
-            _ => {}
+            None
         }
-    }
 
-    None
+    }
 }
 
-fn try_recv_move_cursor_event(rx: &Receiver<StateEvent>) -> Option<MoveCursorEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::MoveCursor(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_scroll_rect_event(rx: &Receiver<StateEvent>) -> Option<ScrollRectEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::ScrollRect(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_move_rect_event(rx: &Receiver<StateEvent>) -> Option<MoveRectEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::MoveRect(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_erase_event(rx: &Receiver<StateEvent>) -> Option<EraseEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::Erase(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_init_pen_event(rx: &Receiver<StateEvent>) -> Option<InitPenEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::InitPen(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_alt_screen_event(rx: &Receiver<StateEvent>) -> Option<AltScreenEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::AltScreen(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_cursor_visible_event(rx: &Receiver<StateEvent>) -> Option<CursorVisibleEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::CursorVisible(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_cursor_blink_event(rx: &Receiver<StateEvent>) -> Option<CursorBlinkEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::CursorBlink(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_cursor_shape_event(rx: &Receiver<StateEvent>) -> Option<CursorShapeEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::CursorShape(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_title_event(rx: &Receiver<StateEvent>) -> Option<TitleEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::Title(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_icon_name_event(rx: &Receiver<StateEvent>) -> Option<IconNameEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::IconName(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_reverse_event(rx: &Receiver<StateEvent>) -> Option<ReverseEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::Reverse(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_mouse_event(rx: &Receiver<StateEvent>) -> Option<MouseEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::Mouse(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
-
-fn try_recv_bell_event(rx: &Receiver<StateEvent>) -> Option<BellEvent> {
-    while let Ok(e) = rx.try_recv() {
-        match e {
-            StateEvent::Bell(v) => return Some(v),
-            _ => {}
-        }
-    }
-
-    None
-}
+dry!(try_recv_put_glyph_event, PutGlyphEvent, StateEvent::PutGlyph);
+dry!(try_recv_move_cursor_event, MoveCursorEvent, StateEvent::MoveCursor);
+dry!(try_recv_scroll_rect_event, ScrollRectEvent, StateEvent::ScrollRect);
+dry!(try_recv_move_rect_event, MoveRectEvent, StateEvent::MoveRect);
+dry!(try_recv_erase_event, EraseEvent, StateEvent::Erase);
+dry!(try_recv_init_pen_event, InitPenEvent, StateEvent::InitPen);
+dry!(try_recv_alt_screen_event, AltScreenEvent, StateEvent::AltScreen);
+dry!(try_recv_cursor_visible_event, CursorVisibleEvent, StateEvent::CursorVisible);
+dry!(try_recv_cursor_blink_event, CursorBlinkEvent, StateEvent::CursorBlink);
+dry!(try_recv_cursor_shape_event, CursorShapeEvent, StateEvent::CursorShape);
+dry!(try_recv_title_event, TitleEvent, StateEvent::Title);
+dry!(try_recv_icon_name_event, IconNameEvent, StateEvent::IconName);
+dry!(try_recv_reverse_event, ReverseEvent, StateEvent::Reverse);
+dry!(try_recv_mouse_event, MouseEvent, StateEvent::Mouse);
+dry!(try_recv_bell_event, BellEvent, StateEvent::Bell);
