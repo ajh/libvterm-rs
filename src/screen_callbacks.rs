@@ -65,7 +65,7 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp, value: *mut ffi::VTermValu
             ScreenEvent::CursorBlink(CursorBlinkEvent { is_true: true })
         }
         ffi::VTermProp::VTermPropCursorshape => {
-            ScreenEvent::CursorShape(CursorShapeEvent { value: 0 })
+            ScreenEvent::CursorShape(CursorShapeEvent { shape: CursorShape::Block })
         }
         ffi::VTermProp::VTermPropCursorvisible => {
             ScreenEvent::CursorVisible(CursorVisibleEvent { is_true: true })
@@ -73,7 +73,7 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp, value: *mut ffi::VTermValu
         ffi::VTermProp::VTermPropIconname => {
             ScreenEvent::IconName(IconNameEvent { text: "fake icon name".to_string() })
         }
-        ffi::VTermProp::VTermPropMouse => ScreenEvent::Mouse(MouseEvent { value: 0 }),
+        ffi::VTermProp::VTermPropMouse => ScreenEvent::Mouse(MouseEvent { mode: MouseMode::None }),
         ffi::VTermProp::VTermPropReverse => ScreenEvent::Reverse(ReverseEvent { is_true: true }),
         ffi::VTermProp::VTermPropTitle => {
             ScreenEvent::Title(TitleEvent { text: "fake title".to_string() })

@@ -107,8 +107,8 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
             }
 
             ffi::VTermProp::VTermPropCursorshape => {
-                let val = unsafe { ffi::vterm_value_get_number(val) };
-                StateEvent::CursorShape(CursorShapeEvent { value: val })
+                let val: CursorShape = unsafe { CursorShape::from_i32(ffi::vterm_value_get_number(val)) };
+                StateEvent::CursorShape(CursorShapeEvent { shape: val })
             }
 
             ffi::VTermProp::VTermPropIconname => {
@@ -117,8 +117,8 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
             }
 
             ffi::VTermProp::VTermPropMouse => {
-                let val = unsafe { ffi::vterm_value_get_number(val) };
-                StateEvent::Mouse(MouseEvent { value: val })
+                let val: MouseMode = unsafe { MouseMode::from_i32(ffi::vterm_value_get_number(val)) };
+                StateEvent::Mouse(MouseEvent { mode: val })
             },
 
             ffi::VTermProp::VTermPropReverse => {

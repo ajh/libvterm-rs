@@ -11,7 +11,7 @@ pub struct CursorBlinkEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct CursorShapeEvent {
-    pub value: i32,
+    pub shape: CursorShape,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct CursorVisibleEvent {
@@ -27,7 +27,7 @@ pub struct IconNameEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct MouseEvent {
-    pub value: i32,
+    pub mode: MouseMode,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct MoveCursorEvent {
@@ -77,4 +77,42 @@ pub struct EraseEvent {
     pub rect: Rect,
     /// ?
     pub selective: isize,
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub enum CursorShape {
+  Block = 1,
+  Underline,
+  BarLeft,
+}
+
+impl CursorShape {
+    pub fn from_i32(val: i32) -> CursorShape {
+        match val {
+            1 => CursorShape::Block,
+            2 => CursorShape::Underline,
+            3 => CursorShape::BarLeft,
+            _ => panic!("unknown cursor shape value: {}", val)
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub enum MouseMode {
+  None = 0,
+  Click,
+  Drag,
+  Move,
+}
+
+impl MouseMode {
+    pub fn from_i32(val: i32) -> MouseMode {
+        match val {
+            0 => MouseMode::None,
+            1 => MouseMode::Click,
+            2 => MouseMode::Drag,
+            3 => MouseMode::Move,
+            _ => panic!("unknown mouse mode value: {}", val)
+        }
+    }
 }

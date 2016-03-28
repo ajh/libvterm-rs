@@ -196,8 +196,7 @@ fn state_can_generate_cursor_shape_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    // TODO: this should be an enum value, not an integer
-    assert_eq!(event.value, 2);
+    assert_eq!(event.shape, CursorShape::Underline);
 
     vterm.write(b"\x1b[0 q").unwrap();
     vterm.flush().unwrap();
@@ -206,7 +205,7 @@ fn state_can_generate_cursor_shape_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.value, 1);
+    assert_eq!(event.shape, CursorShape::Block);
 }
 
 #[test]
@@ -304,7 +303,7 @@ fn state_can_generate_mouse_events() {
     });
     vterm.state_receive_events(&StateCallbacksConfig::all());
 
-    // DECSET x10 mouse support
+    // DECSET for mouse support
     vterm.write(b"\x1b[?1003h").unwrap();
     vterm.flush().unwrap();
 
@@ -314,8 +313,7 @@ fn state_can_generate_mouse_events() {
     assert!(event.is_some());
     let event = event.unwrap();
 
-    // TODO: this should be an enum value, not an integer
-    assert_eq!(event.value, 3);
+    assert_eq!(event.mode, MouseMode::Move);
 }
 
 #[test]
