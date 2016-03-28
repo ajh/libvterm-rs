@@ -61,16 +61,16 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp, value: *mut ffi::VTermValu
         ffi::VTermProp::VTermPropAltscreen => {
             ScreenEvent::AltScreen(AltScreenEvent { is_true: true })
         }
-        ffi::VTermProp::VTermPropCursorblink => {
+        ffi::VTermProp::VTermPropCursorBlink => {
             ScreenEvent::CursorBlink(CursorBlinkEvent { is_true: true })
         }
-        ffi::VTermProp::VTermPropCursorshape => {
+        ffi::VTermProp::VTermPropCursorShape => {
             ScreenEvent::CursorShape(CursorShapeEvent { shape: CursorShape::Block })
         }
-        ffi::VTermProp::VTermPropCursorvisible => {
+        ffi::VTermProp::VTermPropCursorVisible => {
             ScreenEvent::CursorVisible(CursorVisibleEvent { is_true: true })
         }
-        ffi::VTermProp::VTermPropIconname => {
+        ffi::VTermProp::VTermPropIconName => {
             ScreenEvent::IconName(IconNameEvent { text: "fake icon name".to_string() })
         }
         ffi::VTermProp::VTermPropMouse => ScreenEvent::Mouse(MouseEvent { mode: MouseMode::None }),

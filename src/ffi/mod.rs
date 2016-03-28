@@ -17,13 +17,13 @@ use libc::c_int;
 #[derive(Debug)]
 #[repr(C)]
 pub enum VTermProp {
-    VTermPropCursorvisible = 1, // bool
-    VTermPropCursorblink, // bool
+    VTermPropCursorVisible = 1, // bool
+    VTermPropCursorBlink, // bool
     VTermPropAltscreen, // bool
     VTermPropTitle, // string
-    VTermPropIconname, // string
+    VTermPropIconName, // string
     VTermPropReverse, // bool
-    VTermPropCursorshape, // number
+    VTermPropCursorShape, // number
     VTermPropMouse, // number
 }
 

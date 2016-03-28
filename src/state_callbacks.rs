@@ -91,7 +91,7 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
     println!("prop is {:?}", prop);
     with_sender(vterm, |tx| {
         let event: StateEvent = match prop {
-            ffi::VTermProp::VTermPropCursorvisible => {
+            ffi::VTermProp::VTermPropCursorVisible => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
                 StateEvent::CursorVisible(CursorVisibleEvent { is_true: val })
             }
@@ -101,17 +101,17 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                 StateEvent::AltScreen(AltScreenEvent { is_true: val })
             }
 
-            ffi::VTermProp::VTermPropCursorblink => {
+            ffi::VTermProp::VTermPropCursorBlink => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
                 StateEvent::CursorBlink(CursorBlinkEvent { is_true: val })
             }
 
-            ffi::VTermProp::VTermPropCursorshape => {
+            ffi::VTermProp::VTermPropCursorShape => {
                 let val: CursorShape = unsafe { CursorShape::from_i32(ffi::vterm_value_get_number(val)) };
                 StateEvent::CursorShape(CursorShapeEvent { shape: val })
             }
 
-            ffi::VTermProp::VTermPropIconname => {
+            ffi::VTermProp::VTermPropIconName => {
                 let val: String = unsafe { CStr::from_ptr(ffi::vterm_value_get_string(val)).to_string_lossy().into_owned() };
                 StateEvent::IconName(IconNameEvent { text: val })
             }
