@@ -110,8 +110,93 @@ fn state_can_generate_scroll_rect_events_for_part_of_screen() {
     assert_eq!(event.rightward, 0);
 }
 
-//fn state_can_generate_move_rect_events()
-//fn state_can_generate_erase_events()
+#[test]
+fn state_can_generate_move_rect_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+
+    let mut config = StateCallbacksConfig::all();
+    config.scroll_rect = false;
+    vterm.state_receive_events(&config);
+
+    let terminfo = TermInfo::from_name("xterm").unwrap();
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("ri")
+                     .build()
+                     .unwrap()).unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_move_rect_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.src, Rect::new(Pos::new(0, 0), Size::new(2, 1)));
+    assert_eq!(event.dest, Rect::new(Pos::new(0, 1), Size::new(2, 1)));
+}
+
+#[test]
+fn state_can_generate_move_rect_events_for_part_of_screen() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 5,
+        width: 2,
+    });
+
+    let mut config = StateCallbacksConfig::all();
+    config.scroll_rect = false;
+    vterm.state_receive_events(&config);
+
+    let terminfo = TermInfo::from_name("xterm").unwrap();
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("csr")
+                     .number_param(2)
+                     .number_param(5)
+                     .build()
+                     .unwrap()).unwrap();
+
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("cup")
+                     .number_param(2)
+                     .number_param(0)
+                     .build()
+                     .unwrap()).unwrap();
+
+    vterm.write(&CapBuilder::new(&terminfo)
+                     .cap("ri")
+                     .build()
+                     .unwrap()).unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_move_rect_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.src, Rect::new(Pos::new(0, 2), Size::new(2, 2)));
+    assert_eq!(event.dest, Rect::new(Pos::new(0, 3), Size::new(2, 2)));
+}
+
+#[test]
+fn state_can_generate_erase_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 2,
+        width: 2,
+    });
+
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+
+    // DECSED
+    vterm.write(b"\x1b[?2J").unwrap();
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_erase_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.rect, Rect::new(Pos::new(0, 0), Size::new(2, 2)));
+    assert_eq!(event.is_selective, true);
+}
+
 //fn state_can_generate_init_pen_events()
 //fn state_can_generate_set_pen_attr_events()
 
@@ -379,6 +464,28 @@ fn try_recv_scroll_rect_event(rx: &Receiver<StateEvent>) -> Option<ScrollRectEve
     while let Ok(e) = rx.try_recv() {
         match e {
             StateEvent::ScrollRect(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_move_rect_event(rx: &Receiver<StateEvent>) -> Option<MoveRectEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::MoveRect(v) => return Some(v),
+            _ => {}
+        }
+    }
+
+    None
+}
+
+fn try_recv_erase_event(rx: &Receiver<StateEvent>) -> Option<EraseEvent> {
+    while let Ok(e) = rx.try_recv() {
+        match e {
+            StateEvent::Erase(v) => return Some(v),
             _ => {}
         }
     }

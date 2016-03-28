@@ -66,12 +66,34 @@ pub extern "C" fn scroll_rect(rect: ffi::VTermRect,
 
 // int (*moverect)(VTermRect dest, VTermRect src, void *user);
 pub extern "C" fn move_rect(dest: ffi::VTermRect, src: ffi::VTermRect, vterm: *mut c_void) -> c_int {
-    0
+    with_sender(vterm, |tx| {
+        let event = StateEvent::MoveRect(MoveRectEvent {
+            src: src.as_rect(),
+            dest: dest.as_rect(),
+        });
+
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
+
 // int (*erase)(VTermRect rect, int selective, void *user);
 pub extern "C" fn erase(rect: ffi::VTermRect, selective: c_int, vterm: *mut c_void) -> c_int {
-    0
+    with_sender(vterm, |tx| {
+        let event = StateEvent::Erase(EraseEvent {
+            rect: rect.as_rect(),
+            is_selective: int_to_bool(selective),
+        });
+
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
+
 // int (*initpen)(void *user);
 pub extern "C" fn init_pen(vterm: *mut c_void) -> c_int {
     0
@@ -88,7 +110,6 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                             val: *mut ffi::VTermValue,
                             vterm: *mut c_void)
                             -> c_int {
-    println!("prop is {:?}", prop);
     with_sender(vterm, |tx| {
         let event: StateEvent = match prop {
             ffi::VTermProp::VTermPropCursorVisible => {

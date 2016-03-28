@@ -75,8 +75,8 @@ pub struct ScrollRectEvent {
 #[derive(PartialEq, Debug, Clone)]
 pub struct EraseEvent {
     pub rect: Rect,
-    /// ?
-    pub selective: isize,
+    /// true when DECSED used, false if ED used
+    pub is_selective: bool,
 }
 
 #[derive(PartialEq, Debug, Clone)]
