@@ -209,10 +209,19 @@ fn state_can_generate_init_pen_events() {
     let event = try_recv_init_pen_event(&rx);
 
     assert!(event.is_some());
-    let event = event.unwrap();
 }
 
-//fn state_can_generate_set_pen_attr_events()
+//fn state_can_generate_pen_bold_events()
+//fn state_can_generate_pen_underline_events()
+//fn state_can_generate_pen_italic_events()
+//fn state_can_generate_pen_blink_events()
+//fn state_can_generate_pen_reverse_events()
+//fn state_can_generate_pen_strike_events()
+//fn state_can_generate_pen_font_events()
+//fn state_can_generate_pen_foreground_events()
+//fn state_can_generate_pen_background_events()
+//fn state_can_generate_resize_events()
+//fn state_can_generate_line_info_events()
 
 #[test]
 fn state_can_generate_cursor_visible_events() {
@@ -459,14 +468,13 @@ fn state_can_generate_bell_events() {
     vterm.state_receive_events(&StateCallbacksConfig::all());
 
     // BEL - for some reason term crate doesn't know about it?
-    vterm.write(b"\x07");
+    vterm.write(b"\x07").unwrap();
     vterm.flush().unwrap();
 
     let rx = vterm.state_event_rx.take().unwrap();
     let event = try_recv_bell_event(&rx);
 
     assert!(event.is_some());
-    let event = event.unwrap();
 }
 
 // Builds a function that returns a Some of the first event of the given type found on the channel
