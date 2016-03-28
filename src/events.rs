@@ -1,4 +1,4 @@
-use {ScreenCell, GlyphInfo, Rect, Pos, ColorRGB};
+use {ScreenCell, GlyphInfo, Rect, Pos, ColorRGB, ColorPalette};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct AltScreenEvent {
@@ -88,7 +88,7 @@ pub struct PenBoldEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenUnderlineEvent {
-    pub value: i32
+    pub value: Underline
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenItalicEvent {
@@ -112,11 +112,13 @@ pub struct PenFontEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenForegroundEvent {
-    pub color: ColorRGB
+    pub rgb: ColorRGB,
+    pub palette: ColorPalette
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenBackgroundEvent {
-    pub value: ColorRGB
+    pub rgb: ColorRGB,
+    pub palette: ColorPalette
 }
 #[derive(PartialEq, Debug, Clone)]
 pub enum CursorShape {
@@ -152,6 +154,24 @@ impl MouseMode {
             2 => MouseMode::Drag,
             3 => MouseMode::Move,
             _ => panic!("unknown mouse mode value: {}", val)
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub enum Underline {
+  None = 0,
+  Single,
+  Double,
+}
+
+impl Underline {
+    pub fn from_i32(val: i32) -> Underline {
+        match val {
+            0 => Underline::None,
+            1 => Underline::Single,
+            2 => Underline::Double,
+            _ => panic!("unknown underline value: {}", val)
         }
     }
 }

@@ -11,7 +11,7 @@ pub extern "C" fn put_glyph(info: *mut ffi::VTermGlyphInfo,
                         pos: ffi::VTermPos,
                         vterm: *mut c_void)
                         -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::PutGlyph(PutGlyphEvent {
             glyph_info: ::GlyphInfo::from_ptr(info),
             pos: pos.as_pos(),
@@ -30,7 +30,7 @@ pub extern "C" fn move_cursor(new: ffi::VTermPos,
                           visible: c_int,
                           vterm: *mut c_void)
                           -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::MoveCursor(MoveCursorEvent {
             new: new.as_pos(),
             old: old.as_pos(),
@@ -50,7 +50,7 @@ pub extern "C" fn scroll_rect(rect: ffi::VTermRect,
                           rightward: c_int,
                           vterm: *mut c_void)
                           -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::ScrollRect(ScrollRectEvent {
             rect: rect.as_rect(),
             downward: downward as isize,
@@ -66,7 +66,7 @@ pub extern "C" fn scroll_rect(rect: ffi::VTermRect,
 
 // int (*moverect)(VTermRect dest, VTermRect src, void *user);
 pub extern "C" fn move_rect(dest: ffi::VTermRect, src: ffi::VTermRect, vterm: *mut c_void) -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::MoveRect(MoveRectEvent {
             src: src.as_rect(),
             dest: dest.as_rect(),
@@ -81,7 +81,7 @@ pub extern "C" fn move_rect(dest: ffi::VTermRect, src: ffi::VTermRect, vterm: *m
 
 // int (*erase)(VTermRect rect, int selective, void *user);
 pub extern "C" fn erase(rect: ffi::VTermRect, selective: c_int, vterm: *mut c_void) -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::Erase(EraseEvent {
             rect: rect.as_rect(),
             is_selective: int_to_bool(selective),
@@ -96,7 +96,7 @@ pub extern "C" fn erase(rect: ffi::VTermRect, selective: c_int, vterm: *mut c_vo
 
 // int (*initpen)(void *user);
 pub extern "C" fn init_pen(vterm: *mut c_void) -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::InitPen(InitPenEvent);
         match tx.send(event) {
             Ok(_) => 1,
@@ -110,7 +110,56 @@ pub extern "C" fn set_pen_attr(attr: ffi::VTermAttr,
                            val: *mut ffi::VTermValue,
                            vterm: *mut c_void)
                            -> c_int {
-    0
+    println!("set_pen_attr {:?}", attr);
+    cast_vterm(vterm, |vterm, tx| {
+        let event: StateEvent = match attr {
+            ffi::VTermAttr::Bold => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
+                StateEvent::PenBold(PenBoldEvent { is_true: val })
+            }
+            ffi::VTermAttr::Background => {
+                let rgb: ColorRGB = unsafe { ffi::vterm_value_get_color(val).as_color_rgb() };
+                let palette = vterm.state_get_palette_color_from_rgb(&rgb);
+                StateEvent::PenBackground(PenBackgroundEvent {
+                    rgb: rgb, palette: palette })
+            }
+            ffi::VTermAttr::Blink => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
+                StateEvent::PenBlink(PenBlinkEvent { is_true: val })
+            }
+            ffi::VTermAttr::Font => {
+                let val = unsafe { ffi::vterm_value_get_number(val).clone() };
+                StateEvent::PenFont(PenFontEvent { value: val })
+            }
+            ffi::VTermAttr::Foreground => {
+                let rgb: ColorRGB = unsafe { ffi::vterm_value_get_color(val).as_color_rgb() };
+                let palette = vterm.state_get_palette_color_from_rgb(&rgb);
+                StateEvent::PenForeground(PenForegroundEvent {
+                    rgb: rgb, palette: palette })
+            }
+            ffi::VTermAttr::Italic => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
+                StateEvent::PenItalic(PenItalicEvent { is_true: val })
+            }
+            ffi::VTermAttr::Reverse => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
+                StateEvent::PenReverse(PenReverseEvent { is_true: val })
+            }
+            ffi::VTermAttr::Strike => {
+                let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
+                StateEvent::PenStrike(PenStrikeEvent { is_true: val })
+            }
+            ffi::VTermAttr::Underline => {
+                let val = unsafe { Underline::from_i32(ffi::vterm_value_get_number(val).clone()) };
+                StateEvent::PenUnderline(PenUnderlineEvent { value: val })
+            }
+        };
+
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
 
 // int (*settermprop)(VTermProp prop, VTermValue *val, void *user);
@@ -118,7 +167,7 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                             val: *mut ffi::VTermValue,
                             vterm: *mut c_void)
                             -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event: StateEvent = match prop {
             ffi::VTermProp::VTermPropCursorVisible => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
@@ -170,7 +219,7 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
 
 // int (*bell)(void *user);
 pub extern "C" fn bell(vterm: *mut c_void) -> c_int {
-    with_sender(vterm, |tx| {
+    cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::Bell(BellEvent);
         match tx.send(event) {
             Ok(_) => 1,
@@ -197,12 +246,12 @@ pub extern "C" fn set_line_info(row: c_int,
 }
 
 /// Call the given closure with the vterms sender, if it exists.
-fn with_sender<F>(vterm: *mut c_void, closure: F) -> c_int
-    where F: Fn(&Sender<StateEvent>) -> c_int
+fn cast_vterm<F>(vterm: *mut c_void, closure: F) -> c_int
+    where F: Fn(&VTerm, &Sender<StateEvent>) -> c_int
 {
-    let vterm: &mut VTerm = unsafe { &mut *(vterm as *mut VTerm) };
+    let vterm: &VTerm = unsafe { &mut *(vterm as *mut VTerm) };
     match vterm.state_event_tx.as_ref() {
-        Some(tx) => closure(tx),
+        Some(tx) => closure(vterm, tx),
         None => 0,
     }
 }

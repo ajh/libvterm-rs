@@ -15,6 +15,16 @@ pub struct VTermColor {
     pub blue: uint8_t,
 }
 
+impl VTermColor {
+    pub fn as_color_rgb(&self) -> ::ColorRGB {
+        ::ColorRGB {
+            red: self.red,
+            green: self.green,
+            blue: self.blue,
+        }
+    }
+}
+
 extern "C" {
     // These are my rust ffi bitfield workarounds
     pub fn vterm_cell_new() -> *mut VTermScreenCell;

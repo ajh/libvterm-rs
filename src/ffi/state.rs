@@ -4,17 +4,18 @@ use super::*;
 pub enum VTermState {}
 pub enum VTermLineInfo {}  // need to flesh this out
 
+#[derive(Debug)]
 #[repr(C)]
 pub enum VTermAttr {
-    VTERM_ATTR_BOLD = 1, // bool:   1, 22
-    VTERM_ATTR_UNDERLINE, // number: 4, 21, 24
-    VTERM_ATTR_ITALIC, // bool:   3, 23
-    VTERM_ATTR_BLINK, // bool:   5, 25
-    VTERM_ATTR_REVERSE, // bool:   7, 27
-    VTERM_ATTR_STRIKE, // bool:   9, 29
-    VTERM_ATTR_FONT, // number: 10-19
-    VTERM_ATTR_FOREGROUND, // color:  30-39 90-97
-    VTERM_ATTR_BACKGROUND, // color:  40-49 100-107
+    Bold = 1, // bool:   1, 22
+    Underline, // number: 4, 21, 24
+    Italic, // bool:   3, 23
+    Blink, // bool:   5, 25
+    Reverse, // bool:   7, 27
+    Strike, // bool:   9, 29
+    Font, // number: 10-19
+    Foreground, // color:  30-39 90-97
+    Background, // color:  40-49 100-107
 }
 
 #[repr(C)]
