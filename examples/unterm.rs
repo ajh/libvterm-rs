@@ -238,8 +238,8 @@ fn main() {
     while let Ok(event) = rx.try_recv() {
         match event {
             ScreenEvent::Resize(v) => {
-                context.rows_count = v.height;
-                context.cols_count = v.width;
+                context.rows_count = v.size.height;
+                context.cols_count = v.size.width;
             }
             ScreenEvent::SbPushLine(v) => {
                 let (fg_rgb, bg_rgb) = vt.state_get_default_colors();

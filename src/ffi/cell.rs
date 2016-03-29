@@ -1,4 +1,5 @@
-use libc::{c_int, c_uint, uint32_t, size_t, c_char, uint8_t};
+use libc::{c_int, c_uint, uint32_t, size_t, c_char};
+use super::VTermColor;
 
 pub enum VTermScreenCell {}
 
@@ -6,24 +7,6 @@ pub enum VTermScreenCell {}
 /// to cast to ScreenCell
 
 pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
-
-#[repr(C)]
-#[derive(PartialEq, Debug, Clone, Default)]
-pub struct VTermColor {
-    pub red: uint8_t,
-    pub green: uint8_t,
-    pub blue: uint8_t,
-}
-
-impl VTermColor {
-    pub fn as_color_rgb(&self) -> ::ColorRGB {
-        ::ColorRGB {
-            red: self.red,
-            green: self.green,
-            blue: self.blue,
-        }
-    }
-}
 
 extern "C" {
     // These are my rust ffi bitfield workarounds

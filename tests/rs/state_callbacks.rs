@@ -768,6 +768,23 @@ fn state_can_generate_bell_events() {
     assert!(event.is_some());
 }
 
+#[test]
+fn state_can_generate_resize_events() {
+    let mut vterm: VTerm = VTerm::new(&Size {
+        height: 5,
+        width: 5,
+    });
+    vterm.state_receive_events(&StateCallbacksConfig::all());
+    vterm.set_size(&Size::new(2,3));
+
+    let rx = vterm.state_event_rx.take().unwrap();
+    let event = try_recv_resize_event(&rx);
+
+    assert!(event.is_some());
+    let event = event.unwrap();
+    assert_eq!(event.size, Size::new(2,3));
+}
+
 // Builds a function that returns a Some of the first event of the given type found on the channel
 // or None.
 macro_rules! dry {

@@ -234,7 +234,18 @@ pub extern "C" fn resize(rows: c_int,
                      delta: *mut ffi::VTermPos,
                      vterm: *mut c_void)
                      -> c_int {
-    0
+    // NOTE: libvterm expects a synchronise api here and wants us to mutate delta based on how we choose
+    // to scroll or something. But we can't do that can we?
+
+    cast_vterm(vterm, |vterm, tx| {
+        let event = StateEvent::Resize(ResizeEvent {
+            size: Size::new(cols as usize, rows as usize),
+        });
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
 // int (*setlineinfo)(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user);
 pub extern "C" fn set_line_info(row: c_int,

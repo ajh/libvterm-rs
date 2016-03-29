@@ -4,20 +4,6 @@ use super::*;
 pub enum VTermState {}
 pub enum VTermLineInfo {}  // need to flesh this out
 
-#[derive(Debug)]
-#[repr(C)]
-pub enum VTermAttr {
-    Bold = 1, // bool:   1, 22
-    Underline, // number: 4, 21, 24
-    Italic, // bool:   3, 23
-    Blink, // bool:   5, 25
-    Reverse, // bool:   7, 27
-    Strike, // bool:   9, 29
-    Font, // number: 10-19
-    Foreground, // color:  30-39 90-97
-    Background, // color:  40-49 100-107
-}
-
 #[repr(C)]
 pub struct VTermStateCallbacks {
     pub put_glyph: Option<extern "C" fn(*mut VTermGlyphInfo, VTermPos, *mut c_void) -> (c_int)>,

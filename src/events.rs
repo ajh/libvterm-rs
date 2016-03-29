@@ -1,4 +1,4 @@
-use {ScreenCell, GlyphInfo, Rect, Pos, ColorRGB, ColorPalette};
+use {Size, ScreenCell, GlyphInfo, Rect, Pos, ColorRGB, ColorPalette};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct AltScreenEvent {
@@ -42,8 +42,7 @@ pub struct MoveRectEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct ResizeEvent {
-    pub height: usize,
-    pub width: usize,
+    pub size: Size
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct ReverseEvent {
