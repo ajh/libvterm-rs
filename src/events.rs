@@ -42,7 +42,7 @@ pub struct MoveRectEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct ResizeEvent {
-    pub size: Size
+    pub size: Size,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct ReverseEvent {
@@ -83,47 +83,47 @@ pub struct InitPenEvent;
 pub struct BellEvent;
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenBoldEvent {
-    pub is_true: bool
+    pub is_true: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenUnderlineEvent {
-    pub value: Underline
+    pub value: Underline,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenItalicEvent {
-    pub is_true: bool
+    pub is_true: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenBlinkEvent {
-    pub is_true: bool
+    pub is_true: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenReverseEvent {
-    pub is_true: bool
+    pub is_true: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenStrikeEvent {
-    pub is_true: bool
+    pub is_true: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenFontEvent {
-    pub value: i32
+    pub value: i32,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenForegroundEvent {
     pub rgb: ColorRGB,
-    pub palette: ColorPalette
+    pub palette: ColorPalette,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenBackgroundEvent {
     pub rgb: ColorRGB,
-    pub palette: ColorPalette
+    pub palette: ColorPalette,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub enum CursorShape {
-  Block = 1,
-  Underline,
-  BarLeft,
+    Block = 1,
+    Underline,
+    BarLeft,
 }
 
 impl CursorShape {
@@ -132,17 +132,17 @@ impl CursorShape {
             1 => CursorShape::Block,
             2 => CursorShape::Underline,
             3 => CursorShape::BarLeft,
-            _ => panic!("unknown cursor shape value: {}", val)
+            _ => panic!("unknown cursor shape value: {}", val),
         }
     }
 }
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum MouseMode {
-  None = 0,
-  Click,
-  Drag,
-  Move,
+    None = 0,
+    Click,
+    Drag,
+    Move,
 }
 
 impl MouseMode {
@@ -152,16 +152,16 @@ impl MouseMode {
             1 => MouseMode::Click,
             2 => MouseMode::Drag,
             3 => MouseMode::Move,
-            _ => panic!("unknown mouse mode value: {}", val)
+            _ => panic!("unknown mouse mode value: {}", val),
         }
     }
 }
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Underline {
-  None = 0,
-  Single,
-  Double,
+    None = 0,
+    Single,
+    Double,
 }
 
 impl Underline {
@@ -170,7 +170,7 @@ impl Underline {
             0 => Underline::None,
             1 => Underline::Single,
             2 => Underline::Double,
-            _ => panic!("unknown underline value: {}", val)
+            _ => panic!("unknown underline value: {}", val),
         }
     }
 }

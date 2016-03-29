@@ -56,7 +56,10 @@ pub extern "C" fn move_cursor(new: ffi::VTermPos,
     }
 }
 
-pub extern "C" fn set_term_prop(prop: ffi::VTermProp, value: *mut ffi::VTermValue, vterm: *mut c_void) -> c_int {
+pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
+                                value: *mut ffi::VTermValue,
+                                vterm: *mut c_void)
+                                -> c_int {
     let event: ScreenEvent = match prop {
         ffi::VTermProp::VTermPropAltscreen => {
             ScreenEvent::AltScreen(AltScreenEvent { is_true: true })
@@ -109,7 +112,7 @@ pub extern "C" fn resize(rows: c_int, cols: c_int, vterm: *mut c_void) -> c_int 
     match vterm.screen_event_tx.as_ref() {
         Some(tx) => {
             match tx.send(ScreenEvent::Resize(ResizeEvent {
-                size: Size::new(cols as usize, rows as usize)
+                size: Size::new(cols as usize, rows as usize),
             })) {
                 Ok(_) => 1,
                 Err(_) => 0,

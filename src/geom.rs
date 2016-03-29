@@ -52,8 +52,7 @@ impl<'a> RectPositions<'a> {
     fn advance(&mut self) {
         if self.pos.x + 1 < self.rect.right() {
             self.pos.x += 1;
-        }
-        else {
+        } else {
             self.pos.y += 1;
             self.pos.x = self.rect.origin.x;
         }
@@ -70,8 +69,7 @@ impl<'a> Iterator for RectPositions<'a> {
             let output = self.pos.clone();
             self.advance();
             Some(output)
-        }
-        else {
+        } else {
             None
         }
     }
@@ -83,7 +81,11 @@ mod tests {
 
     #[test]
     fn rect_positions_will_iterate() {
-        let rect = Rect::new(Pos { x: 0, y: 0 }, Size { width: 2, height: 3 });
+        let rect = Rect::new(Pos { x: 0, y: 0 },
+                             Size {
+                                 width: 2,
+                                 height: 3,
+                             });
         let mut iter = rect.positions();
         assert_eq!(iter.next(), Some(Pos { x: 0, y: 0 }));
         assert_eq!(iter.next(), Some(Pos { x: 1, y: 0 }));
