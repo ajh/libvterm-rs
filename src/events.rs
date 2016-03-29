@@ -119,6 +119,11 @@ pub struct PenBackgroundEvent {
     pub rgb: ColorRGB,
     pub palette: ColorPalette,
 }
+pub struct LineInfoEvent {
+    // TODO: add line info stuff here
+    pub row: i32,
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub enum CursorShape {
     Block = 1,

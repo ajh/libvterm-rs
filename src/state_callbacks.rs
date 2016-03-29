@@ -106,7 +106,6 @@ pub extern "C" fn set_pen_attr(attr: ffi::VTermAttr,
                                val: *mut ffi::VTermValue,
                                vterm: *mut c_void)
                                -> c_int {
-    println!("set_pen_attr {:?}", attr);
     cast_vterm(vterm, |vterm, tx| {
         let event: StateEvent = match attr {
             ffi::VTermAttr::Bold => {
@@ -257,7 +256,16 @@ pub extern "C" fn set_line_info(row: c_int,
                                 old: *const ffi::VTermLineInfo,
                                 vterm: *mut c_void)
                                 -> c_int {
-    0
+    cast_vterm(vterm, |vterm, tx| {
+        let event = StateEvent::LineInfo(LineInfoEvent {
+            row: row,
+            // TODO: add line info data as well
+        });
+        match tx.send(event) {
+            Ok(_) => 1,
+            Err(_) => 0,
+        }
+    })
 }
 
 /// Call the given closure with the vterms sender, if it exists.

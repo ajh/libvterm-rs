@@ -28,7 +28,7 @@ pub enum StateEvent {
     Resize(ResizeEvent),
     Reverse(ReverseEvent),
     ScrollRect(ScrollRectEvent),
-    SetLineInfo,
+    LineInfo(LineInfoEvent),
     Title(TitleEvent),
 }
 

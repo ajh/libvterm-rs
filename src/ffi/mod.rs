@@ -29,6 +29,8 @@ pub enum VTermProp {
 
 pub enum VTermValue {}
 
+pub enum VTermLineInfo {}
+
 #[repr(C)]
 #[derive(PartialEq, Debug)]
 pub struct VTermPos {

@@ -2,7 +2,6 @@ use libc::{c_int, c_void};
 use super::*;
 
 pub enum VTermState {}
-pub enum VTermLineInfo {}  // need to flesh this out
 
 #[repr(C)]
 pub struct VTermStateCallbacks {

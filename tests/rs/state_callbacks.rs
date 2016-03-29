@@ -811,7 +811,7 @@ dry!(try_recv_cursor_visible_event, CursorVisibleEvent, StateEvent::CursorVisibl
 dry!(try_recv_erase_event, EraseEvent, StateEvent::Erase);
 dry!(try_recv_icon_name_event, IconNameEvent, StateEvent::IconName);
 dry!(try_recv_init_pen_event, InitPenEvent, StateEvent::InitPen);
-//dry!(try_recv_line_info_event, LineInfoEvent, StateEvent::LineInfo);
+dry!(try_recv_line_info_event, LineInfoEvent, StateEvent::LineInfo);
 dry!(try_recv_mouse_event, MouseEvent, StateEvent::Mouse);
 dry!(try_recv_move_cursor_event, MoveCursorEvent, StateEvent::MoveCursor);
 dry!(try_recv_move_rect_event, MoveRectEvent, StateEvent::MoveRect);
