@@ -110,7 +110,7 @@ pub extern "C" fn set_pen_attr(attr: ffi::VTermAttr,
         let event: StateEvent = match attr {
             ffi::VTermAttr::Bold => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::PenBold(PenBoldEvent { is_true: val })
+                StateEvent::PenBold(PenBoldEvent { is_on: val })
             }
             ffi::VTermAttr::Background => {
                 let rgb: ColorRGB = unsafe { ffi::vterm_value_get_color(val).as_color_rgb() };
@@ -122,11 +122,11 @@ pub extern "C" fn set_pen_attr(attr: ffi::VTermAttr,
             }
             ffi::VTermAttr::Blink => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::PenBlink(PenBlinkEvent { is_true: val })
+                StateEvent::PenBlink(PenBlinkEvent { is_on: val })
             }
             ffi::VTermAttr::Font => {
                 let val = unsafe { ffi::vterm_value_get_number(val).clone() };
-                StateEvent::PenFont(PenFontEvent { value: val })
+                StateEvent::PenFont(PenFontEvent { font: val })
             }
             ffi::VTermAttr::Foreground => {
                 let rgb: ColorRGB = unsafe { ffi::vterm_value_get_color(val).as_color_rgb() };
@@ -138,19 +138,19 @@ pub extern "C" fn set_pen_attr(attr: ffi::VTermAttr,
             }
             ffi::VTermAttr::Italic => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::PenItalic(PenItalicEvent { is_true: val })
+                StateEvent::PenItalic(PenItalicEvent { is_on: val })
             }
             ffi::VTermAttr::Reverse => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::PenReverse(PenReverseEvent { is_true: val })
+                StateEvent::PenReverse(PenReverseEvent { is_on: val })
             }
             ffi::VTermAttr::Strike => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::PenStrike(PenStrikeEvent { is_true: val })
+                StateEvent::PenStrike(PenStrikeEvent { is_on: val })
             }
             ffi::VTermAttr::Underline => {
                 let val = unsafe { Underline::from_i32(ffi::vterm_value_get_number(val).clone()) };
-                StateEvent::PenUnderline(PenUnderlineEvent { value: val })
+                StateEvent::PenUnderline(PenUnderlineEvent { mode: val })
             }
         };
 
@@ -169,17 +169,17 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
         let event: StateEvent = match prop {
             ffi::VTermProp::VTermPropCursorVisible => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::CursorVisible(CursorVisibleEvent { is_true: val })
+                StateEvent::CursorVisible(CursorVisibleEvent { is_on: val })
             }
 
             ffi::VTermProp::VTermPropAltscreen => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::AltScreen(AltScreenEvent { is_true: val })
+                StateEvent::AltScreen(AltScreenEvent { is_on: val })
             }
 
             ffi::VTermProp::VTermPropCursorBlink => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::CursorBlink(CursorBlinkEvent { is_true: val })
+                StateEvent::CursorBlink(CursorBlinkEvent { is_on: val })
             }
 
             ffi::VTermProp::VTermPropCursorShape => {
@@ -193,7 +193,7 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                 let val: String = unsafe {
                     CStr::from_ptr(ffi::vterm_value_get_string(val)).to_string_lossy().into_owned()
                 };
-                StateEvent::IconName(IconNameEvent { text: val })
+                StateEvent::IconName(IconNameEvent { name: val })
             }
 
             ffi::VTermProp::VTermPropMouse => {
@@ -205,14 +205,14 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
 
             ffi::VTermProp::VTermPropReverse => {
                 let val = unsafe { int_to_bool(ffi::vterm_value_get_boolean(val)).clone() };
-                StateEvent::Reverse(ReverseEvent { is_true: val })
+                StateEvent::Reverse(ReverseEvent { is_on: val })
             }
 
             ffi::VTermProp::VTermPropTitle => {
                 let val: String = unsafe {
                     CStr::from_ptr(ffi::vterm_value_get_string(val)).to_string_lossy().into_owned()
                 };
-                StateEvent::Title(TitleEvent { text: val })
+                StateEvent::Title(TitleEvent { title: val })
             }
         };
 

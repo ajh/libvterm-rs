@@ -3,11 +3,11 @@ use {Size, ScreenCell, GlyphInfo, Rect, Pos, ColorRGB, ColorPalette};
 #[derive(PartialEq, Debug, Clone)]
 pub struct AltScreenEvent {
     /// this is a dumb name. Maybe `is_on` or just `value`?
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct CursorBlinkEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct CursorShapeEvent {
@@ -15,7 +15,7 @@ pub struct CursorShapeEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct CursorVisibleEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct DamageEvent {
@@ -23,7 +23,7 @@ pub struct DamageEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct IconNameEvent {
-    pub text: String,
+    pub name: String,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct MouseEvent {
@@ -46,7 +46,7 @@ pub struct ResizeEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct ReverseEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct SbPopLineEvent {
@@ -58,7 +58,7 @@ pub struct SbPushLineEvent {
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct TitleEvent {
-    pub text: String,
+    pub title: String,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PutGlyphEvent {
@@ -83,31 +83,31 @@ pub struct InitPenEvent;
 pub struct BellEvent;
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenBoldEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenUnderlineEvent {
-    pub value: Underline,
+    pub mode: Underline,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenItalicEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenBlinkEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenReverseEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenStrikeEvent {
-    pub is_true: bool,
+    pub is_on: bool,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenFontEvent {
-    pub value: i32,
+    pub font: i32,
 }
 #[derive(PartialEq, Debug, Clone)]
 pub struct PenForegroundEvent {

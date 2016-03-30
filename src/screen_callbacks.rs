@@ -62,24 +62,24 @@ pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
                                 -> c_int {
     let event: ScreenEvent = match prop {
         ffi::VTermProp::VTermPropAltscreen => {
-            ScreenEvent::AltScreen(AltScreenEvent { is_true: true })
+            ScreenEvent::AltScreen(AltScreenEvent { is_on: true })
         }
         ffi::VTermProp::VTermPropCursorBlink => {
-            ScreenEvent::CursorBlink(CursorBlinkEvent { is_true: true })
+            ScreenEvent::CursorBlink(CursorBlinkEvent { is_on: true })
         }
         ffi::VTermProp::VTermPropCursorShape => {
             ScreenEvent::CursorShape(CursorShapeEvent { shape: CursorShape::Block })
         }
         ffi::VTermProp::VTermPropCursorVisible => {
-            ScreenEvent::CursorVisible(CursorVisibleEvent { is_true: true })
+            ScreenEvent::CursorVisible(CursorVisibleEvent { is_on: true })
         }
         ffi::VTermProp::VTermPropIconName => {
-            ScreenEvent::IconName(IconNameEvent { text: "fake icon name".to_string() })
+            ScreenEvent::IconName(IconNameEvent { name: "fake icon name".to_string() })
         }
         ffi::VTermProp::VTermPropMouse => ScreenEvent::Mouse(MouseEvent { mode: MouseMode::None }),
-        ffi::VTermProp::VTermPropReverse => ScreenEvent::Reverse(ReverseEvent { is_true: true }),
+        ffi::VTermProp::VTermPropReverse => ScreenEvent::Reverse(ReverseEvent { is_on: true }),
         ffi::VTermProp::VTermPropTitle => {
-            ScreenEvent::Title(TitleEvent { text: "fake title".to_string() })
+            ScreenEvent::Title(TitleEvent { title: "fake title".to_string() })
         }
     };
 

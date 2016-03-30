@@ -256,7 +256,7 @@ fn state_can_generate_pen_blink_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("sgr0")
@@ -268,7 +268,7 @@ fn state_can_generate_pen_blink_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -291,7 +291,7 @@ fn state_can_generate_pen_bold_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("sgr0")
@@ -303,7 +303,7 @@ fn state_can_generate_pen_bold_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -322,7 +322,7 @@ fn state_can_generate_pen_font_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.value, 0);
+    assert_eq!(event.font, 0);
 
     vterm.write(b"\x1b[12m").unwrap();
     vterm.flush().unwrap();
@@ -331,7 +331,7 @@ fn state_can_generate_pen_font_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.value, 2);
+    assert_eq!(event.font, 2);
 }
 
 #[test]
@@ -377,7 +377,7 @@ fn state_can_generate_pen_italic_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("sgr0")
@@ -389,7 +389,7 @@ fn state_can_generate_pen_italic_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -423,7 +423,7 @@ fn state_can_generate_pen_reverse_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("sgr0")
@@ -435,7 +435,7 @@ fn state_can_generate_pen_reverse_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -455,7 +455,7 @@ fn state_can_generate_pen_strike_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("sgr0")
@@ -467,7 +467,7 @@ fn state_can_generate_pen_strike_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -499,7 +499,7 @@ fn state_can_generate_pen_underline_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.value, Underline::Single);
+    assert_eq!(event.mode, Underline::Single);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("sgr0")
@@ -511,7 +511,7 @@ fn state_can_generate_pen_underline_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.value, Underline::None);
+    assert_eq!(event.mode, Underline::None);
 }
 
 #[test]
@@ -534,7 +534,7 @@ fn state_can_generate_cursor_visible_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("cnorm")
@@ -546,7 +546,7 @@ fn state_can_generate_cursor_visible_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 }
 
 #[test]
@@ -566,7 +566,7 @@ fn state_can_generate_cursor_blink_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(b"\x1b[2 q").unwrap();
     vterm.flush().unwrap();
@@ -575,7 +575,7 @@ fn state_can_generate_cursor_blink_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -624,7 +624,7 @@ fn state_can_generate_title_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.text, "foo");
+    assert_eq!(event.title, "foo");
 
     vterm.write(b"\x1b]2;bar\x1b\\").unwrap();
     vterm.flush().unwrap();
@@ -633,7 +633,7 @@ fn state_can_generate_title_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.text, "bar");
+    assert_eq!(event.title, "bar");
 }
 
 #[test]
@@ -653,7 +653,7 @@ fn state_can_generate_iconname_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.text, "foo");
+    assert_eq!(event.name, "foo");
 
     vterm.write(b"\x1b]1;bar\x1b\\").unwrap();
     vterm.flush().unwrap();
@@ -662,7 +662,7 @@ fn state_can_generate_iconname_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.text, "bar");
+    assert_eq!(event.name, "bar");
 }
 
 #[test]
@@ -682,7 +682,7 @@ fn state_can_generate_reverse_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(b"\x1b[?5l").unwrap();
     vterm.flush().unwrap();
@@ -691,7 +691,7 @@ fn state_can_generate_reverse_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -735,7 +735,7 @@ fn state_can_generate_alt_screen_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, true);
+    assert_eq!(event.is_on, true);
 
     vterm.write(&CapBuilder::new(&terminfo)
                      .cap("rmcup")
@@ -747,7 +747,7 @@ fn state_can_generate_alt_screen_events() {
 
     assert!(event.is_some());
     let event = event.unwrap();
-    assert_eq!(event.is_true, false);
+    assert_eq!(event.is_on, false);
 }
 
 #[test]
@@ -811,7 +811,7 @@ dry!(try_recv_cursor_visible_event, CursorVisibleEvent, StateEvent::CursorVisibl
 dry!(try_recv_erase_event, EraseEvent, StateEvent::Erase);
 dry!(try_recv_icon_name_event, IconNameEvent, StateEvent::IconName);
 dry!(try_recv_init_pen_event, InitPenEvent, StateEvent::InitPen);
-dry!(try_recv_line_info_event, LineInfoEvent, StateEvent::LineInfo);
+//dry!(try_recv_line_info_event, LineInfoEvent, StateEvent::LineInfo);
 dry!(try_recv_mouse_event, MouseEvent, StateEvent::Mouse);
 dry!(try_recv_move_cursor_event, MoveCursorEvent, StateEvent::MoveCursor);
 dry!(try_recv_move_rect_event, MoveRectEvent, StateEvent::MoveRect);
