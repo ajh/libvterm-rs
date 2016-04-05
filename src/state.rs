@@ -3,6 +3,7 @@ use std::sync::mpsc;
 
 use super::*;
 
+#[derive(Debug)]
 pub enum StateEvent {
     AltScreen(AltScreenEvent),
     Bell(BellEvent),

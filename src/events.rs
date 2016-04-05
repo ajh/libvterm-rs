@@ -119,6 +119,7 @@ pub struct PenBackgroundEvent {
     pub rgb: ColorRGB,
     pub palette: ColorPalette,
 }
+#[derive(PartialEq, Debug, Clone)]
 pub struct LineInfoEvent {
     // TODO: add line info stuff here
     pub row: i32,
