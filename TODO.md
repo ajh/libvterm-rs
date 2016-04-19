@@ -1,5 +1,7 @@
 # TODO
 
+* [ ] validate Pos and Rect arguments are withing the right range, or
+      segfaults happen! Like in `get_text_as_bytes`
 * [ ] benchmark and performance improvements
 * [x] take references to things when its more idiomatic
 * [x] implement Write trait

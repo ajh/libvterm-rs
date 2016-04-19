@@ -6,8 +6,6 @@ pub enum VTermScreenCell {}
 /// There should be rust methods here to pull stuff out of the cell, also a into_screen_cell method
 /// to cast to ScreenCell
 
-pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
-
 extern "C" {
     // These are my rust ffi bitfield workarounds
     pub fn vterm_cell_new() -> *mut VTermScreenCell;

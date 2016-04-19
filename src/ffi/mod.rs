@@ -14,6 +14,8 @@ pub use self::glyph_info::*;
 
 use libc::{c_int, uint8_t};
 
+pub const VTERM_MAX_CHARS_PER_CELL: usize = 6;
+
 #[derive(Debug)]
 #[repr(C)]
 pub enum VTermProp {

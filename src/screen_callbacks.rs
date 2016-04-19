@@ -57,7 +57,7 @@ pub extern "C" fn move_cursor(new: ffi::VTermPos,
 }
 
 pub extern "C" fn set_term_prop(prop: ffi::VTermProp,
-                                value: *mut ffi::VTermValue,
+                                _: *mut ffi::VTermValue,
                                 vterm: *mut c_void)
                                 -> c_int {
     let event: ScreenEvent = match prop {

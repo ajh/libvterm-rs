@@ -103,17 +103,20 @@ impl VTerm {
     }
 
     fn get_text_as_bytes(&mut self, rect: &Rect) -> Vec<u8> {
-        let size: usize = rect.size.width * rect.size.height;
-        let mut text: Vec<c_char> = vec![0x0; size];
-        let text_ptr: *mut c_char = (&mut text[0..size]).as_mut_ptr();
+        let size: usize = rect.size.width * rect.size.height * ffi::VTERM_MAX_CHARS_PER_CELL;
+        let mut bytes = Vec::with_capacity(size);
+        unsafe { bytes.set_len(size) };
+        let bytes_ptr: *mut c_char = (&mut bytes[0..size]).as_mut_ptr();
+
         unsafe {
-            ffi::vterm_screen_get_text(self.screen_ptr.get(),
-                                       text_ptr,
-                                       text.len() as size_t,
+            let len = ffi::vterm_screen_get_text(self.screen_ptr.get(),
+                                       bytes_ptr,
+                                       size as size_t,
                                        ffi::VTermRect::from_rect(&rect));
+            bytes.set_len(len);
         }
 
-        text.into_iter().map(|c| c as u8).collect()
+        bytes.into_iter().map(|c| c as u8).collect()
     }
 
     pub fn screen_flush_damage(&mut self) {
