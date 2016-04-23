@@ -258,8 +258,7 @@ pub extern "C" fn set_line_info(row: c_int,
                                 -> c_int {
     cast_vterm(vterm, |vterm, tx| {
         let event = StateEvent::LineInfo(LineInfoEvent {
-            row: row,
-            // TODO: add line info data as well
+            row: row, // TODO: add line info data as well
         });
         match tx.send(event) {
             Ok(_) => 1,

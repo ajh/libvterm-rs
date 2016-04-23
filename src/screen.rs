@@ -78,7 +78,9 @@ impl VTerm {
     pub fn screen_get_cell(&self, pos: &Pos) -> ScreenCell {
         let size = self.get_size();
         if pos.x >= size.width || pos.y >= size.height {
-            panic!("given position out of bounds: size={:?} pos={:?}", size, pos);
+            panic!("given position out of bounds: size={:?} pos={:?}",
+                   size,
+                   pos);
         }
 
         let cell_buf = unsafe { ffi::vterm_cell_new() };
@@ -108,9 +110,11 @@ impl VTerm {
     }
 
     fn get_text_as_bytes(&self, rect: &Rect) -> Vec<u8> {
-        let screen_rect = Rect::new(Pos::new(0,0), self.get_size());
+        let screen_rect = Rect::new(Pos::new(0, 0), self.get_size());
         if !screen_rect.contains_rect(&rect) {
-            panic!("given rect out of bounds: size={:?} rect={:?}", self.get_size(), rect);
+            panic!("given rect out of bounds: size={:?} rect={:?}",
+                   self.get_size(),
+                   rect);
         }
 
         let size: usize = rect.size.width * rect.size.height * ffi::VTERM_MAX_CHARS_PER_CELL;
@@ -120,9 +124,9 @@ impl VTerm {
 
         unsafe {
             let len = ffi::vterm_screen_get_text(self.screen_ptr.get(),
-                                       bytes_ptr,
-                                       size as size_t,
-                                       ffi::VTermRect::from_rect(&rect));
+                                                 bytes_ptr,
+                                                 size as size_t,
+                                                 ffi::VTermRect::from_rect(&rect));
             bytes.set_len(len);
         }
 

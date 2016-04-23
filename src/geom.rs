@@ -36,10 +36,8 @@ impl RectAssist for Rect {
     }
 
     fn contains_rect(&self, other: &Rect) -> bool {
-        self.top() <= other.top() &&
-            self.bottom() >= other.bottom() &&
-            self.left() <= other.left() &&
-            self.right() >= other.right()
+        self.top() <= other.top() && self.bottom() >= other.bottom() &&
+        self.left() <= other.left() && self.right() >= other.right()
     }
 }
 
