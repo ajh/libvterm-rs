@@ -1,7 +1,5 @@
 use std::io::prelude::*;
 use vterm_sys::*;
-use term::terminfo::TermInfo;
-use ::support::CapBuilder;
 use std::sync::mpsc::Receiver;
 
 #[test]

@@ -76,6 +76,11 @@ impl VTerm {
 
     /// Return the cell at the given position
     pub fn screen_get_cell(&self, pos: &Pos) -> ScreenCell {
+        let size = self.get_size();
+        if pos.x >= size.width || pos.y >= size.height {
+            panic!("given position out of bounds: size={:?} pos={:?}", size, pos);
+        }
+
         let cell_buf = unsafe { ffi::vterm_cell_new() };
         unsafe {
             ffi::vterm_screen_get_cell(self.screen_ptr.get(),
@@ -90,19 +95,24 @@ impl VTerm {
 
     // Returns the text within the rect as a String. Invalid utf8 sequences are replaces with or
     // panics if invalid utf8 bytes are found
-    pub fn screen_get_text_lossy(&mut self, rect: &Rect) -> String {
+    pub fn screen_get_text_lossy(&self, rect: &Rect) -> String {
         let bytes = self.get_text_as_bytes(rect);
         String::from_utf8_lossy(&bytes).into_owned()
     }
 
     // Returns the text within the rect as a String or panics if invalid utf8 bytes are found
-    pub fn screen_get_text(&mut self, rect: &Rect) -> Result<String, ::std::string::FromUtf8Error> {
+    pub fn screen_get_text(&self, rect: &Rect) -> Result<String, ::std::string::FromUtf8Error> {
         let bytes = self.get_text_as_bytes(rect);
         let v = try! { String::from_utf8(bytes) };
         Ok(v)
     }
 
-    fn get_text_as_bytes(&mut self, rect: &Rect) -> Vec<u8> {
+    fn get_text_as_bytes(&self, rect: &Rect) -> Vec<u8> {
+        let screen_rect = Rect::new(Pos::new(0,0), self.get_size());
+        if !screen_rect.contains_rect(&rect) {
+            panic!("given rect out of bounds: size={:?} rect={:?}", self.get_size(), rect);
+        }
+
         let size: usize = rect.size.width * rect.size.height * ffi::VTERM_MAX_CHARS_PER_CELL;
         let mut bytes = Vec::with_capacity(size);
         unsafe { bytes.set_len(size) };

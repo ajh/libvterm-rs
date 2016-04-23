@@ -13,6 +13,7 @@ pub trait RectAssist {
     /// iterator of positions in by row order, meaning positions for all columns are returned for
     /// the first row, before positions for subsequent rows.
     fn positions<'a>(&'a self) -> RectPositions<'a>;
+    fn contains_rect(&self, &Rect) -> bool;
 }
 
 impl RectAssist for Rect {
@@ -32,6 +33,13 @@ impl RectAssist for Rect {
 
     fn positions<'a>(&'a self) -> RectPositions<'a> {
         RectPositions::new(self)
+    }
+
+    fn contains_rect(&self, other: &Rect) -> bool {
+        self.top() <= other.top() &&
+            self.bottom() >= other.bottom() &&
+            self.left() <= other.left() &&
+            self.right() >= other.right()
     }
 }
 
