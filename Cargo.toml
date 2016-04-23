@@ -2,11 +2,12 @@
 authors = ["Andy Hartford <hartforda@gmail.com>"]
 description = "FFI bindings to libvterm"
 homepage = "https://github.com/ajh/libvterm-rs"
+keywords = ["term", "ansi_term", "terminal", "vterm"]
 license = "MIT"
 name = "vterm-sys"
 readme = "README.md"
 repository = "https://github.com/ajh/libvterm-rs"
-version = "0.0.1"
+version = "0.1.0"
 
 build = "build.rs"
 links = "libvterm"
