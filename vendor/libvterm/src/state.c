@@ -176,13 +176,23 @@ static int is_cursor_in_scrollregion(const VTermState *state)
 
 static void tab(VTermState *state, int count, int direction)
 {
-  while(count--)
-    while(state->pos.col >= 0 && state->pos.col < THISROWWIDTH(state)-1) {
-      state->pos.col += direction;
+  while(count > 0) {
+    if(direction > 0) {
+      if(state->pos.col >= THISROWWIDTH(state)-1)
+        return;
 
-      if(is_col_tabstop(state, state->pos.col))
-        break;
+      state->pos.col++;
     }
+    else if(direction < 0) {
+      if(state->pos.col < 1)
+        return;
+
+      state->pos.col--;
+    }
+
+    if(is_col_tabstop(state, state->pos.col))
+      count--;
+  }
 }
 
 #define NO_FORCE 0
@@ -239,6 +249,12 @@ static int on_text(const char bytes[], size_t len, void *user)
   (*encoding->enc->decode)(encoding->enc, encoding->data,
       codepoints, &npoints, state->gsingle_set ? 1 : len,
       bytes, &eaten, len);
+
+  /* There's a chance an encoding (e.g. UTF-8) hasn't found enough bytes yet
+   * for even a single codepoint
+   */
+  if(!npoints)
+    return 0;
 
   if(state->gsingle_set && npoints)
     state->gsingle_set = 0;
@@ -1359,7 +1375,8 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     else
       UBOUND(state->scrollregion_right, state->cols);
 
-    if(SCROLLREGION_RIGHT(state) <= SCROLLREGION_LEFT(state)) {
+    if(state->scrollregion_right > -1 &&
+       state->scrollregion_right <= state->scrollregion_left) {
       // Invalid
       state->scrollregion_left  = 0;
       state->scrollregion_right = -1;
@@ -1425,6 +1442,18 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
      state->pos.col < 0 || state->pos.col >= state->cols) {
     fprintf(stderr, "Position out of bounds after CSI %c: (%d,%d)\n",
         command, state->pos.row, state->pos.col);
+    abort();
+  }
+
+  if(SCROLLREGION_BOTTOM(state) <= state->scrollregion_top) {
+    fprintf(stderr, "Scroll region height out of bounds after CSI %c: %d <= %d\n",
+        command, SCROLLREGION_BOTTOM(state), state->scrollregion_top);
+    abort();
+  }
+
+  if(SCROLLREGION_RIGHT(state) <= SCROLLREGION_LEFT(state)) {
+    fprintf(stderr, "Scroll region width out of bounds after CSI %c: %d <= %d\n",
+        command, SCROLLREGION_RIGHT(state), SCROLLREGION_LEFT(state));
     abort();
   }
 #endif
