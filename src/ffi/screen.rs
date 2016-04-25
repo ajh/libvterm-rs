@@ -14,6 +14,7 @@ pub enum VTermDamageSize {
 
 pub enum VTermAttrMask {}
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct VTermScreenCallbacks {
     pub damage: Option<extern "C" fn(VTermRect, *mut c_void) -> (c_int)>,

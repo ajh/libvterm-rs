@@ -22,6 +22,7 @@ pub enum ScreenEvent {
     Title(TitleEvent),
 }
 
+#[derive(Debug)]
 pub struct ScreenCallbacksConfig {
     pub damage: bool,
     pub move_rect: bool,

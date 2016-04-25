@@ -6,8 +6,6 @@ terminal emulator"
 
 # How to build
 
-    git submodule init
-    git submodule update
     (cd vendor/libvterm; make)
     cargo build
 
